@@ -1,3 +1,33 @@
 #!/bin/bash
 
+strip_url() {
+	echo $1 | sed 's|^.*://.*/||g'
+}
 
+if [ ! -f PKGBUILD ]; then
+	echo "This must be run in the directory of a built package."
+	exit 1
+fi
+
+source PKGBUILD
+
+if [ ! -f $pkgname-$pkgver-$pkgrel.pkg.tar.gz ]; then
+	echo "You must have a built package to check."
+	exit 1
+fi
+
+pkgurl=`yes | pacman -Sp $pkgname | rev | cut -d ' ' -f 1 | rev`
+
+oldpkg=`strip_url $pkgurl`
+
+if [ ! -f $oldpkg ]; then
+	wget $pkgurl
+fi
+
+tar tzf $oldpkg > filelist-old
+tar tzf $pkgname-$pkgver-$pkgrel.pkg.tar.gz > filelist
+
+sort -o filelist filelist
+sort -o filelist-old filelist
+
+diff filelist-old filelist
