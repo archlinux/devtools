@@ -32,31 +32,15 @@ if [ ! -f $pkgfile ]; then
 fi
 
 if [ "$cmd" == "extrapkg" ]; then
-	if echo $pkgrel | grep "t" > /dev/null 2>&1; then
-		echo "Package can't be uploaded to extra with a 't' in the release"
-		exit 1
-	fi
 	repo="extra"
 	tag="CURRENT"
 elif [ "$cmd" == "currentpkg" ]; then
-	if echo $pkgrel | grep "t" > /dev/null 2>&1; then
-		echo "Package can't be uploaded to current with a 't' in the release"
-		exit 1
-	fi
 	repo="current"
 	tag="CURRENT"
 elif [ "$cmd" == "testingpkg" ]; then
-	if echo $pkgrel | grep -v "t" > /dev/null 2>&1; then
-		echo "Package can't be uploaded to testing without a 't' in the release"
-		exit 1
-	fi
 	repo="testing"
 	tag="TESTING"
 elif [ "$cmd" == "unstablepkg" ]; then
-	if echo $pkgrel | grep "t" > /dev/null 2>&1; then
-		echo "Package can't be uploaded to unstable with a 't' in the release"
-		exit 1
-	fi
 	repo="unstable"
 	tag="CURRENT"
 fi
