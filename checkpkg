@@ -33,7 +33,11 @@ if [ "$oldpkg" = "$pkgname-$pkgver-$pkgrel.pkg.tar.gz" ]; then
 fi
 
 if [ ! -f $oldpkg ]; then
-	wget $pkgurl
+	if echo $oldpkg | grep "^file:///" > /dev/null 2>&1; then
+		cp `echo $oldpkg | sed 's#^file://##'` .
+	else
+		wget $pkgurl
+	fi
 fi
 
 tar tzf $oldpkg > filelist-old
