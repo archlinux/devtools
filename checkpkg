@@ -20,6 +20,11 @@ pkgurl=`yes | pacman -Sp $pkgname | rev | cut -d ' ' -f 1 | rev`
 
 oldpkg=`strip_url $pkgurl`
 
+if [ "$oldpkg" = "$pkgname-$pkgver-$pkgrel.pkg.tar.gz" ]; then
+	echo "The built package is the one in the repo right now!"
+	exit 1
+fi
+
 if [ ! -f $oldpkg ]; then
 	wget $pkgurl
 fi
@@ -28,6 +33,16 @@ tar tzf $oldpkg > filelist-old
 tar tzf $pkgname-$pkgver-$pkgrel.pkg.tar.gz > filelist
 
 sort -o filelist filelist
-sort -o filelist-old filelist
+sort -o filelist-old filelist-old
 
 diff filelist-old filelist
+
+if diff filelist-old filelist | grep '\.so\.' > /dev/null 2>&1; then
+	mkdir -p pkg
+	cd pkg
+	tar xzf ../$pkgname-$pkgver-$pkgrel.pkg.tar.gz > /dev/null
+	for i in `diff ../filelist-old ../filelist | grep \> | grep \.so\. | awk '{print $2}'`; do
+		echo -n "${i}: "
+		objdump -p $i | grep SONAME
+	done
+fi
