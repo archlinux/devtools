@@ -1,0 +1,39 @@
+#!/bin/bash
+
+source /etc/makepkg.conf
+
+cmd=`basename $0`
+
+if echo *.pkg.tar.gz | grep ' ' >/dev/null 2>&1; then
+	echo "Too many packages in current dir"
+	exit 1
+fi
+
+if [ ! -f *.pkg.tar.gz ]; then
+	echo "No package file"
+	exit 1
+fi
+
+pkgfile=`echo *.pkg.tar.gz`
+pkg=`echo *.pkg.tar.gz | rev | cut -d- -f 3- | rev`
+ver=`echo *.pkg.tar.gz | rev | cut -d- -f -2 | rev | sed 's/\.pkg\.tar\.gz//'`
+if [ "$cmd" == "extrapkg" ]; then
+	repo="extra"
+	tag="CURRENT"
+elif [ "$cmd" == "currentpkg" ]; then
+	repo="current"
+	tag="CURRENT"
+elif [ "$cmd" == "testingpkg" ]; then
+	repo="testing"
+	tag="TESTING"
+elif [ "$cmd" == "unstablepkg" ]; then
+	repo="unstable"
+	tag="CURRENT"
+fi
+
+scp $pkgfile archlinux.org:/home/ftp/$repo/os/$CARCH
+echo "===> Uploaded $pkgfile"
+cvs commit -m "upgpkg: $pkg $ver" > /dev/null
+echo "===> Commited with \"upgpkg: $pkg $ver\" message"
+cvs tag -c -F -R $tag > /dev/null
+echo "===> Tagged as $tag"
