@@ -32,15 +32,33 @@ elif [ "$cmd" == "unstablepkg" ]; then
 fi
 
 scp $pkgfile archlinux.org:/home/ftp/$repo/os/$CARCH
+if [ $? -ne 0 ]; then
+	echo "Cancelled"
+	exit 1
+fi
 echo "===> Uploaded $pkgfile"
+
 if [ "$1" != "" ]; then
 cvs commit -m "upgpkg: $pkg $ver
 $1" > /dev/null
+if [ $? -ne 0 ]; then
+	echo "Cancelled"
+	exit 1
+fi
 echo "===> Commited with \"upgpkg: $pkg $ver
 $1\" message"
 else
 cvs commit -m "upgpkg: $pkg $ver" > /dev/null
+if [ $? -ne 0 ]; then
+	echo "Cancelled"
+	exit 1
+fi
 echo "===> Commited with \"upgpkg: $pkg $ver\" message"
 fi
+
 cvs tag -c -F -R $tag > /dev/null
+if [ $? -ne 0 ]; then
+	echo "Cancelled"
+	exit 1
+fi
 echo "===> Tagged as $tag"
