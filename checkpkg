@@ -16,7 +16,14 @@ if [ ! -f $pkgname-$pkgver-$pkgrel.pkg.tar.gz ]; then
 	exit 1
 fi
 
-pkgurl=`pacman -Sp --noconfirm $pkgname | rev | cut -d ' ' -f 1 | rev`
+tmp=`pacman -Sp --noconfirm $pkgname`
+
+if [ $? -ne 0 ]; then
+	echo "Couldn't download previous package."
+	exit 1
+fi
+
+pkgurl=`echo $tmp | rev | cut -d ' ' -f 1 | rev`
 
 oldpkg=`strip_url $pkgurl`
 
