@@ -69,21 +69,21 @@ fi
 echo "===> Uploaded $pkgfile"
 
 if [ "$1" != "" ]; then
-cvs commit -m "upgpkg: $pkgname $pkgver
+cvs commit -m "upgpkg: $pkgname $pkgver-$pkgrel
 $1" > /dev/null
 if [ $? -ne 0 ]; then
 	echo "Cancelled"
 	exit 1
 fi
-echo "===> Commited with \"upgpkg: $pkgname $pkgver
+echo "===> Commited with \"upgpkg: $pkgname $pkgver-$pkgrel
 $1\" message"
 else
-cvs commit -m "upgpkg: $pkgname $pkgver" > /dev/null
+cvs commit -m "upgpkg: $pkgname $pkgver-$pkgrel" > /dev/null
 if [ $? -ne 0 ]; then
 	echo "Cancelled"
 	exit 1
 fi
-echo "===> Commited with \"upgpkg: $pkgname $pkgver\" message"
+echo "===> Commited with \"upgpkg: $pkgname $pkgver-$pkgrel\" message"
 fi
 
 cvs tag -c -F -R $tag > /dev/null
