@@ -16,7 +16,7 @@ if [ ! -f $pkgname-$pkgver-$pkgrel.pkg.tar.gz ]; then
 	exit 1
 fi
 
-pkgurl=`yes | pacman -Sp $pkgname | rev | cut -d ' ' -f 1 | rev`
+pkgurl=`pacman -Sp --noconfirm $pkgname | rev | cut -d ' ' -f 1 | rev`
 
 oldpkg=`strip_url $pkgurl`
 
@@ -45,4 +45,6 @@ if diff filelist-old filelist | grep '\.so\.' > /dev/null 2>&1; then
 		echo -n "${i}: "
 		objdump -p $i | grep SONAME
 	done
+else
+	echo "No filename differences"
 fi
