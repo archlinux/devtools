@@ -4,19 +4,33 @@ source /etc/makepkg.conf
 
 cmd=`basename $0`
 
-if echo *.pkg.tar.gz | grep ' ' >/dev/null 2>&1; then
-	echo "Too many packages in current dir"
+#if echo *.pkg.tar.gz | grep ' ' >/dev/null 2>&1; then
+#	echo "Too many packages in current dir"
+#	exit 1
+#fi
+#
+#if [ ! -f *.pkg.tar.gz ]; then
+#	echo "No package file"
+#	exit 1
+#fi
+#
+#pkgfile=`echo *.pkg.tar.gz`
+#pkg=`echo *.pkg.tar.gz | rev | cut -d- -f 3- | rev`
+#ver=`echo *.pkg.tar.gz | rev | cut -d- -f -2 | rev | sed 's/\.pkg\.tar\.gz//'`
+
+if [ ! -f PKGBUILD ]; then
+	echo "No PKGBUILD file"
 	exit 1
 fi
 
-if [ ! -f *.pkg.tar.gz ]; then
-	echo "No package file"
+source PKGBUILD
+pkgfile=${pkgname}-${pkgver}-${pkgrel}.pkg.tar.gz
+
+if [ ! -f $pkgfile ]; then
+	echo "File $pkgfile doesn't exist"
 	exit 1
 fi
 
-pkgfile=`echo *.pkg.tar.gz`
-pkg=`echo *.pkg.tar.gz | rev | cut -d- -f 3- | rev`
-ver=`echo *.pkg.tar.gz | rev | cut -d- -f -2 | rev | sed 's/\.pkg\.tar\.gz//'`
 if [ "$cmd" == "extrapkg" ]; then
 	repo="extra"
 	tag="CURRENT"
@@ -24,6 +38,10 @@ elif [ "$cmd" == "currentpkg" ]; then
 	repo="current"
 	tag="CURRENT"
 elif [ "$cmd" == "testingpkg" ]; then
+	if echo $pkgrel | grep -v "t" > /dev/null 2>&1; then
+		echo "Package can't be uploaded to testing without a 't' in the release"
+		exit 1
+	fi
 	repo="testing"
 	tag="TESTING"
 elif [ "$cmd" == "unstablepkg" ]; then
@@ -39,21 +57,21 @@ fi
 echo "===> Uploaded $pkgfile"
 
 if [ "$1" != "" ]; then
-cvs commit -m "upgpkg: $pkg $ver
+cvs commit -m "upgpkg: $pkgname $pkgver
 $1" > /dev/null
 if [ $? -ne 0 ]; then
 	echo "Cancelled"
 	exit 1
 fi
-echo "===> Commited with \"upgpkg: $pkg $ver
+echo "===> Commited with \"upgpkg: $pkgname $pkgver
 $1\" message"
 else
-cvs commit -m "upgpkg: $pkg $ver" > /dev/null
+cvs commit -m "upgpkg: $pkgname $pkgver" > /dev/null
 if [ $? -ne 0 ]; then
 	echo "Cancelled"
 	exit 1
 fi
-echo "===> Commited with \"upgpkg: $pkg $ver\" message"
+echo "===> Commited with \"upgpkg: $pkgname $pkgver\" message"
 fi
 
 cvs tag -c -F -R $tag > /dev/null
