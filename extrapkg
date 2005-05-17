@@ -34,7 +34,7 @@ elif [ "$cmd" == "communitypkg" ]; then
 	tag="CURRENT"
 fi
 
-if [ "$repo" != "communitypkg" ]; then
+if [ "$repo" != "community" ]; then
 	scp $pkgfile archlinux.org:/home/ftp/$repo/os/$CARCH
 else
 	if [ ! -f ~/.tupkg ]; then
