@@ -4,20 +4,6 @@ source /etc/makepkg.conf
 
 cmd=`basename $0`
 
-#if echo *.pkg.tar.gz | grep ' ' >/dev/null 2>&1; then
-#	echo "Too many packages in current dir"
-#	exit 1
-#fi
-#
-#if [ ! -f *.pkg.tar.gz ]; then
-#	echo "No package file"
-#	exit 1
-#fi
-#
-#pkgfile=`echo *.pkg.tar.gz`
-#pkg=`echo *.pkg.tar.gz | rev | cut -d- -f 3- | rev`
-#ver=`echo *.pkg.tar.gz | rev | cut -d- -f -2 | rev | sed 's/\.pkg\.tar\.gz//'`
-
 if [ ! -f PKGBUILD ]; then
 	echo "No PKGBUILD file"
 	exit 1
@@ -43,9 +29,20 @@ elif [ "$cmd" == "testingpkg" ]; then
 elif [ "$cmd" == "unstablepkg" ]; then
 	repo="unstable"
 	tag="CURRENT"
+elif [ "$cmd" == "communitypkg" ]; then
+	repo="community"
+	tag="CURRENT"
 fi
 
-scp $pkgfile archlinux.org:/home/ftp/$repo/os/$CARCH
+if [ "$repo" != "communitypkg" ]; then
+	scp $pkgfile archlinux.org:/home/ftp/$repo/os/$CARCH
+else
+	if [ ! -f ~/.tupkg ]; then
+	   echo "Must configure tupkg via ~/.tupkg, cancelled"
+	   exit 1
+	fi
+	tupkg $pkgfile
+fi
 if [ $? -ne 0 ]; then
 	echo "Cancelled"
 	exit 1
