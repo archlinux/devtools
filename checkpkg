@@ -16,7 +16,7 @@ if [ ! -f $pkgname-$pkgver-$pkgrel.pkg.tar.gz ]; then
 	exit 1
 fi
 
-tmp=`pacman -Sp --noconfirm $pkgname`
+tmp=`pacman -Spd --noconfirm $pkgname`
 
 if [ $? -ne 0 ]; then
 	echo "Couldn't download previous package."
