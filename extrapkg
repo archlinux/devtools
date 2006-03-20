@@ -35,7 +35,7 @@ elif [ "$cmd" == "communitypkg" ]; then
 fi
 
 if [ "$repo" != "community" ]; then
-	scp $pkgfile archlinux.org:/home/ftp/$repo/os/$CARCH
+	scp $pkgfile archlinux.org:staging/$repo/add
 else
 	if [ ! -f ~/.tupkg ]; then
 	   echo "Must configure tupkg via ~/.tupkg, cancelled"
