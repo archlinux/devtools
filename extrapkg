@@ -13,6 +13,10 @@ source PKGBUILD
 pkgfile=${pkgname}-${pkgver}-${pkgrel}.pkg.tar.gz
 
 if [ ! -f $pkgfile ]; then
+	pkgfile=$PKGDEST/$pkgfile
+fi
+
+if [ ! -f $pkgfile ]; then
 	echo "File $pkgfile doesn't exist"
 	exit 1
 fi
