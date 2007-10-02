@@ -10,22 +10,28 @@ if [ ! -f PKGBUILD ]; then
 fi
 
 source PKGBUILD
-pkgfile=${pkgname}-${pkgver}-${pkgrel}.pkg.tar.gz
+pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}.pkg.tar.gz
+oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}.pkg.tar.gz
 
 if [ ! -f $pkgfile ]; then
-	pkgfile=$PKGDEST/$pkgfile
-fi
-
-if [ ! -f $pkgfile ]; then
-	echo "File $pkgfile doesn't exist"
-	exit 1
+	if [ -f $PKGDEST/$pkgfile ]; then
+		pkgfile=$PKGDEST/$pkgfile
+		oldstylepkgfile=$PKGDEST/$oldstylepkgfile
+	elif [ -f $oldstylepkgfile ]; then
+		pkgfile=$oldstylepkgfile
+	elif [ -f $PKGDEST/$oldstylepkgfile ]; then
+		pkgfile=$PKGDEST/$oldstylepkgfile
+	else
+		echo "File $pkgfile doesn't exist"
+		exit 1
+	fi
 fi
 
 if [ "$cmd" == "extrapkg" ]; then
 	repo="extra"
 	tag="CURRENT"
-elif [ "$cmd" == "currentpkg" ]; then
-	repo="arch"
+elif [ "$cmd" == "corepkg" ]; then
+	repo="core"
 	tag="CURRENT"
 elif [ "$cmd" == "testingpkg" ]; then
 	repo="testing"
@@ -44,6 +50,11 @@ else
 	if [ ! -f ~/.tupkg ]; then
 	   echo "Must configure tupkg via ~/.tupkg, cancelled"
 	   exit 1
+	fi
+	if [ "$(basename $pkgfile)" != "$(basename $oldstylepkgfile)" ]; then
+		echo "Renaming makepkg3 package for compatability"
+		mv $pkgfile $oldstylepkgfile
+		pkgfile=$oldstylepkgfile
 	fi
 	tupkg $pkgfile
 fi

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /etc/makepkg.conf
+
 strip_url() {
 	echo $1 | sed 's|^.*://.*/||g'
 }
@@ -11,9 +13,20 @@ fi
 
 source PKGBUILD
 
-if [ ! -f $pkgname-$pkgver-$pkgrel.pkg.tar.gz ]; then
-	echo "You must have a built package to check."
-	exit 1
+pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}.pkg.tar.gz
+oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}.pkg.tar.gz
+
+if [ ! -f $pkgfile ]; then
+	if [ -f $PKGDEST/$pkgfile ]; then
+		pkgfile=$PKGDEST/$pkgfile
+	elif [ -f $oldstylepkgfile ]; then
+		pkgfile=$oldstylepkgfile
+	elif [ -f $PKGDEST/$oldstylepkgfile ]; then
+		pkgfile=$PKGDEST/$oldstylepkgfile
+	else
+		echo "You must have a built package to check."
+		exit 1
+	fi
 fi
 
 tmp=`pacman -Spd --noconfirm $pkgname`
@@ -27,7 +40,7 @@ pkgurl=`echo $tmp | rev | cut -d ' ' -f 1 | rev`
 
 oldpkg=`strip_url $pkgurl`
 
-if [ "$oldpkg" = "$pkgname-$pkgver-$pkgrel.pkg.tar.gz" ]; then
+if [ "$oldpkg" = "$pkgfile" ]; then
 	echo "The built package is the one in the repo right now!"
 	exit 1
 fi
@@ -41,7 +54,7 @@ if [ ! -f $oldpkg ]; then
 fi
 
 tar tzf $oldpkg > filelist-old
-tar tzf $pkgname-$pkgver-$pkgrel.pkg.tar.gz > filelist
+tar tzf $pkgfile > filelist
 
 sort -o filelist filelist
 sort -o filelist-old filelist-old
@@ -51,7 +64,7 @@ diff filelist-old filelist
 if diff filelist-old filelist | grep '\.so\.' > /dev/null 2>&1; then
 	mkdir -p pkg
 	cd pkg
-	tar xzf ../$pkgname-$pkgver-$pkgrel.pkg.tar.gz > /dev/null
+	tar xzf ../$pkgfile > /dev/null
 	for i in `diff ../filelist-old ../filelist | grep \> | grep \.so\. | awk '{print $2}'`; do
 		echo -n "${i}: "
 		objdump -p $i | grep SONAME
