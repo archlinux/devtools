@@ -19,12 +19,13 @@ oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}.pkg.tar.gz
 if [ ! -f $pkgfile ]; then
 	if [ -f $PKGDEST/$pkgfile ]; then
 		pkgfile=$PKGDEST/$pkgfile
+		oldstylepkgfile=$PKGDEST/$oldstylepkgfile
 	elif [ -f $oldstylepkgfile ]; then
 		pkgfile=$oldstylepkgfile
 	elif [ -f $PKGDEST/$oldstylepkgfile ]; then
 		pkgfile=$PKGDEST/$oldstylepkgfile
 	else
-		echo "You must have a built package to check."
+		echo "File $pkgfile doesn't exist"
 		exit 1
 	fi
 fi
