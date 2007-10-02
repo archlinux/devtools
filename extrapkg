@@ -44,8 +44,15 @@ elif [ "$cmd" == "communitypkg" ]; then
 	tag="CURRENT"
 fi
 
+# see if any limit options were passed, we'll send them to SCP
+unset scpopts
+if [ "$1" = "-l" ]; then
+	scpopts="$1 $2"
+	shift 2
+fi
+
 if [ "$repo" != "community" ]; then
-	scp $pkgfile archlinux.org:staging/$repo/add
+	scp $scpopts $pkgfile archlinux.org:staging/$repo/add
     if [ "$(md5sum $pkgfile | cut -d' ' -f1)" != "$(ssh archlinux.org md5sum staging/${repo}/add/$pkgfile | cut -d' ' -f1)" ]; then
         echo "File got corrupted during upload, cancelled."
         exit 1
