@@ -52,13 +52,13 @@ if [ "$1" = "-l" ]; then
 fi
 
 if [ "$repo" != "community" ]; then
-	scp $scpopts $pkgfile archlinux.org:staging/$repo/add
-    if [ "$(md5sum $pkgfile | cut -d' ' -f1)" != "$(ssh archlinux.org md5sum staging/${repo}/add/$pkgfile | cut -d' ' -f1)" ]; then
-        echo "File got corrupted during upload, cancelled."
-        exit 1
-    else
-        echo "File integrity okay."
-    fi
+	scp ${scpopts} ${pkgfile} archlinux.org:staging/$repo/add
+	if [ "$(md5sum ${pkgfile} | cut -d' ' -f1)" != "$(ssh archlinux.org md5sum staging/${repo}/add/$(basename ${pkgfile}) | cut -d' ' -f1)" ]; then
+		echo "File got corrupted during upload, cancelled."
+	exit 1
+	else
+		echo "File integrity okay."
+	fi
 else
 	if [ ! -f ~/.tupkg ]; then
 	   echo "Must configure tupkg via ~/.tupkg, cancelled"
