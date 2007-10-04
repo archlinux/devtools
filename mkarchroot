@@ -1,0 +1,136 @@
+#!/bin/sh
+
+FORCE="n"
+BZIP2=""
+GZIP=""
+RUN=""
+
+working_dir=""
+
+APPNAME=$(basename "${0}")
+
+usage ()
+{
+    echo "usage ${APPNAME} [options] working-dir package [package [package..]]"
+    echo " options:"
+    echo "    -r <app>      run 'app' within the context of the chroot"
+    echo "    -f            force overwrite of files in the working-dir"
+    echo "    -h            this message."
+    exit 1
+}
+
+while getopts 'r:fh' arg; do
+    echo "getopts $arg"
+    case "${arg}" in
+        r) echo "run=>$OPTARG"; RUN="$OPTARG" ;;
+        f) FORCE="y" ;;
+        h|?) usage ;;
+        *) echo "invalid argument '${arg}'"; usage ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+[ $# -lt 1 ] && echo "missing arguments" && usage
+
+working_dir="$(readlink -f ${1})"
+shift 1
+
+[ "${working_dir}" = "" ] && echo "error: please specify a working directory" && usage
+
+# {{{ functions 
+
+function chroot_mount ()
+{
+    echo "mounting sysfs : /sys"
+    [ -e "${working_dir}/sys" ] || mkdir "${working_dir}/sys"
+    mount -t sysfs sysfs "${working_dir}/sys"
+
+    echo "mounting procfs : /proc"
+    [ -e "${working_dir}/proc" ] || mkdir "${working_dir}/proc"
+    mount -t proc proc "${working_dir}/proc"
+
+    echo "binding device nodes : /dev"
+    [ -e "${working_dir}/dev" ] || mkdir "${working_dir}/dev"
+    mount -o bind /dev "${working_dir}/dev"
+
+    echo "binding pacman cache : /var/cache/pacman"
+    [ -e "${working_dir}/var/cache/pacman" ] || mkdir -p "${working_dir}/var/cache/pacman"
+    mount -o bind /var/cache/pacman "${working_dir}/var/cache/pacman"
+
+    trap 'chroot_umount' 1 2 15
+}
+
+function chroot_umount ()
+{
+    echo "cleaning up mounts"
+    umount "${working_dir}/proc"
+    umount "${working_dir}/sys"
+    umount "${working_dir}/dev"
+    umount "${working_dir}/var/cache/pacman"
+}
+# }}}
+
+if [ "$RUN" != "" ]; then
+# run chroot {{{
+    if [ "$EUID" != "0" ]; then
+        echo "Running a chroot requires root privileges, aborting"
+        exit 1
+    fi
+
+    #Sanity check
+    if [ ! -f "${working_dir}/.arch-chroot" ]; then
+        echo "'${working_dir}' does not appear to be a Arch chroot"
+        echo "  please build the image using mkarchchroot"
+        exit 1
+    fi
+
+    chroot_mount
+
+    echo "starting chroot (using \$SHELL)"
+    chroot "${working_dir}" "${SHELL}"
+
+# }}}
+else
+# {{{ build chroot
+    if [ -e "${working_dir}" -a "${FORCE}" = "n" ]; then
+        echo "Working dir '${working_dir}' already exists - try using -f"
+        exit 1
+    fi
+
+    mkdir -p "${working_dir}"
+
+    chroot_mount
+
+    pacargs="--noconfirm -v " #--noprogressbar -v
+    pacargs="$pacargs --root=${working_dir}"
+    pacargs="$pacargs --dbpath=${working_dir}/var/lib/pacman"
+    pacargs="$pacargs --cachedir=${working_dir}/var/cache/pacman"
+
+    if [ $# -eq 0 ]; then
+        echo "no packages to install"
+    else
+        echo "installing packages:"
+        for i in $@; do echo -e "\t$i"; done
+
+        op="-Sy"
+        if [ "$FORCE" == "y" ]; then
+            op="${op}f"
+        fi
+        if ! pacman ${op} ${pacargs} $@; then
+            echo "error: failed to instal all packages"
+            exit 1
+        fi
+    fi
+
+    if [ -d "${working_dir}/lib/modules" ]; then
+        echo "running ldconfig"
+        ldconfig -r "${working_dir}"
+    fi
+
+    if [ ! -e "${working_dir}/.arch-chroot" ]; then
+        date +%s > "${working_dir}/.arch-chroot"
+    fi
+# }}}
+fi
+
+# vim:ft=sh:ts=4:sw=4:et:
