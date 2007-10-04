@@ -1,0 +1,92 @@
+#!/bin/sh
+
+FORCE="n"
+RUN=""
+MAKEPKG_ARGS="-Ss"
+
+chrootdir="$CHROOT_SHELL"
+
+APPNAME=$(basename "${0}")
+
+if [ ! -f PKGBUILD ]; then
+	echo "This must be run in the directory of a built package."
+	exit 1
+fi
+source PKGBUILD
+
+if [ "$EUID" != "0" ]; then
+    echo "This script must be run as root."
+    exit 1
+fi
+
+usage ()
+{
+    echo "usage ${APPNAME} [-h] [-c CHROOT_SHELL] [makepkg args]"
+    echo " Run this script in a PKGBUILD dir to build a package inside a"
+    echo " clean chroot. All unrecognized arguments passed to this script"
+    echo " will be passed to makepkg."
+    echo ""
+    echo "The \$CHROOT_SHELL environment variable is used to determine where"
+    echo " your chroot shell is. The shell consists of the following"
+    echo " directories: \$CHROOT_SHELL/{root, rw, union} but only 'root' is"
+    echo " required by default. The rest will be created as needed"
+    echo ""
+    echo "The chroot shell 'root' directory must be created via the following"
+    echo "command:"
+    echo "    mkarchroot \$CHROOT_SHELL base base-devel"
+    echo ""
+    echo "Default makepkg args: $MAKEPKG_ARGS"
+    exit 1
+}
+
+while getopts 'c:h' arg; do
+    case "${arg}" in
+        c) chrootdir="$OPTARG" ;;
+        h|?) usage ;;
+        *) MAKEPKG_ARGS="$MAKEPKG_ARGS -$arg $OPTARG" ;;
+    esac
+done
+
+if [ ! -d "$chrootdir" ]; then
+    echo "No \$CHROOT_SHELL defined, or invalid path"
+    exit 1
+fi
+
+if [ ! -d "$chrootdir/root" ]; then
+    echo "Missing \$CHROOT_SHELL root directory."
+    echo "Try using: mkarchroot \$CHROOT_SHELL base base-devel"
+    exit 1
+fi
+
+[ -d "$chrootdir/rw" ] || mkdir "$chrootdir/rw"
+[ -d "$chrootdir/union" ] || mkdir "$chrootdir/union"
+
+function cleanup ()
+{
+    echo "cleaning up unioned mounts"
+    umount "$chrootdir/union"
+}
+
+uniondir="$chrootdir/union"
+echo "building union chroot"
+modprobe -q unionfs
+mount -t unionfs none -o "dirs=$chrootdir/rw=rw:$chrootdir/root=ro" "$uniondir"
+trap 'cleanup' 1 2 15
+
+echo "moving build files to chroot"
+[ -d "$uniondir/build" ] || mkdir "$uniondir/build"
+
+(
+cat <<EOF
+#!/bin/sh
+su nobody
+cd /build
+makepkg $MAKEPKG_ARGS
+EOF
+) > "$uniondir/chrootbuild"
+chmod +x "$uniondir/chrootbuild"
+
+./mkarchroot -r "/chrootbuild" "$uniondir"
+
+# TODO move relevant files here
+echo "build complete... check \$CHROOT_SHELL/build for build results"

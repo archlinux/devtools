@@ -1,13 +1,16 @@
 #!/bin/sh
 
 FORCE="n"
-BZIP2=""
-GZIP=""
 RUN=""
 
 working_dir=""
 
 APPNAME=$(basename "${0}")
+
+if [ "$EUID" != "0" ]; then
+    echo "This script must be run as root."
+    exit 1
+fi
 
 usage ()
 {
@@ -20,9 +23,8 @@ usage ()
 }
 
 while getopts 'r:fh' arg; do
-    echo "getopts $arg"
     case "${arg}" in
-        r) echo "run=>$OPTARG"; RUN="$OPTARG" ;;
+        r) RUN="$OPTARG" ;;
         f) FORCE="y" ;;
         h|?) usage ;;
         *) echo "invalid argument '${arg}'"; usage ;;
@@ -30,7 +32,13 @@ while getopts 'r:fh' arg; do
 done
 shift $(($OPTIND - 1))
 
-[ $# -lt 1 ] && echo "missing arguments" && usage
+if [ "$RUN" == "" -a $# -lt 2 ]; then
+    echo "you must specify a directory and one or more packages"
+    usage
+elif [ $# -lt 1 ]; then
+    echo "you must specify a directory"
+    usage
+fi
 
 working_dir="$(readlink -f ${1})"
 shift 1
@@ -86,8 +94,8 @@ if [ "$RUN" != "" ]; then
 
     chroot_mount
 
-    echo "starting chroot (using \$SHELL)"
-    chroot "${working_dir}" "${SHELL}"
+    echo "starting chroot ($RUN)"
+    chroot "${working_dir}" "${RUN}"
 
 # }}}
 else
