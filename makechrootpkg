@@ -33,7 +33,7 @@ usage ()
     echo ""
     echo "The chroot shell 'root' directory must be created via the following"
     echo "command:"
-    echo "    mkarchroot \$CHROOT_SHELL base base-devel"
+    echo "    mkarchroot \$CHROOT_SHELL base base-devel sudo"
     echo ""
     echo "Default makepkg args: $MAKEPKG_ARGS"
     exit 1
@@ -54,8 +54,8 @@ fi
 
 if [ ! -d "$chrootdir/root" ]; then
     echo "Missing \$CHROOT_SHELL root directory."
-    echo "Try using: mkarchroot \$CHROOT_SHELL base base-devel"
-    exit 1
+    echo "Try using: mkarchroot \$CHROOT_SHELL base base-devel sudo"
+    usage
 fi
 
 [ -d "$chrootdir/rw" ] || mkdir "$chrootdir/rw"
@@ -76,12 +76,26 @@ trap 'cleanup' 1 2 15
 echo "moving build files to chroot"
 [ -d "$uniondir/build" ] || mkdir "$uniondir/build"
 
-(
-cat <<EOF
-#!/bin/sh
-su nobody
+source PKGBUILD
+cp PKGBUILD "$uniondir/build/"
+for f in ${source[@]}; do
+    if [ -f "$f" ]; then
+        cp "$f" "$uniondir/build/"
+    fi
+done
+
+if ! grep "^nobody" "$uniondir/etc/sudoers" >/dev/null 2>&1; then
+    echo "allowing 'nobody' sudo rights in the chroot"
+    echo "nobody	ALL=(ALL) NOPASSWD: ALL" >> $uniondir/etc/sudoers
+fi
+
+#This is a little gross, but this way the script is recreated every time in the
+#rw portion of the union
+(cat <<EOF
+#!/bin/bash
+export LANG=$LOCALE
 cd /build
-makepkg $MAKEPKG_ARGS
+sudo -u nobody makepkg "$MAKEPKG_ARGS"
 EOF
 ) > "$uniondir/chrootbuild"
 chmod +x "$uniondir/chrootbuild"
