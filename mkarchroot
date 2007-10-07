@@ -136,6 +136,10 @@ else
         ldconfig -r "${working_dir}"
     fi
 
+    echo "generating default locales"
+    sed -i "s|^#\(.*$LANG\)|\1|g" /etc/locale.gen
+    locale-gen
+
     if [ ! -e "${working_dir}/.arch-chroot" ]; then
         date +%s > "${working_dir}/.arch-chroot"
     fi
