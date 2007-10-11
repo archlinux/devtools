@@ -16,19 +16,20 @@ working_dir=""
 APPNAME=$(basename "${0}")
 
 if [ "$EUID" != "0" ]; then
-    echo "This script must be run as root."
+    echo "error: this script must be run as root."
     exit 1
 fi
 
+# usage: usage <exitvalue>
 usage ()
 {
     echo "usage ${APPNAME} [options] working-dir [package-list | app]"
     echo " options:"
-    echo "    -r <app>      run 'app' within the context of the chroot"
-    echo "    -u            update the chroot via pacman"
-    echo "    -f            force overwrite of files in the working-dir"
-    echo "    -h            this message."
-    exit 1
+    echo "    -r <app>      Run 'app' within the context of the chroot"
+    echo "    -u            Update the chroot via pacman"
+    echo "    -f            Force overwrite of files in the working-dir"
+    echo "    -h            This message"
+    exit $1
 }
 
 while getopts 'r:ufh' arg; do
@@ -36,24 +37,24 @@ while getopts 'r:ufh' arg; do
         r) RUN="$OPTARG" ;;
         u) RUN="pacman -Syu" ;;
         f) FORCE="y" ;;
-        h|?) usage ;;
-        *) echo "invalid argument '${arg}'"; usage ;;
+        h|?) usage 0 ;;
+        *) echo "invalid argument '${arg}'"; usage 1 ;;
     esac
 done
 shift $(($OPTIND - 1))
 
 if [ "$RUN" == "" -a $# -lt 2 ]; then
     echo "you must specify a directory and one or more packages"
-    usage
+    usage 1
 elif [ $# -lt 1 ]; then
     echo "you must specify a directory"
-    usage
+    usage 1
 fi
 
 working_dir="$(readlink -f ${1})"
 shift 1
 
-[ "${working_dir}" = "" ] && echo "error: please specify a working directory" && usage
+[ "${working_dir}" = "" ] && echo "error: please specify a working directory" && usage 1
 
 # {{{ functions 
 
@@ -90,14 +91,9 @@ function chroot_umount ()
 
 if [ "$RUN" != "" ]; then
 # run chroot {{{
-    if [ "$EUID" != "0" ]; then
-        echo "Running a chroot requires root privileges, aborting"
-        exit 1
-    fi
-
     #Sanity check
     if [ ! -f "${working_dir}/.arch-chroot" ]; then
-        echo "'${working_dir}' does not appear to be a Arch chroot"
+        echo "error: '${working_dir}' does not appear to be a Arch chroot"
         echo "  please build the image using mkarchchroot"
         exit 1
     fi
@@ -111,7 +107,7 @@ if [ "$RUN" != "" ]; then
 else
 # {{{ build chroot
     if [ -e "${working_dir}" -a "${FORCE}" = "n" ]; then
-        echo "Working dir '${working_dir}' already exists - try using -f"
+        echo "error: working dir '${working_dir}' already exists - try using -f"
         exit 1
     fi
 
