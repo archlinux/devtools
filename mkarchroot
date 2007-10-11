@@ -15,11 +15,6 @@ working_dir=""
 
 APPNAME=$(basename "${0}")
 
-if [ "$EUID" != "0" ]; then
-    echo "error: this script must be run as root."
-    exit 1
-fi
-
 # usage: usage <exitvalue>
 usage ()
 {
@@ -41,6 +36,12 @@ while getopts 'r:ufh' arg; do
         *) echo "invalid argument '${arg}'"; usage 1 ;;
     esac
 done
+
+if [ "$EUID" != "0" ]; then
+    echo "error: this script must be run as root."
+    exit 1
+fi
+
 shift $(($OPTIND - 1))
 
 if [ "$RUN" == "" -a $# -lt 2 ]; then
