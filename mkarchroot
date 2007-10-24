@@ -115,7 +115,7 @@ else
         exit 1
     fi
 
-    mkdir -p "${working_dir}"
+    mkdir -p "${working_dir}/var/lib/pacman/"
 
     chroot_mount
 
