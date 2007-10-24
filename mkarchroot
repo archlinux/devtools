@@ -22,17 +22,19 @@ fi
 
 usage ()
 {
-    echo "usage ${APPNAME} [options] working-dir package [package [package..]]"
+    echo "usage ${APPNAME} [options] working-dir [package-list | app]"
     echo " options:"
     echo "    -r <app>      run 'app' within the context of the chroot"
+    echo "    -u            update the chroot via pacman"
     echo "    -f            force overwrite of files in the working-dir"
     echo "    -h            this message."
     exit 1
 }
 
-while getopts 'r:fh' arg; do
+while getopts 'r:ufh' arg; do
     case "${arg}" in
         r) RUN="$OPTARG" ;;
+        u) RUN="pacman -Syu" ;;
         f) FORCE="y" ;;
         h|?) usage ;;
         *) echo "invalid argument '${arg}'"; usage ;;
@@ -134,7 +136,7 @@ else
             op="${op}f"
         fi
         if ! pacman ${op} ${pacargs} $@; then
-            echo "error: failed to instal all packages"
+            echo "error: failed to install all packages"
             exit 1
         fi
     fi
