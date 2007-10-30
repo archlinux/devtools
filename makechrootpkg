@@ -79,7 +79,7 @@ uniondir="$chrootdir/union"
 echo "building union chroot"
 modprobe -q unionfs
 mount -t unionfs none -o "dirs=$chrootdir/rw=rw:$chrootdir/root=ro" "$uniondir"
-trap 'cleanup' 1 2 15
+trap 'cleanup' 0 1 2 15
 
 echo "moving build files to chroot"
 [ -d "$uniondir/build" ] || mkdir "$uniondir/build"
