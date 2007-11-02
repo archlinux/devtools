@@ -23,15 +23,17 @@ usage ()
     echo "    -r <app>      Run 'app' within the context of the chroot"
     echo "    -u            Update the chroot via pacman"
     echo "    -f            Force overwrite of files in the working-dir"
+    echo "    -C <file>     location of a pacman config file"
     echo "    -h            This message"
     exit $1
 }
 
-while getopts 'r:ufh' arg; do
+while getopts 'r:ufhC:' arg; do
     case "${arg}" in
         r) RUN="$OPTARG" ;;
         u) RUN="pacman -Syu" ;;
         f) FORCE="y" ;;
+        C) pac_conf="$OPTARG" ;;
         h|?) usage 0 ;;
         *) echo "invalid argument '${arg}'"; usage 1 ;;
     esac
@@ -121,6 +123,9 @@ else
     # pacman takes these as relative to the given root
     pacargs="$pacargs --dbpath=/var/lib/pacman"
     pacargs="$pacargs --cachedir=/var/cache/pacman/pkg"
+    if [ "$pac_conf" != "" ]; then
+        pacargs="$pacargs --config=${pac_conf}"
+    fi
 
     if [ $# -eq 0 ]; then
         echo "no packages to install"
