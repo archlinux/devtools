@@ -148,6 +148,11 @@ else
         ldconfig -r "${working_dir}"
     fi
 
+    if [ "$pac_conf" != "" ]; then
+        echo "installing custom pacman.conf"
+        cp ${pac_conf} ${working_dir}/etc/pacman.conf
+    fi
+
     echo "generating default locales"
     sed -i "s|^#\(.*$LANG\)|\1|g" "${working_dir}/etc/locale.gen"
     chroot "${working_dir}" locale-gen
