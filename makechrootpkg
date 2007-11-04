@@ -113,7 +113,7 @@ fi
 #!/bin/bash
 export LANG=$LOCALE
 cd /build
-sudo -u nobody makepkg "$MAKEPKG_ARGS"
+sudo -u nobody makepkg $MAKEPKG_ARGS
 EOF
 ) > "$uniondir/chrootbuild"
 chmod +x "$uniondir/chrootbuild"
