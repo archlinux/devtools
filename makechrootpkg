@@ -29,7 +29,7 @@ fi
 
 usage ()
 {
-    echo "usage ${APPNAME} [-h] [-c CHROOT_SHELL] [makepkg args]"
+    echo "usage ${APPNAME} [-h] [-c CHROOT_SHELL] [--] [makepkg args]"
     echo " Run this script in a PKGBUILD dir to build a package inside a"
     echo " clean chroot. All unrecognized arguments passed to this script"
     echo " will be passed to makepkg."
@@ -43,6 +43,9 @@ usage ()
     echo "command:"
     echo "    mkarchroot \$CHROOT_SHELL base base-devel sudo"
     echo ""
+    echo "If you have problems passing params to makepkg or need to pass long"
+    echo "options, put -- between the makechrootpkg args and the makepkg args"
+    echo ""
     echo "Default makepkg args: $MAKEPKG_ARGS"
     exit 1
 }
@@ -54,6 +57,9 @@ while getopts ':c:h' arg; do
         *) MAKEPKG_ARGS="$MAKEPKG_ARGS -$arg $OPTARG" ;;
     esac
 done
+
+# Pass all arguments after -- right to makepkg
+MAKEPKG_ARGS="$MAKEPKG_ARGS ${*:$OPTIND}"
 
 if [ ! -d "$chrootdir" ]; then
     echo "No \$CHROOT_SHELL defined, or invalid path"
