@@ -97,6 +97,9 @@ for f in ${source[@]}; do
         cp "$f" "$uniondir/build/"
     fi
 done
+if [ "$install" != "" -a -f "$install" ]; then
+    cp "$install" "$uniondir/build/"
+fi
 
 if ! grep "^nobody" "$uniondir/etc/sudoers" >/dev/null 2>&1; then
     echo "allowing 'nobody' sudo rights in the chroot"
