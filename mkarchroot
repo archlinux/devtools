@@ -104,7 +104,7 @@ if [ "$RUN" != "" ]; then
     chroot_mount
 
     echo "starting chroot ($RUN)"
-    chroot "${working_dir}" "${RUN}"
+    chroot "${working_dir}" ${RUN}
 
 # }}}
 else
