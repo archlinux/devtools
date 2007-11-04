@@ -118,7 +118,7 @@ EOF
 ) > "$uniondir/chrootbuild"
 chmod +x "$uniondir/chrootbuild"
 
-./mkarchroot -r "/chrootbuild" "$uniondir"
+mkarchroot -r "/chrootbuild" "$uniondir"
 
 # TODO move relevant files here
 echo "build complete... check \$CHROOT_SHELL/build for build results"
