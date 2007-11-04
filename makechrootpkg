@@ -89,6 +89,7 @@ trap 'cleanup' 0 1 2 15
 
 echo "moving build files to chroot"
 [ -d "$uniondir/build" ] || mkdir "$uniondir/build"
+chown -R nobody "$uniondir/build"
 
 source PKGBUILD
 cp PKGBUILD "$uniondir/build/"
