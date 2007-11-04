@@ -47,7 +47,7 @@ usage ()
     exit 1
 }
 
-while getopts 'c:h' arg; do
+while getopts ':c:h' arg; do
     case "${arg}" in
         c) chrootdir="$OPTARG" ;;
         h|?) usage ;;
