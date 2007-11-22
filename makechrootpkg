@@ -11,6 +11,7 @@
 FORCE="n"
 RUN=""
 MAKEPKG_ARGS="-Ss"
+WORKDIR=$PWD
 
 chrootdir="$CHROOT_SHELL"
 
@@ -114,12 +115,20 @@ fi
 #!/bin/bash
 export LANG=$LOCALE
 cd /build
-sudo -u nobody makepkg $MAKEPKG_ARGS
+sudo -u nobody makepkg $MAKEPKG_ARGS || touch BUILD_FAILED
 EOF
 ) > "$uniondir/chrootbuild"
 chmod +x "$uniondir/chrootbuild"
 
 mkarchroot -r "/chrootbuild" "$uniondir"
 
-# TODO move relevant files here
-echo "build complete... check \$CHROOT_SHELL/build for build results"
+if [ -e ${chrootdir}/rw/build/BUILD_FAILED ]; then
+	echo "Build failed, check \$CHROOT_DIR/rw/build"
+	rm ${chrootdir}/rw/build/BUILD_FAILED
+        exit 1
+else	
+	source ${WORKDIR}/PKGBUILD
+	mv ${chrootdir}/rw/build/${pkgname}-${pkgver}-*.pkg.tar.gz ${WORKDIR}
+	rm -rf ${chrootdir}/rw/build/* 
+	echo "Build complete"
+fi
