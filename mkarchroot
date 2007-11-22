@@ -120,6 +120,7 @@ else
     fi
 
     mkdir -p "${working_dir}/var/lib/pacman/"
+    mkdir -p "${working_dir}/etc/"
 
     chroot_mount
 
