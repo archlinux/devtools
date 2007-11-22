@@ -163,6 +163,8 @@ else
         cp ${makepkg_conf} ${working_dir}/etc/makepkg.conf
     fi
 
+    echo "copying resolv.conf : /etc/resolv.conf"
+    cp /etc/resolv.conf "${working_dir}/etc/resolv.conf"
 
     echo "generating default locales"
     sed -i "s|^#\(.*$LANG\)|\1|g" "${working_dir}/etc/locale.gen"
