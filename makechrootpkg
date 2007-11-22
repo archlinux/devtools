@@ -31,7 +31,7 @@ usage ()
     echo ""
     echo "The chroot shell 'root' directory must be created via the following"
     echo "command:"
-    echo "    mkarchroot \$CHROOT_SHELL base base-devel sudo"
+    echo "    mkarchroot \$CHROOT_SHELL/root base base-devel sudo"
     echo ""
     echo "If you have problems passing params to makepkg or need to pass long"
     echo "options, put -- between the makechrootpkg args and the makepkg args"
