@@ -12,3 +12,13 @@ install:
 	mkdir -p $(DESTDIR)/usr/sbin
 	install -m 755 mkarchroot $(DESTDIR)/usr/sbin
 	install -m 755 makechrootpkg $(DESTDIR)/usr/sbin
+
+uninstall:
+	# remove all files we installed
+	rm $(DESTDIR)/usr/bin/checkpkg
+	rm $(DESTDIR)/usr/bin/extrapkg
+	rm $(DESTDIR)/usr/bin/corepkg
+	rm $(DESTDIR)/usr/bin/testingpkg
+	rm $(DESTDIR)/usr/bin/unstablepkg
+	rm $(DESTDIR)/usr/sbin/mkarchroot
+	rm $(DESTDIR)/usr/sbin/makechrootpkg
