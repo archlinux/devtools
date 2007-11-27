@@ -16,17 +16,6 @@ chrootdir="$CHROOT_SHELL"
 
 APPNAME=$(basename "${0}")
 
-if [ ! -f PKGBUILD ]; then
-	echo "This must be run in the directory of a built package."
-	exit 1
-fi
-source PKGBUILD
-
-if [ "$EUID" != "0" ]; then
-    echo "This script must be run as root."
-    exit 1
-fi
-
 usage ()
 {
     echo "usage ${APPNAME} [-h] [-c CHROOT_SHELL] [--] [makepkg args]"
@@ -60,6 +49,17 @@ done
 
 # Pass all arguments after -- right to makepkg
 MAKEPKG_ARGS="$MAKEPKG_ARGS ${*:$OPTIND}"
+
+if [ "$EUID" != "0" ]; then
+    echo "This script must be run as root."
+    exit 1
+fi
+
+if [ ! -f PKGBUILD ]; then
+	echo "This must be run in a directory containing a PKGBUILD."
+	exit 1
+fi
+source PKGBUILD
 
 if [ ! -d "$chrootdir" ]; then
     echo "No \$CHROOT_SHELL defined, or invalid path"
