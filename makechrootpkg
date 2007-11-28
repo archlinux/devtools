@@ -63,7 +63,7 @@ fi
 source PKGBUILD
 
 if [ ! -d "$chrootdir" ]; then
-    echo "No \$CHROOT_SHELL defined, or invalid path"
+    echo "No \$CHROOT_SHELL defined, or invalid path ($chrootdir)"
     exit 1
 fi
 
