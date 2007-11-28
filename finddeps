@@ -1,0 +1,36 @@
+#!/bin/bash
+
+if [ "$1" = "" ]; then
+	echo "usage: finddep <depname>"
+	echo ""
+	echo "run this script from the top-level directory of your ABS tree"
+	echo ""
+	exit 0
+fi
+
+match=$1
+tld=`pwd`
+
+for d in `find . -type d`; do
+	cd $d
+	if [ -f PKGBUILD ]; then
+		unset pkgname depends makedepends
+		. PKGBUILD
+		for dep in "${depends[@]}"; do
+			# lose the version comaparator, if any
+			depname=${dep%%[<>=]*}
+			if [ "$depname" = "$match" ]; then
+				echo $pkgname
+			fi
+		done
+		for dep in "${makedepends[@]}"; do
+			# lose the version comaparator, if any
+			depname=${dep%%[<>=]*}
+			if [ "$depname" = "$match" ]; then
+				echo $pkgname
+			fi
+		done
+	fi
+	cd $tld
+done
+

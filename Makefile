@@ -14,6 +14,7 @@ install:
 	install -m 755 makechrootpkg $(DESTDIR)/usr/sbin
 	#Additional packaging helper scripts
 	install -m 755 lddd $(DESTDIR)/usr/bin
+	install -m 755 finddeps $(DESTDIR)/usr/bin
 
 uninstall:
 	# remove all files we installed
@@ -25,3 +26,4 @@ uninstall:
 	rm $(DESTDIR)/usr/sbin/mkarchroot
 	rm $(DESTDIR)/usr/sbin/makechrootpkg
 	rm $(DESTDIR)/usr/bin/lddd
+	rm $(DESTDIR)/usr/bin/finddeps
