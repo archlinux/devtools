@@ -168,7 +168,7 @@ else
     cp /etc/resolv.conf "${working_dir}/etc/resolv.conf"
 
     echo "generating default locales"
-    sed -i "s|^#\(.*$LANG\)|\1|g" "${working_dir}/etc/locale.gen"
+    cp /etc/locale.gen "${working_dir}/etc/locale.gen"
     chroot "${working_dir}" locale-gen
 
     if [ ! -e "${working_dir}/.arch-chroot" ]; then
