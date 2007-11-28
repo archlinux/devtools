@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; version 2 of the License.
@@ -48,7 +48,7 @@ fi
 
 shift $(($OPTIND - 1))
 
-if [ "$RUN" == "" -a $# -lt 2 ]; then
+if [ "$RUN" = "" -a $# -lt 2 ]; then
     echo "you must specify a directory and one or more packages"
     usage 1
 elif [ $# -lt 1 ]; then
@@ -63,7 +63,7 @@ shift 1
 
 # {{{ functions 
 
-function chroot_mount ()
+chroot_mount ()
 {
     echo "mounting sysfs : /sys"
     [ -e "${working_dir}/sys" ] || mkdir "${working_dir}/sys"
@@ -87,7 +87,7 @@ function chroot_mount ()
     trap 'chroot_umount' 0 1 2 15
 }
 
-function chroot_umount ()
+chroot_umount ()
 {
     echo "cleaning up mounts"
     umount "${working_dir}/proc"
@@ -140,7 +140,7 @@ else
         for i in $@; do echo -e "\t$i"; done
 
         op="-Sy"
-        if [ "$FORCE" == "y" ]; then
+        if [ "$FORCE" = "y" ]; then
             op="${op}f"
         fi
         if ! pacman ${op} ${pacargs} $@; then
