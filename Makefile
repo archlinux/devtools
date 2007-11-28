@@ -12,6 +12,8 @@ install:
 	mkdir -p $(DESTDIR)/usr/sbin
 	install -m 755 mkarchroot $(DESTDIR)/usr/sbin
 	install -m 755 makechrootpkg $(DESTDIR)/usr/sbin
+	#Additional packaging helper scripts
+	install -m 755 lddd $(DESTDIR)/usr/bin
 
 uninstall:
 	# remove all files we installed
@@ -22,3 +24,4 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/unstablepkg
 	rm $(DESTDIR)/usr/sbin/mkarchroot
 	rm $(DESTDIR)/usr/sbin/makechrootpkg
+	rm $(DESTDIR)/usr/bin/lddd
