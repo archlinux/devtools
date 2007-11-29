@@ -102,7 +102,7 @@ if [ "$RUN" != "" ]; then
     #Sanity check
     if [ ! -f "${working_dir}/.arch-chroot" ]; then
         echo "error: '${working_dir}' does not appear to be a Arch chroot"
-        echo "  please build the image using mkarchchroot"
+        echo "  please build the image using mkarchroot"
         exit 1
     fi
 
