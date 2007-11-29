@@ -84,6 +84,9 @@ chroot_mount ()
     echo "copying mtab : /etc/mtab"
     cp /etc/mtab "${working_dir}/etc/mtab"
 
+    echo "copying resolv.conf : /etc/resolv.conf"
+    cp /etc/resolv.conf "${working_dir}/etc/resolv.conf"
+
     trap 'chroot_umount' 0 1 2 15
 }
 
@@ -163,9 +166,6 @@ else
         echo "installing custom makepkg.conf"
         cp ${makepkg_conf} ${working_dir}/etc/makepkg.conf
     fi
-
-    echo "copying resolv.conf : /etc/resolv.conf"
-    cp /etc/resolv.conf "${working_dir}/etc/resolv.conf"
 
     echo "generating default locales"
     cp /etc/locale.gen "${working_dir}/etc/locale.gen"
