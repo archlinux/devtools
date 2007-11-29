@@ -73,3 +73,5 @@ if diff filelist-old filelist | grep '\.so\.' > /dev/null 2>&1; then
 else
 	echo "No filename differences"
 fi
+
+# vim:ft=sh:ts=4:sw=4:et:

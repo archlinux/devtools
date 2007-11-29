@@ -57,8 +57,8 @@ if [ "$EUID" != "0" ]; then
 fi
 
 if [ ! -f PKGBUILD ]; then
-	echo "This must be run in a directory containing a PKGBUILD."
-	exit 1
+    echo "This must be run in a directory containing a PKGBUILD."
+    exit 1
 fi
 source PKGBUILD
 
@@ -123,12 +123,14 @@ chmod +x "$uniondir/chrootbuild"
 mkarchroot -r "/chrootbuild" "$uniondir"
 
 if [ -e ${chrootdir}/rw/build/BUILD_FAILED ]; then
-	echo "Build failed, check \$CHROOT_DIR/rw/build"
-	rm ${chrootdir}/rw/build/BUILD_FAILED
-        exit 1
+    echo "Build failed, check \$CHROOT_DIR/rw/build"
+    rm ${chrootdir}/rw/build/BUILD_FAILED
+    exit 1
 else	
-	source ${WORKDIR}/PKGBUILD
-	mv ${chrootdir}/rw/build/${pkgname}-${pkgver}-*.pkg.tar.gz ${WORKDIR}
-	rm -rf ${chrootdir}/rw/build/* 
-	echo "Build complete"
+    source ${WORKDIR}/PKGBUILD
+    mv ${chrootdir}/rw/build/${pkgname}-${pkgver}-*.pkg.tar.gz ${WORKDIR}
+    rm -rf ${chrootdir}/rw/build/*
+    echo "Build complete"
 fi
+
+# vim:ft=sh:ts=4:sw=4:et:

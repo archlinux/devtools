@@ -98,7 +98,7 @@ chroot_umount ()
 # }}}
 
 if [ "$RUN" != "" ]; then
-# run chroot {{{
+    # run chroot {{{
     #Sanity check
     if [ ! -f "${working_dir}/.arch-chroot" ]; then
         echo "error: '${working_dir}' does not appear to be a Arch chroot"
@@ -111,9 +111,9 @@ if [ "$RUN" != "" ]; then
     echo "starting chroot ($RUN)"
     chroot "${working_dir}" ${RUN}
 
-# }}}
+    # }}}
 else
-# {{{ build chroot
+    # {{{ build chroot
     if [ -e "${working_dir}" -a "${FORCE}" = "n" ]; then
         echo "error: working dir '${working_dir}' already exists - try using -f"
         exit 1
@@ -174,7 +174,7 @@ else
     if [ ! -e "${working_dir}/.arch-chroot" ]; then
         date +%s > "${working_dir}/.arch-chroot"
     fi
-# }}}
+    # }}}
 fi
 
 # vim:ft=sh:ts=4:sw=4:et:
