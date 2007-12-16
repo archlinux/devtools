@@ -12,6 +12,7 @@ FORCE="n"
 RUN=""
 MAKEPKG_ARGS="-Ss"
 WORKDIR=$PWD
+clean_first=""
 
 chrootdir="$CHROOT_SHELL"
 
@@ -19,7 +20,7 @@ APPNAME=$(basename "${0}")
 
 usage ()
 {
-    echo "usage ${APPNAME} [-h] [-c CHROOT_SHELL] [--] [makepkg args]"
+    echo "usage ${APPNAME} [-h] [-c] [-r CHROOT_SHELL] [--] [makepkg args]"
     echo " Run this script in a PKGBUILD dir to build a package inside a"
     echo " clean chroot. All unrecognized arguments passed to this script"
     echo " will be passed to makepkg."
@@ -28,6 +29,9 @@ usage ()
     echo " your chroot shell is. The shell consists of the following"
     echo " directories: \$CHROOT_SHELL/{root, rw, union} but only 'root' is"
     echo " required by default. The rest will be created as needed"
+    echo ""
+    echo "The -c flag, if specified, will remove all files created by previous"
+    echo "builds using makechrootpkg.  This will ensure a clean chroot is used."
     echo ""
     echo "The chroot shell 'root' directory must be created via the following"
     echo "command:"
@@ -42,7 +46,8 @@ usage ()
 
 while getopts ':c:h' arg; do
     case "${arg}" in
-        c) chrootdir="$OPTARG" ;;
+        r) chrootdir="$OPTARG" ;;
+        c) clean_first=1 ;;
         h|?) usage ;;
         *) MAKEPKG_ARGS="$MAKEPKG_ARGS -$arg $OPTARG" ;;
     esac
@@ -73,6 +78,7 @@ if [ ! -d "$chrootdir/root" ]; then
     usage
 fi
 
+[ -d "$chrootdir/rw" -a "$clean_first" -eq "1" ] && rm -rf "$chrootdir/rw/" 
 [ -d "$chrootdir/rw" ] || mkdir "$chrootdir/rw"
 [ -d "$chrootdir/union" ] || mkdir "$chrootdir/union"
 
