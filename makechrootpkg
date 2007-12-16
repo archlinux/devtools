@@ -53,6 +53,9 @@ while getopts ':c:h' arg; do
     esac
 done
 
+#Get rid of trailing / in chrootdir
+[ "$chrootdir" != "/" ] && chrootdir=$(echo $chrootdir | sed 's#/$##')
+
 # Pass all arguments after -- right to makepkg
 MAKEPKG_ARGS="$MAKEPKG_ARGS ${*:$OPTIND}"
 
@@ -85,6 +88,8 @@ fi
 cleanup ()
 {
     echo "cleaning up unioned mounts"
+    umount "$chrootdir/union/pkgdest" 2>/dev/null
+    umount "$chrootdir/union/srcdest" 2>/dev/null
     umount "$chrootdir/union"
 }
 
@@ -96,8 +101,34 @@ trap 'cleanup' 0 1 2 15
 
 echo "moving build files to chroot"
 [ -d "$uniondir/build" ] || mkdir "$uniondir/build"
+
+# Source makepkg.conf and ~/makepkg.conf
+if [ -r "/etc/makepkg.conf" ]; then
+  source "/etc/makepkg.conf"
+fi
+if [ -r ~/.makepkg.conf ]; then
+  source ~/.makepkg.conf
+fi
+
+# Set up src and pkg dirs
+[ -d "$uniondir/srcdest" ] || mkdir "$uniondir/srcdest"
+[ -d "$uniondir/pkgdest" ] || mkdir "$uniondir/pkgdest"
+[ ! -z "$PKGDEST" ] && mount --bind "$PKGDEST" "$uniondir/pkgdest"
+[ ! -z "$SRCDEST" ] && mount --bind "$SRCDEST" "$uniondir/srcdest"
+
+if ! grep "PKGDEST=/pkgdest" "$uniondir/etc/makepkg.conf" >/dev/null 2>&1; then
+    echo "Setting PKGDEST in makepkg.conf"
+    echo "PKGDEST=/pkgdest" >> "$uniondir/etc/makepkg.conf"
+fi
+
+if ! grep "SRCDEST=/srcdest" "$uniondir/etc/makepkg.conf" >/dev/null 2>&1; then
+    echo "Setting SRCDEST in makepkg.conf"
+    echo "SRCDEST=/srcdest" >> "$uniondir/etc/makepkg.conf"
+fi
+
 chown -R nobody "$uniondir/build"
 
+# Copy PKGBUILD and sources
 source PKGBUILD
 cp PKGBUILD "$uniondir/build/"
 for f in ${source[@]}; do
@@ -134,7 +165,14 @@ if [ -e ${chrootdir}/rw/build/BUILD_FAILED ]; then
     exit 1
 else	
     source ${WORKDIR}/PKGBUILD
-    mv ${chrootdir}/rw/build/${pkgname}-${pkgver}-*.pkg.tar.gz ${WORKDIR}
+    if [ -z "$(mount | grep ${chrootdir}/union/pkgdest)" ]; then
+        echo "Moving completed package file to ${WORKDIR}"
+        mv ${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-*.pkg.tar.gz ${WORKDIR}
+    fi
+    if [ -z "$(mount | grep ${chrootdir}/union/srcdest)" ]; then
+        echo "Moving downloaded source files to ${WORKDIR}"
+        mv ${chrootdir}/union/srcdest/* ${WORKDIR}
+    fi
     rm -rf ${chrootdir}/rw/build/*
     echo "Build complete"
 fi
