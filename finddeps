@@ -24,14 +24,14 @@ for d in $(find . -type d); do
             # lose the version comaparator, if any
             depname=${dep%%[<>=]*}
             if [ "$depname" = "$match" ]; then
-                echo $pkgname
+                echo "$d (depends)"
             fi
         done
         for dep in "${makedepends[@]}"; do
             # lose the version comaparator, if any
             depname=${dep%%[<>=]*}
             if [ "$depname" = "$match" ]; then
-                echo $pkgname
+                echo "$d (makedepends)"
             fi
         done
     fi
