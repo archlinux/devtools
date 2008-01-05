@@ -102,15 +102,20 @@ trap 'cleanup' 0 1 2 15
 echo "moving build files to chroot"
 [ -d "$uniondir/build" ] || mkdir "$uniondir/build"
 
-# Source makepkg.conf and ~/makepkg.conf
+# Copy makepkg.conf and ~/.makepkg.conf into the chroot so packager has
+# all their custom variables set.
 if [ -r "/etc/makepkg.conf" ]; then
-  source "/etc/makepkg.conf"
+  rm $uniondir/etc/makepkg.conf
+  cp /etc/makepkg.conf $uniondir/etc/makepkg.conf
 fi
 if [ -r ~/.makepkg.conf ]; then
-  source ~/.makepkg.conf
+  cat ~/.makepkg.conf >> $uniondir/etc/makepkg.conf
 fi
 
-# Set up src and pkg dirs
+source $uniondir/etc/makepkg.conf
+
+# Magic trickery with PKGDEST and SRCDEST, so that the built
+# files end up where they're expected in the _real_ filesystem
 [ -d "$uniondir/srcdest" ] || mkdir "$uniondir/srcdest"
 [ -d "$uniondir/pkgdest" ] || mkdir "$uniondir/pkgdest"
 [ ! -z "$PKGDEST" ] && mount --bind "$PKGDEST" "$uniondir/pkgdest"
