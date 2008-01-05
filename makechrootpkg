@@ -44,7 +44,7 @@ usage ()
     exit 1
 }
 
-while getopts ':c:h' arg; do
+while getopts ':r:h:c' arg; do
     case "${arg}" in
         r) chrootdir="$OPTARG" ;;
         c) clean_first=1 ;;
@@ -172,7 +172,7 @@ else
     source ${WORKDIR}/PKGBUILD
     if [ -z "$(mount | grep ${chrootdir}/union/pkgdest)" ]; then
         echo "Moving completed package file to ${WORKDIR}"
-        mv ${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-*.pkg.tar.gz ${WORKDIR}
+        mv ${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz ${WORKDIR}
     fi
     if [ -z "$(mount | grep ${chrootdir}/union/srcdest)" ]; then
         echo "Moving downloaded source files to ${WORKDIR}"
