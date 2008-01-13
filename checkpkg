@@ -27,18 +27,17 @@ source PKGBUILD
 pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}.pkg.tar.gz
 oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}.pkg.tar.gz
 
-if [ ! -f $pkgfile ]; then
-	if [ -f $PKGDEST/$pkgfile ]; then
-		pkgfile=$PKGDEST/$pkgfile
-		oldstylepkgfile=$PKGDEST/$oldstylepkgfile
-	elif [ -f $oldstylepkgfile ]; then
-		pkgfile=$oldstylepkgfile
-	elif [ -f $PKGDEST/$oldstylepkgfile ]; then
-		pkgfile=$PKGDEST/$oldstylepkgfile
-	else
-		echo "File $pkgfile doesn't exist"
-		exit 1
-	fi
+if [ -f "$(pwd)/$pkgfile" ]; then
+    pkgfile=$(pwd)/$pkgfile
+elif [ -f "$PKGDEST/$pkgfile" ]; then
+    pkgfile=$PKGDEST/$pkgfile
+elif [ -f "$(pwd)/$oldstylepkgfile" ]; then
+    pkgfile=$(pwd)/$oldstylepkgfile
+elif [ -f "$PKGDEST/$oldstylepkgfile" ]; then
+    pkgfile=$PKGDEST/$oldstylepkgfile
+else
+    echo "File \"$pkgfile\" doesn't exist"
+    exit 1
 fi
 
 tmp=`pacman -Spd --noconfirm $pkgname`
@@ -52,7 +51,7 @@ pkgurl=`echo $tmp | rev | cut -d ' ' -f 1 | rev`
 
 oldpkg=`strip_url $pkgurl`
 
-if [ "$oldpkg" = "$pkgfile" ]; then
+if [ "$(basename $oldpkg)" = "$(basename $pkgfile)" ]; then
 	echo "The built package is the one in the repo right now!"
 	exit 1
 fi
@@ -66,7 +65,7 @@ if [ ! -f $oldpkg ]; then
 fi
 
 tar tzf $oldpkg > filelist-old
-tar tzf $pkgfile > filelist
+tar tzf "$pkgfile" > filelist
 
 sort -o filelist filelist
 sort -o filelist-old filelist-old
@@ -76,7 +75,7 @@ diff filelist-old filelist
 if diff filelist-old filelist | grep '\.so\.' > /dev/null 2>&1; then
 	mkdir -p pkg
 	cd pkg
-	tar xzf ../$pkgfile > /dev/null
+	tar xzf "$pkgfile" > /dev/null
 	for i in `diff ../filelist-old ../filelist | grep \> | grep \.so\. | awk '{print $2}'`; do
 		echo -n "${i}: "
 		objdump -p $i | grep SONAME
