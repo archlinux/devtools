@@ -1,6 +1,17 @@
 #!/bin/bash
 
-source /etc/makepkg.conf
+# Source makepkg.conf; fail if it is not found
+if [ -r "/etc/makepkg.conf" ]; then
+	source "/etc/makepkg.conf"
+else
+    echo "/etc/makepkg.conf not found!"
+    exit 1
+fi
+
+# Source user-specific makepkg.conf overrides
+if [ -r ~/.makepkg.conf ]; then
+	source ~/.makepkg.conf
+fi
 
 cmd=`basename $0`
 
