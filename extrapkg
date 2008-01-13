@@ -63,7 +63,7 @@ if [ "$1" = "-l" ]; then
 fi
 
 if [ "$repo" != "community" ]; then
-    scp ${scpopts} ${pkgfile} archlinux.org:staging/$repo/add/${pkgfile}
+    scp ${scpopts} ${pkgfile} archlinux.org:staging/$repo/add/$(basename ${pkgfile})
     if [ "$(md5sum ${pkgfile} | cut -d' ' -f1)" != "$(ssh archlinux.org md5sum staging/${repo}/add/$(basename ${pkgfile}) | cut -d' ' -f1)" ]; then
         echo "File got corrupted during upload, cancelled."
         exit 1
