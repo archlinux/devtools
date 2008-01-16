@@ -11,6 +11,7 @@
 FORCE="n"
 RUN=""
 MAKEPKG_ARGS="-Ss"
+REPACK=""
 WORKDIR=$PWD
 clean_first=""
 
@@ -59,6 +60,14 @@ done
 # Pass all arguments after -- right to makepkg
 MAKEPKG_ARGS="$MAKEPKG_ARGS ${*:$OPTIND}"
 
+# See if -R was passed to makepkg
+for arg in ${*:$OPTIND}; do
+    if [ "$arg" = "-R" ]; then
+        REPACK=1
+        break;
+    fi
+done
+
 if [ "$EUID" != "0" ]; then
     echo "This script must be run as root."
     exit 1
@@ -101,6 +110,11 @@ trap 'cleanup' 0 1 2 15
 
 echo "moving build files to chroot"
 [ -d "$uniondir/build" ] || mkdir "$uniondir/build"
+
+if [ "$REPACK" != "1" ]; then
+    #Remove anything in there UNLESS -R (repack) was passed to makepkg
+    rm -rf "$uniondir/build/"*
+fi
 
 # Copy makepkg.conf and ~/.makepkg.conf into the chroot so packager has
 # all their custom variables set.
