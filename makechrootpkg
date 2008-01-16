@@ -151,8 +151,9 @@ chown -R nobody "$uniondir/build"
 source PKGBUILD
 cp PKGBUILD "$uniondir/build/"
 for f in ${source[@]}; do
-    if [ -f "$f" ]; then
-        cp "$f" "$uniondir/build/"
+    basef=$(basename $f)
+    if [ -f "$basef" ]; then
+        cp "$basef" "$uniondir/build/"
     fi
 done
 if [ "$install" != "" -a -f "$install" ]; then
