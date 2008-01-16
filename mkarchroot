@@ -130,7 +130,6 @@ else
     pacargs="--noconfirm -v " #--noprogressbar -v
     pacargs="$pacargs --root=${working_dir}"
     # pacman takes these as relative to the given root
-    pacargs="$pacargs --dbpath=/var/lib/pacman"
     pacargs="$pacargs --cachedir=/var/cache/pacman/pkg"
     if [ "$pac_conf" != "" ]; then
         pacargs="$pacargs --config=${pac_conf}"
