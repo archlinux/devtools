@@ -13,7 +13,7 @@ RUN=""
 MAKEPKG_ARGS="-s"
 REPACK=""
 WORKDIR=$PWD
-clean_first=""
+clean_first="0"
 
 chrootdir="$CHROOT_SHELL"
 
@@ -146,6 +146,8 @@ if ! grep "SRCDEST=/srcdest" "$uniondir/etc/makepkg.conf" >/dev/null 2>&1; then
 fi
 
 chown -R nobody "$uniondir/build"
+chown -R nobody "$uniondir/srcdest"
+chown -R nobody "$uniondir/pkgdest"
 
 # Copy PKGBUILD and sources
 source PKGBUILD
@@ -153,7 +155,7 @@ cp PKGBUILD "$uniondir/build/"
 for f in ${source[@]}; do
     basef=$(basename $f)
     if [ -f "$basef" ]; then
-        cp "$basef" "$uniondir/build/"
+        cp "$basef" "$uniondir/srcdest/"
     fi
 done
 if [ "$install" != "" -a -f "$install" ]; then
