@@ -10,7 +10,7 @@
 
 FORCE="n"
 RUN=""
-MAKEPKG_ARGS="-s"
+MAKEPKG_ARGS="-sr"
 REPACK=""
 WORKDIR=$PWD
 clean_first="0"
