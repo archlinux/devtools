@@ -104,7 +104,13 @@ cleanup ()
 
 uniondir="$chrootdir/union"
 echo "building union chroot"
-modprobe -q unionfs
+grep -Fq unionfs /proc/filesystems
+if [ $? -ne 0 ]; then
+    modprobe -q unionfs
+    if [ $? -ne 0 ];
+        echo "ERROR: No unionfs available. Abandon ship!" && exit 1
+    fi
+fi
 mount -t unionfs none -o "dirs=$chrootdir/rw=rw:$chrootdir/root=ro" "$uniondir"
 trap 'cleanup' 0 1 2 15
 
