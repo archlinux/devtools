@@ -81,13 +81,17 @@ chroot_mount ()
     [ -e "${working_dir}/var/cache/pacman" ] || mkdir -p "${working_dir}/var/cache/pacman"
     mount -o bind /var/cache/pacman "${working_dir}/var/cache/pacman"
 
+    trap 'chroot_umount' 0 1 2 15
+}
+
+copy_hostconf ()
+{
     echo "copying mtab : /etc/mtab"
     cp /etc/mtab "${working_dir}/etc/mtab"
 
     echo "copying resolv.conf : /etc/resolv.conf"
     cp /etc/resolv.conf "${working_dir}/etc/resolv.conf"
 
-    trap 'chroot_umount' 0 1 2 15
 }
 
 chroot_umount ()
@@ -110,6 +114,7 @@ if [ "$RUN" != "" ]; then
     fi
 
     chroot_mount
+    copy_hostconf
 
     echo "starting chroot ($RUN)"
     chroot "${working_dir}" ${RUN}
