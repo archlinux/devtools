@@ -20,6 +20,20 @@ if [ ! -f PKGBUILD ]; then
     exit 1
 fi
 
+# define tags and staging areas based on architecture
+if [ "$CARCH" = "i686" ]; then
+    currenttag='CURRENT'
+    testingtag='TESTING'
+    suffix=''
+elif [ "$CARCH" = "x86_64" ]; then
+    currenttag='CURRENT-64'
+    testingtag='TESTING-64'
+    suffix='64'
+else
+    echo "CARCH must be set to a recognized value!"
+    exit 1
+fi
+
 source PKGBUILD
 pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}.pkg.tar.gz
 oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}.pkg.tar.gz
@@ -40,19 +54,19 @@ fi
 
 if [ "$cmd" == "extrapkg" ]; then
     repo="extra"
-    tag="CURRENT"
+    tag="$currenttag"
 elif [ "$cmd" == "corepkg" ]; then
     repo="core"
-    tag="CURRENT"
+    tag="$currenttag"
 elif [ "$cmd" == "testingpkg" ]; then
     repo="testing"
-    tag="TESTING"
+    tag="$testingtag"
 elif [ "$cmd" == "unstablepkg" ]; then
     repo="unstable"
-    tag="CURRENT"
+    tag="$currenttag"
 elif [ "$cmd" == "communitypkg" ]; then
     repo="community"
-    tag="CURRENT"
+    tag="$currenttag"
 fi
 
 # see if any limit options were passed, we'll send them to SCP
@@ -63,8 +77,10 @@ if [ "$1" = "-l" ]; then
 fi
 
 if [ "$repo" != "community" ]; then
-    scp ${scpopts} ${pkgfile} archlinux.org:staging/$repo/add/$(basename ${pkgfile})
-    if [ "$(md5sum ${pkgfile} | cut -d' ' -f1)" != "$(ssh archlinux.org md5sum staging/${repo}/add/$(basename ${pkgfile}) | cut -d' ' -f1)" ]; then
+    # combine what we know into a variable (suffix defined based on $CARCH)
+    uploadto="staging/${repo}${suffix}/add/$(basename ${pkgfile})"
+    scp ${scpopts} "${pkgfile}" "archlinux.org:${uploadto}"
+    if [ "$(md5sum "${pkgfile}" | cut -d' ' -f1)" != "$(ssh archlinux.org md5sum "${uploadto}" | cut -d' ' -f1)" ]; then
         echo "File got corrupted during upload, cancelled."
         exit 1
     else
