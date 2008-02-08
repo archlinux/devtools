@@ -107,7 +107,7 @@ echo "building union chroot"
 grep -Fq unionfs /proc/filesystems
 if [ $? -ne 0 ]; then
     modprobe -q unionfs
-    if [ $? -ne 0 ];
+    if [ $? -ne 0 ]; then
         echo "ERROR: No unionfs available. Abandon ship!" && exit 1
     fi
 fi
