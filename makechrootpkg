@@ -180,6 +180,7 @@ fi
 #!/bin/bash
 export LANG=$LOCALE
 cd /build
+export HOME=/build
 sudo -u nobody makepkg $MAKEPKG_ARGS || touch BUILD_FAILED
 EOF
 ) > "$uniondir/chrootbuild"
