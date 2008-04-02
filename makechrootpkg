@@ -170,6 +170,7 @@ fi
 
 if ! grep "^nobody" "$uniondir/etc/sudoers" >/dev/null 2>&1; then
     echo "allowing 'nobody' sudo rights in the chroot"
+    touch "$uniondir/etc/sudoers"
     echo "nobody	ALL=(ALL) NOPASSWD: ALL" >> "$uniondir/etc/sudoers"
     chmod 440 "$uniondir/etc/sudoers"
 fi
