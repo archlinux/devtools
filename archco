@@ -5,4 +5,4 @@ if [ "$1" = "" ]; then
 	exit 1
 fi
 
-svn co ssh://svn.archlinux.org/home/svn-packages/$1
+svn co svn+ssh://svn.archlinux.org/home/svn-packages/$1
