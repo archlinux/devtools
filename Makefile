@@ -8,6 +8,10 @@ install:
 	ln -sf extrapkg $(DESTDIR)/usr/bin/corepkg
 	ln -sf extrapkg $(DESTDIR)/usr/bin/testingpkg
 	ln -sf extrapkg $(DESTDIR)/usr/bin/unstablepkg
+	# arch{co,release,rm}
+	install -m 755 archco $(DESTDIR)/usr/bin
+	install -m 755 archrelease $(DESTDIR)/usr/bin
+	install -m 755 archrm $(DESTDIR)/usr/bin
 	# new chroot tools, only usable by root
 	mkdir -p $(DESTDIR)/usr/sbin
 	install -m 755 mkarchroot $(DESTDIR)/usr/sbin
@@ -27,3 +31,6 @@ uninstall:
 	rm $(DESTDIR)/usr/sbin/makechrootpkg
 	rm $(DESTDIR)/usr/bin/lddd
 	rm $(DESTDIR)/usr/bin/finddeps
+	rm $(DESTDIR)/usr/bin/archco
+	rm $(DESTDIR)/usr/bin/archrelease
+	rm $(DESTDIR)/usr/bin/archrm

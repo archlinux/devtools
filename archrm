@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ "$1" = "" ]; then
+	echo "Usage: archrm <path to checkout>"
+	exit 1
+fi
+
+# FIXME: Check if there are uncommited changes
+#pushd $1
+#
+#popd
+
+rm -rf $1

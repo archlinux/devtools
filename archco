@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ "$1" = "" ]; then
+	echo "Usage: archco <package name>"
+	exit 1
+fi
+
+svn co ssh://svn.archlinux.org/home/svn-packages/$1
