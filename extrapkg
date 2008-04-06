@@ -20,20 +20,6 @@ if [ ! -f PKGBUILD ]; then
     exit 1
 fi
 
-# define tags and staging areas based on architecture
-if [ "$CARCH" = "i686" ]; then
-    currenttag='CURRENT'
-    testingtag='TESTING'
-    suffix=''
-elif [ "$CARCH" = "x86_64" ]; then
-    currenttag='CURRENT-64'
-    testingtag='TESTING-64'
-    suffix='64'
-else
-    echo "CARCH must be set to a recognized value!"
-    exit 1
-fi
-
 source PKGBUILD
 pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}.pkg.tar.gz
 oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}.pkg.tar.gz
@@ -54,19 +40,14 @@ fi
 
 if [ "$cmd" == "extrapkg" ]; then
     repo="extra"
-    tag="$currenttag"
 elif [ "$cmd" == "corepkg" ]; then
     repo="core"
-    tag="$currenttag"
 elif [ "$cmd" == "testingpkg" ]; then
     repo="testing"
-    tag="$testingtag"
 elif [ "$cmd" == "unstablepkg" ]; then
     repo="unstable"
-    tag="$currenttag"
 elif [ "$cmd" == "communitypkg" ]; then
     repo="community"
-    tag="$currenttag"
 fi
 
 # see if any limit options were passed, we'll send them to SCP
@@ -105,7 +86,7 @@ fi
 echo "===> Uploaded $pkgfile"
 
 if [ "$1" != "" ]; then
-    cvs commit -m "upgpkg: $pkgname $pkgver-$pkgrel
+    svn commit -m "upgpkg: $pkgname $pkgver-$pkgrel
     $1" > /dev/null
     if [ $? -ne 0 ]; then
         echo "Cancelled"
@@ -114,7 +95,7 @@ if [ "$1" != "" ]; then
     echo "===> Commited with \"upgpkg: $pkgname $pkgver-$pkgrel
     $1\" message"
 else
-    cvs commit -m "upgpkg: $pkgname $pkgver-$pkgrel" > /dev/null
+    svn commit -m "upgpkg: $pkgname $pkgver-$pkgrel" > /dev/null
     if [ $? -ne 0 ]; then
         echo "Cancelled"
         exit 1
@@ -122,11 +103,11 @@ else
     echo "===> Commited with \"upgpkg: $pkgname $pkgver-$pkgrel\" message"
 fi
 
-cvs tag -c -F -R $tag > /dev/null
+archrelease $repo-$CARCH
 if [ $? -ne 0 ]; then
     echo "Cancelled"
     exit 1
 fi
-echo "===> Tagged as $tag"
+echo "===> Tagged for $repo-$CARCH"
 
 # vim:ft=sh:ts=4:sw=4:et:
