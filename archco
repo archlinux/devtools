@@ -1,8 +1,10 @@
 #!/bin/bash
 
 if [ "$1" = "" ]; then
-	echo "Usage: archco <package name>"
+	echo "Usage: archco <package name> [<package name>]"
 	exit 1
 fi
 
-svn co svn+ssh://svn.archlinux.org/home/svn-packages/$1
+for i in "$@"; do
+     svn co svn+ssh://svn.archlinux.org/home/svn-packages/$i
+done
