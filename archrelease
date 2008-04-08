@@ -1,19 +1,24 @@
 #!/bin/bash
 
 if [ "$1" = "" ]; then
-	echo "Usage: archrelease <repo>"
-	exit 1
+    echo "Usage: archrelease <repo>"
+    exit 1
 fi
 
 if [ ! -d ../repos/$1 ]; then
-	pushd ..
-	svn copy trunk ../repos/$1
-	popd
+    pushd ..
+    svn copy trunk repos/$1
+    svn commit -m "archrelease: new repo $1"
+    popd
 else
-	svnmerge merge ../repos/$1
+    svnmerge merge ../repos/$1
+    pushd ..
+    if [ -f trunk/svnmerge-commit-message.txt ]; then
+        svn commit -F trunk/svnmerge-commit-message.txt
+        rm trunk/svnmerge-commit-message.txt
+    else
+        echo "Nothing to commit"
+    fi
+    popd
 fi
 
-pushd ..
-svn commit -F trunk/svnmerge-commit-message.txt
-popd
-rm svnmerge-commit-message.txt
