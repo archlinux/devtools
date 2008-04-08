@@ -7,7 +7,7 @@ fi
 
 if [ ! -d ../repos/$1 ]; then
     pushd ..
-    svn copy trunk repos/$1
+    svn copy -r HEAD trunk repos/$1
     svn commit -m "archrelease: new repo $1"
     popd
 else
