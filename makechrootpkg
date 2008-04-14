@@ -168,6 +168,10 @@ if [ "$install" != "" -a -f "$install" ]; then
     cp "$install" "$uniondir/build/"
 fi
 
+if [ -f "ChangeLog" ]; then
+    cp ChangeLog "$uniondir/build/"
+fi
+
 if ! grep "^nobody" "$uniondir/etc/sudoers" >/dev/null 2>&1; then
     echo "allowing 'nobody' sudo rights in the chroot"
     touch "$uniondir/etc/sudoers"
