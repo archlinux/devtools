@@ -20,6 +20,14 @@ else
     pushd ..
     if [ -f trunk/svnmerge-commit-message.txt ]; then
         svn commit -F trunk/svnmerge-commit-message.txt
+        if [ $? -ne 0 ]; then
+            # The user is going to have to clean things up a bit
+            echo "*** ATTENTION: There was a problem merging the package changes ***"
+            echo "To fix it, edit the conflicting files in repos/$1 (the ones that are C in svn status)."
+            echo "Once you have resolved conflicts, execute 'svn resolved <path to file>' to tell svn the error was resolved."
+            echo "Then to finish the merge commit, execute 'svn commit -F trunk/svnmerge-commit-message.txt' and, if there are no problems, delete trunk/svnmerge-commit-message.txt"
+            exit $?
+        fi
         rm trunk/svnmerge-commit-message.txt
     else
         echo "Nothing to commit"
