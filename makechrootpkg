@@ -193,22 +193,23 @@ chmod +x "$uniondir/chrootbuild"
 
 mkarchroot -r "/chrootbuild" "$uniondir"
 
+source ${WORKDIR}/PKGBUILD
+if [ -z "$(mount | grep ${chrootdir}/union/pkgdest)" ]; then
+    echo "Moving completed package file to ${WORKDIR}"
+    mv ${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz ${WORKDIR}
+fi
+if [ -z "$(mount | grep ${chrootdir}/union/srcdest)" ]; then
+    echo "Moving downloaded source files to ${WORKDIR}"
+    mv ${chrootdir}/union/srcdest/* ${WORKDIR}
+fi
+
 if [ -e ${chrootdir}/rw/build/BUILD_FAILED ]; then
     echo "Build failed, check \$CHROOT_DIR/rw/build"
     rm ${chrootdir}/rw/build/BUILD_FAILED
-    exit 1
-else	
-    source ${WORKDIR}/PKGBUILD
-    if [ -z "$(mount | grep ${chrootdir}/union/pkgdest)" ]; then
-        echo "Moving completed package file to ${WORKDIR}"
-        mv ${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz ${WORKDIR}
-    fi
-    if [ -z "$(mount | grep ${chrootdir}/union/srcdest)" ]; then
-        echo "Moving downloaded source files to ${WORKDIR}"
-        mv ${chrootdir}/union/srcdest/* ${WORKDIR}
-    fi
+else
     rm -rf ${chrootdir}/rw/build/*
     echo "Build complete"
-fi
+fi	
+
 
 # vim:ft=sh:ts=4:sw=4:et:
