@@ -5,6 +5,16 @@ if [ "$1" = "" ]; then
     exit 1
 fi
 
+if [ ! -f "PKGBUILD" ]; then
+    echo "archrelease: PKGBUILD not found"
+    exit 1
+fi
+
+if [ "$(basename $(readlink -f .))" != "trunk" ]; then
+    echo "archrelease: Not in a package trunk dir"
+    exit 1
+fi
+
 if [ ! -d ../repos/$1 ]; then
     pushd ..
     [ -d repos ] || mkdir repos
