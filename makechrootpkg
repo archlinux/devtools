@@ -14,6 +14,7 @@ MAKEPKG_ARGS="-sr"
 REPACK=""
 WORKDIR=$PWD
 clean_first="0"
+install_pkg=""
 
 chrootdir="$CHROOT_SHELL"
 
@@ -45,9 +46,10 @@ usage ()
     exit 1
 }
 
-while getopts ':r:h:c' arg; do
+while getopts ':r:i:h:c' arg; do
     case "${arg}" in
         r) chrootdir="$OPTARG" ;;
+        i) install_pkg="$OPTARG" ;;
         c) clean_first=1 ;;
         h|?) usage ;;
         *) MAKEPKG_ARGS="$MAKEPKG_ARGS -$arg $OPTARG" ;;
@@ -113,6 +115,17 @@ if [ $? -ne 0 ]; then
 fi
 mount -t unionfs none -o "dirs=$chrootdir/rw=rw:$chrootdir/root=ro" "$uniondir"
 trap 'cleanup' 0 1 2 15
+
+if [ -n "$install_pkg" ]; then
+    pkgname="$(basename "$install_pkg")"
+    echo "installing '$pkgname' in chroot"
+    cp "$install_pkg" "$uniondir/$pkgname"
+    mkarchroot -r "pacman -U /$pkgname" "$uniondir"
+    ret=$?
+    rm "$uniondir/$pkgname"
+    #exit early, we've done all we need to
+    exit $ret
+fi
 
 echo "moving build files to chroot"
 [ -d "$uniondir/build" ] || mkdir "$uniondir/build"
