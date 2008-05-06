@@ -20,16 +20,6 @@ if [ ! -f PKGBUILD ]; then
     exit 1
 fi
 
-# define staging areas based on architecture
-if [ "$CARCH" = "i686" ]; then
-    suffix=''
-elif [ "$CARCH" = "x86_64" ]; then
-    suffix='64'
-else
-    echo "CARCH must be set to a recognized value!"
-    exit 1
-fi
-
 source PKGBUILD
 pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}.pkg.tar.gz
 oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}.pkg.tar.gz
@@ -68,8 +58,8 @@ if [ "$1" = "-l" ]; then
 fi
 
 if [ "$repo" != "community" ]; then
-    # combine what we know into a variable (suffix defined based on $CARCH)
-    uploadto="staging/${repo}${suffix}/add/$(basename ${pkgfile})"
+    # combine what we know into a variable
+    uploadto="staging/${repo}/add/$(basename ${pkgfile})"
     scp ${scpopts} "${pkgfile}" "archlinux.org:${uploadto}"
     if [ "$(md5sum "${pkgfile}" | cut -d' ' -f1)" != "$(ssh archlinux.org md5sum "${uploadto}" | cut -d' ' -f1)" ]; then
         echo "File got corrupted during upload, cancelled."
