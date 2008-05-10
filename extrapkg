@@ -73,7 +73,7 @@ else
         exit 1
     fi
     if [ "$(basename $pkgfile)" != "$(basename $oldstylepkgfile)" ]; then
-        echo "Renaming makepkg3 package for compatability"
+        echo "Renaming makepkg3 package for compatibility"
         mv $pkgfile $oldstylepkgfile
         pkgfile=$oldstylepkgfile
     fi
