@@ -20,6 +20,11 @@ if [ ! -f PKGBUILD ]; then
     exit 1
 fi
 
+if [ -z "$CARCH" ]; then
+    echo "CARCH must be set to a recognized value!"
+    exit 1
+fi
+
 source PKGBUILD
 pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}.pkg.tar.gz
 oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}.pkg.tar.gz
