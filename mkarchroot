@@ -171,9 +171,11 @@ else
         cp ${makepkg_conf} ${working_dir}/etc/makepkg.conf
     fi
 
-    echo "generating default locales"
-    cp /etc/locale.gen "${working_dir}/etc/locale.gen"
-    chroot "${working_dir}" locale-gen
+    if [ -e "${working_dir}/etc/locale.gen" ]; then
+        echo "generating default locales from host system"
+        cp /etc/locale.gen "${working_dir}/etc/locale.gen"
+        chroot "${working_dir}" locale-gen
+    fi
 
     if [ ! -e "${working_dir}/.arch-chroot" ]; then
         date +%s > "${working_dir}/.arch-chroot"
