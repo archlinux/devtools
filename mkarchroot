@@ -10,6 +10,7 @@
 
 FORCE="n"
 RUN=""
+NOCOPY="n"
 
 working_dir=""
 
@@ -25,6 +26,7 @@ usage ()
     echo "    -f            Force overwrite of files in the working-dir"
     echo "    -C <file>     location of a pacman config file"
     echo "    -M <file>     location of a makepkg config file"
+    echo "    -n            do not copy config files into the chroot"
     echo "    -h            This message"
     exit $1
 }
@@ -36,6 +38,7 @@ while getopts 'r:ufhC:M:' arg; do
         f) FORCE="y" ;;
         C) pac_conf="$OPTARG" ;;
         M) makepkg_conf="$OPTARG" ;;
+        n) NOCOPY="y" ;;
         h|?) usage 0 ;;
         *) echo "invalid argument '${arg}'"; usage 1 ;;
     esac
@@ -161,12 +164,12 @@ else
         ldconfig -r "${working_dir}"
     fi
 
-    if [ "$pac_conf" != "" ]; then
+    if [ "$pac_conf" != "" -a "$NOCOPY" = "n" ]; then
         echo "installing custom pacman.conf"
         cp ${pac_conf} ${working_dir}/etc/pacman.conf
     fi
 
-    if [ "$makepkg_conf" != "" ]; then
+    if [ "$makepkg_conf" != "" -a "$NOCOPY" = "n" ]; then
         echo "installing custom makepkg.conf"
         cp ${makepkg_conf} ${working_dir}/etc/makepkg.conf
     fi
