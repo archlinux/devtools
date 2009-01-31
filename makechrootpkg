@@ -172,7 +172,7 @@ chown -R nobody "$uniondir/pkgdest"
 source PKGBUILD
 cp PKGBUILD "$uniondir/build/"
 for f in ${source[@]}; do
-    basef=$(basename $f)
+    basef=$(echo $f | sed 's|::.*||' | sed 's|^.*://.*/||g')
     if [ -f "$basef" ]; then
         cp "$basef" "$uniondir/srcdest/"
     fi
