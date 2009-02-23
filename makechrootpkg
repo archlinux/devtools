@@ -23,7 +23,7 @@ APPNAME=$(basename "${0}")
 
 usage ()
 {
-    echo "usage ${APPNAME} [-hcui] [-r CHROOT_SHELL] [--] [makepkg args]"
+    echo "usage ${APPNAME} [-hcuI] [-r CHROOT_SHELL] [--] [makepkg args]"
     echo " Run this script in a PKGBUILD dir to build a package inside a"
     echo " clean chroot. All unrecognized arguments passed to this script"
     echo " will be passed to makepkg."
@@ -48,14 +48,14 @@ usage ()
     echo "-u       Update the rw layer of the chroot before building"
     echo "         This is useful for rebuilds without dirtying the pristine"
     echo "         chroot"
-    echo "-i <pkg> Install a package into the rw layer of the chroot"
+    echo "-I <pkg> Install a package into the rw layer of the chroot"
     exit 1
 }
 
-while getopts ':r:i:h:cu' arg; do
+while getopts ':r:I:h:cu' arg; do
     case "${arg}" in
         r) chrootdir="$OPTARG" ;;
-        i) install_pkg="$OPTARG" ;;
+        I) install_pkg="$OPTARG" ;;
         u) update_first=1 ;;
         c) clean_first=1 ;;
         h|?) usage ;;
