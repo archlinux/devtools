@@ -13,6 +13,7 @@ RUN=""
 MAKEPKG_ARGS="-sr"
 REPACK=""
 WORKDIR=$PWD
+update_first="0"
 clean_first="0"
 install_pkg=""
 
@@ -22,7 +23,7 @@ APPNAME=$(basename "${0}")
 
 usage ()
 {
-    echo "usage ${APPNAME} [-h] [-c] [-r CHROOT_SHELL] [--] [makepkg args]"
+    echo "usage ${APPNAME} [-hcui] [-r CHROOT_SHELL] [--] [makepkg args]"
     echo " Run this script in a PKGBUILD dir to build a package inside a"
     echo " clean chroot. All unrecognized arguments passed to this script"
     echo " will be passed to makepkg."
@@ -32,9 +33,6 @@ usage ()
     echo " directories: \$CHROOT_SHELL/{root, rw, union} but only 'root' is"
     echo " required by default. The rest will be created as needed"
     echo ""
-    echo "The -c flag, if specified, will remove all files created by previous"
-    echo "builds using makechrootpkg.  This will ensure a clean chroot is used."
-    echo ""
     echo "The chroot shell 'root' directory must be created via the following"
     echo "command:"
     echo "    mkarchroot \$CHROOT_SHELL/root base base-devel sudo"
@@ -43,13 +41,22 @@ usage ()
     echo "options, put -- between the makechrootpkg args and the makepkg args"
     echo ""
     echo "Default makepkg args: $MAKEPKG_ARGS"
+    echo ""
+    echo "Flags:"
+    echo "-h       This help"
+    echo "-c       Clean the chroot before building"
+    echo "-u       Update the rw layer of the chroot before building"
+    echo "         This is useful for rebuilds without dirtying the pristine"
+    echo "         chroot"
+    echo "-i <pkg> Install a package into the rw layer of the chroot"
     exit 1
 }
 
-while getopts ':r:i:h:c' arg; do
+while getopts ':r:i:h:cu' arg; do
     case "${arg}" in
         r) chrootdir="$OPTARG" ;;
         i) install_pkg="$OPTARG" ;;
+        u) update_first=1 ;;
         c) clean_first=1 ;;
         h|?) usage ;;
         *) MAKEPKG_ARGS="$MAKEPKG_ARGS -$arg $OPTARG" ;;
@@ -125,6 +132,11 @@ if [ -n "$install_pkg" ]; then
     rm "$uniondir/$pkgname"
     #exit early, we've done all we need to
     exit $ret
+fi
+
+if [ $update_first -eq 1 ]; then
+    echo "updating chroot"
+    mkarchroot -u "$uniondir"
 fi
 
 echo "moving build files to chroot"
