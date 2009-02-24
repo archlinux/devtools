@@ -13,32 +13,30 @@ RUN=""
 MAKEPKG_ARGS="-sr"
 REPACK=""
 WORKDIR=$PWD
+
 update_first="0"
 clean_first="0"
 install_pkg=""
 
-chrootdir="$CHROOT_SHELL"
+chrootdir=""
 
 APPNAME=$(basename "${0}")
 
 usage ()
 {
-    echo "usage ${APPNAME} [-hcuI] [-r CHROOT_SHELL] [--] [makepkg args]"
+    echo "usage ${APPNAME} [-hcu] -r <chrootdir> [--] [makepkg args]"
+    echo "      ${APPNAME} -r <chrootdir> -I <package-file>"
     echo " Run this script in a PKGBUILD dir to build a package inside a"
     echo " clean chroot. All unrecognized arguments passed to this script"
     echo " will be passed to makepkg."
     echo ""
-    echo "The \$CHROOT_SHELL environment variable is used to determine where"
-    echo " your chroot shell is. The shell consists of the following"
-    echo " directories: \$CHROOT_SHELL/{root, rw, union} but only 'root' is"
-    echo " required by default. The rest will be created as needed"
+    echo " The chroot dir consists of the following directories:"
+    echo " <chrootdir>/{root, rw, union} but only 'root' is required"
+    echo " by default. The rest will be created as needed"
     echo ""
-    echo "The chroot shell 'root' directory must be created via the following"
+    echo "The chroot 'root' directory must be created via the following"
     echo "command:"
-    echo "    mkarchroot \$CHROOT_SHELL/root base base-devel sudo"
-    echo ""
-    echo "If you have problems passing params to makepkg or need to pass long"
-    echo "options, put -- between the makechrootpkg args and the makepkg args"
+    echo "    mkarchroot <chrootdir>/root base base-devel sudo"
     echo ""
     echo "Default makepkg args: $MAKEPKG_ARGS"
     echo ""
@@ -48,17 +46,18 @@ usage ()
     echo "-u       Update the rw layer of the chroot before building"
     echo "         This is useful for rebuilds without dirtying the pristine"
     echo "         chroot"
+    echo "-r <dir> The chroot shell to use"
     echo "-I <pkg> Install a package into the rw layer of the chroot"
     exit 1
 }
 
-while getopts ':r:I:h:cu' arg; do
+while getopts 'hcur:I:' arg; do
     case "${arg}" in
+        h) usage ;;
+        c) clean_first=1 ;;
+        u) update_first=1 ;;
         r) chrootdir="$OPTARG" ;;
         I) install_pkg="$OPTARG" ;;
-        u) update_first=1 ;;
-        c) clean_first=1 ;;
-        h|?) usage ;;
         *) MAKEPKG_ARGS="$MAKEPKG_ARGS -$arg $OPTARG" ;;
     esac
 done
@@ -89,13 +88,13 @@ fi
 source PKGBUILD
 
 if [ ! -d "$chrootdir" ]; then
-    echo "No \$CHROOT_SHELL defined, or invalid path ($chrootdir)"
+    echo "No chroot dir defined, or invalid path '$chrootdir'"
     exit 1
 fi
 
 if [ ! -d "$chrootdir/root" ]; then
-    echo "Missing \$CHROOT_SHELL root directory."
-    echo "Try using: mkarchroot \$CHROOT_SHELL base base-devel sudo"
+    echo "Missing chroot dir root directory."
+    echo "Try using: mkarchroot $chrootdir/root base base-devel sudo"
     usage
 fi
 
@@ -229,7 +228,7 @@ if [ -z "$(mount | grep ${chrootdir}/union/srcdest)" ]; then
 fi
 
 if [ -e ${chrootdir}/rw/build/BUILD_FAILED ]; then
-    echo "Build failed, check \$CHROOT_DIR/rw/build"
+    echo "Build failed, check $chrootdir/rw/build"
     rm ${chrootdir}/rw/build/BUILD_FAILED
 else
     rm -rf ${chrootdir}/rw/build/*
