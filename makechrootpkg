@@ -138,7 +138,7 @@ fi
 
 if [ $update_first -eq 1 ]; then
     echo "updating chroot"
-    mkarchroot -u "$uniondir"
+    mkarchroot -r "pacman -Syu --noconfirm" "$uniondir"
 fi
 
 echo "moving build files to chroot"
