@@ -1,0 +1,76 @@
+#!/bin/bash
+# This script rebuilds a list of packages in order
+# and reports anything that fails
+# 
+# Due to sudo usage, it is recommended to allow makechrootpkg
+# to be run with NOPASSWD in your sudoers file
+#
+# FIXME
+# Currently uses $(pwd)/rebuilds as the directory for rebuilding...
+
+if [ $# -le 1 ]; then
+    echo "usage: $(basename $0) <chrootdir> <packages to rebuild>"
+    echo "  example: $(basename $0) ~/chroot readline bash foo bar baz"
+    exit 1
+fi
+
+die () {
+    echo $@ >&2
+    exit 1
+}
+
+bump_pkgrel () {
+    # Get the current pkgrel from SVN and update the working copy with it
+    # This prevents us from incrementing out of control :)
+    pbuild=".svn/text-base/PKGBUILD.svn-base"
+    oldrel=$(grep "pkgrel=" $pbuild | cut -d= -f2)
+
+    #remove decimals
+    rel=$(echo $oldrel | cut -d. -f1)
+    
+    newrel=$(($rel + 1))
+
+    sed -i "s/pkgrel=$oldrel/pkgrel=$newrel/" PKGBUILD 
+}
+
+chrootdir="$1"; shift
+pkgs="$@"
+
+SVNPATH="svn+ssh://archlinux.org/srv/svn-packages"
+
+echo ":: Work will be done in $(pwd)/rebuilds"
+
+REBUILD_ROOT="$(pwd)/rebuilds"
+mkdir -p "$REBUILD_ROOT"
+cd "$REBUILD_ROOT"
+
+/usr/bin/svn co -N $SVNPATH
+
+FAILED=""
+for pkg in $pkgs; do
+    cd "$REBUILD_ROOT/svn-packages"
+
+    echo ":: Building '$pkg'"
+    /usr/bin/svn update "$pkg"
+    cd "$pkg/trunk/"
+
+    bump_pkgrel
+
+    if ! sudo makechrootpkg -u -d -r "$chrootdir" -- --noconfirm; then
+        FAILED="$FAILED $pkg"
+        echo ":: $pkg Failed!"
+        continue
+    else
+        echo ":: $pkg Complete"
+    fi
+done
+
+cd "$REBUILD_ROOT"
+if [ "$FAILED" != "" ]; then
+    echo "Packages failed:"
+    for pkg in $FAILED; do
+        echo -e "\t$pkg"
+    done
+fi
+
+echo "SVN pkgbumps in svn-packages/ - commit when ready"
