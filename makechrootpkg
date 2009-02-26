@@ -233,13 +233,19 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
         popd >/dev/null
     fi
 
+    local pkgfile=${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz
     if [ -z "$(mount | grep ${chrootdir}/union/pkgdest)" ]; then
-        echo "Moving completed package file to ${WORKDIR}"
-        mv ${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz ${WORKDIR}
+        if [ -e "$pkgfile" ]; then
+            echo "Moving completed package file to ${WORKDIR}"
+            mv "$pkgfile" "${WORKDIR}"
+        fi
     fi
     if [ -z "$(mount | grep ${chrootdir}/union/srcdest)" ]; then
-        echo "Moving downloaded source files to ${WORKDIR}"
-        mv ${chrootdir}/union/srcdest/* ${WORKDIR}
+        for f in ${chrootdir}/union/srcdest/*; do
+            [ -e "$f" ] || continue
+            echo "Moving downloaded source file ($(basename $f) to ${WORKDIR}"
+            mv "$f" "${WORKDIR}"
+        done
     fi
 else
     #just in case. We returned 1, make sure we fail
