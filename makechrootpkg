@@ -12,6 +12,7 @@ FORCE="n"
 RUN=""
 MAKEPKG_ARGS="-sr"
 REPACK=""
+LAYER="rw"
 WORKDIR=$PWD
 
 update_first="0"
@@ -25,8 +26,7 @@ APPNAME=$(basename "${0}")
 
 usage ()
 {
-    echo "usage ${APPNAME} [-hcud] -r <chrootdir> [--] [makepkg args]"
-    echo "      ${APPNAME} -r <chrootdir> -I <package-file>"
+    echo "usage ${APPNAME} [options] -r <chrootdir> [--] [makepkg args]"
     echo " Run this script in a PKGBUILD dir to build a package inside a"
     echo " clean chroot. All unrecognized arguments passed to this script"
     echo " will be passed to makepkg."
@@ -42,18 +42,20 @@ usage ()
     echo "Default makepkg args: $MAKEPKG_ARGS"
     echo ""
     echo "Flags:"
-    echo "-h       This help"
-    echo "-c       Clean the chroot before building"
-    echo "-u       Update the rw layer of the chroot before building"
-    echo "         This is useful for rebuilds without dirtying the pristine"
-    echo "         chroot"
-    echo "-d       Add the package to a local db at /repo after building"
-    echo "-r <dir> The chroot shell to use"
-    echo "-I <pkg> Install a package into the rw layer of the chroot"
+    echo "-h         This help"
+    echo "-c         Clean the chroot before building"
+    echo "-u         Update the rw layer of the chroot before building"
+    echo "           This is useful for rebuilds without dirtying the pristine"
+    echo "           chroot"
+    echo "-d         Add the package to a local db at /repo after building"
+    echo "-r <dir>   The chroot shell to use"
+    echo "-I <pkg>   Install a package into the rw layer of the chroot"
+    echo "-l <layer> The directory to use as the rw layer of the unionfs"
+    echo "           Useful for maintain multiple layers. Default: rw"
     exit 1
 }
 
-while getopts 'hcudr:I:' arg; do
+while getopts 'hcudr:I:l:' arg; do
     case "${arg}" in
         h) usage ;;
         c) clean_first=1 ;;
@@ -61,6 +63,7 @@ while getopts 'hcudr:I:' arg; do
         d) add_to_db=1 ;;
         r) chrootdir="$OPTARG" ;;
         I) install_pkg="$OPTARG" ;;
+        l) LAYER="$OPTARG" ;;
         *) MAKEPKG_ARGS="$MAKEPKG_ARGS -$arg $OPTARG" ;;
     esac
 done
@@ -101,8 +104,8 @@ if [ ! -d "$chrootdir/root" ]; then
     usage
 fi
 
-[ -d "$chrootdir/rw" -a "$clean_first" -eq "1" ] && rm -rf "$chrootdir/rw/" 
-[ -d "$chrootdir/rw" ] || mkdir "$chrootdir/rw"
+[ -d "$chrootdir/$LAYER" -a "$clean_first" -eq "1" ] && rm -rf "$chrootdir/$LAYER/" 
+[ -d "$chrootdir/$LAYER" ] || mkdir "$chrootdir/$LAYER"
 [ -d "$chrootdir/union" ] || mkdir "$chrootdir/union"
 
 cleanup ()
@@ -122,7 +125,7 @@ if [ $? -ne 0 ]; then
         echo "ERROR: No unionfs available. Abandon ship!" && exit 1
     fi
 fi
-mount -t unionfs none -o "dirs=$chrootdir/rw=rw:$chrootdir/root=ro" "$uniondir"
+mount -t unionfs none -o "dirs=$chrootdir/$LAYER=rw:$chrootdir/root=ro" "$uniondir"
 trap 'cleanup' 0 1 2 15
 
 if [ -n "$install_pkg" ]; then
@@ -214,6 +217,7 @@ export LANG=$LOCALE
 cd /build
 export HOME=/build
 sudo -u nobody makepkg $MAKEPKG_ARGS || touch BUILD_FAILED
+namcap *.pkg.tar.gz > /pkgdest/namcap.log
 EOF
 ) > "$uniondir/chrootbuild"
 chmod +x "$uniondir/chrootbuild"
@@ -239,14 +243,14 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
     fi
 else
     #just in case. We returned 1, make sure we fail
-    touch ${chrootdir}/rw/build/BUILD_FAILED
+    touch ${chrootdir}/union/build/BUILD_FAILED
 fi
 
-if [ -e ${chrootdir}/rw/build/BUILD_FAILED ]; then
-    echo "Build failed, check $chrootdir/rw/build"
-    rm ${chrootdir}/rw/build/BUILD_FAILED
+if [ -e ${chrootdir}/union/build/BUILD_FAILED ]; then
+    echo "Build failed, check $chrootdir/$LAYER/build"
+    rm ${chrootdir}/union/build/BUILD_FAILED
 else
-    rm -rf ${chrootdir}/rw/build/*
+    rm -rf ${chrootdir}/union/build/*
     echo "Build complete"
 fi	
 
