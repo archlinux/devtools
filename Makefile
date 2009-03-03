@@ -1,13 +1,14 @@
 all:
 
 install:
-	# extrapkg/checkpkg and friends
+	# commitpkg/checkpkg and friends
 	mkdir -p $(DESTDIR)/usr/bin
 	install -m 755 checkpkg $(DESTDIR)/usr/bin
-	install -m 755 extrapkg $(DESTDIR)/usr/bin
-	ln -sf extrapkg $(DESTDIR)/usr/bin/corepkg
-	ln -sf extrapkg $(DESTDIR)/usr/bin/testingpkg
-	ln -sf extrapkg $(DESTDIR)/usr/bin/unstablepkg
+	install -m 755 commitpkg $(DESTDIR)/usr/bin
+	ln -sf commitpkg $(DESTDIR)/usr/bin/commitpkg
+	ln -sf commitpkg $(DESTDIR)/usr/bin/corepkg
+	ln -sf commitpkg $(DESTDIR)/usr/bin/testingpkg
+	ln -sf commitpkg $(DESTDIR)/usr/bin/unstablepkg
 	# arch{co,release,rm}
 	install -m 755 archco $(DESTDIR)/usr/bin
 	install -m 755 archrelease $(DESTDIR)/usr/bin
@@ -23,6 +24,7 @@ install:
 uninstall:
 	# remove all files we installed
 	rm $(DESTDIR)/usr/bin/checkpkg
+	rm $(DESTDIR)/usr/bin/commitpkg
 	rm $(DESTDIR)/usr/bin/extrapkg
 	rm $(DESTDIR)/usr/bin/corepkg
 	rm $(DESTDIR)/usr/bin/testingpkg

@@ -53,6 +53,13 @@ elif [ "$cmd" == "unstablepkg" ]; then
     repo="unstable"
 elif [ "$cmd" == "communitypkg" ]; then
     repo="community"
+else
+    if [ $# -eq 0 ]; then
+        echo "usage: commitpkg <reponame> [-l limit] [commit message]"
+        exit 1
+    fi
+    repo="$1"
+    shift
 fi
 
 # see if any limit options were passed, we'll send them to SCP
