@@ -164,18 +164,13 @@ fi
 
 source $uniondir/etc/makepkg.conf
 
-# Magic trickery with PKGDEST and SRCDEST, so that the built
-# files end up where they're expected in the _real_ filesystem
-[ -d "$uniondir/srcdest" ] || mkdir "$uniondir/srcdest"
 [ -d "$uniondir/pkgdest" ] || mkdir "$uniondir/pkgdest"
-[ ! -z "$PKGDEST" ] && mount --bind "$PKGDEST" "$uniondir/pkgdest"
-[ ! -z "$SRCDEST" ] && mount --bind "$SRCDEST" "$uniondir/srcdest"
-
 if ! grep "PKGDEST=/pkgdest" "$uniondir/etc/makepkg.conf" >/dev/null 2>&1; then
     echo "Setting PKGDEST in makepkg.conf"
     echo "PKGDEST=/pkgdest" >> "$uniondir/etc/makepkg.conf"
 fi
 
+[ -d "$uniondir/srcdest" ] || mkdir "$uniondir/srcdest"
 if ! grep "SRCDEST=/srcdest" "$uniondir/etc/makepkg.conf" >/dev/null 2>&1; then
     echo "Setting SRCDEST in makepkg.conf"
     echo "SRCDEST=/srcdest" >> "$uniondir/etc/makepkg.conf"
@@ -192,6 +187,8 @@ for f in ${source[@]}; do
     basef=$(echo $f | sed 's|::.*||' | sed 's|^.*://.*/||g')
     if [ -f "$basef" ]; then
         cp "$basef" "$uniondir/srcdest/"
+    elif [ -f "$SRCDEST/$basef" ]; then
+        cp "$SRCDEST/$basef" "$uniondir/srcdest/"
     fi
 done
 if [ "$install" != "" -a -f "$install" ]; then
@@ -236,15 +233,25 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
     local pkgfile=${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz
     if [ -z "$(mount | grep ${chrootdir}/union/pkgdest)" ]; then
         if [ -e "$pkgfile" ]; then
-            echo "Moving completed package file to ${WORKDIR}"
-            mv "$pkgfile" "${WORKDIR}"
+            if [ -n "$PKGDEST" ]; then
+                echo "Moving completed package file to ${PKGDEST}"
+                mv "$pkgfile" "${PKGDEST}"
+            else
+                echo "Moving completed package file to ${WORKDIR}"
+                mv "$pkgfile" "${WORKDIR}"
+            fi
         fi
     fi
     if [ -z "$(mount | grep ${chrootdir}/union/srcdest)" ]; then
         for f in ${chrootdir}/union/srcdest/*; do
             [ -e "$f" ] || continue
-            echo "Moving downloaded source file ($(basename $f) to ${WORKDIR}"
-            mv "$f" "${WORKDIR}"
+            if [ -n "$SRCDEST" ]; then
+                echo "Moving downloaded source file ($(basename $f) to ${SRCDEST}"
+                mv "$f" "${SRCDEST}"
+            else
+                echo "Moving downloaded source file ($(basename $f) to ${WORKDIR}"
+                mv "$f" "${WORKDIR}"
+            fi
         done
     fi
 else
