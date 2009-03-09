@@ -232,29 +232,25 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
     fi
 
     local pkgfile=${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz
-    if [ -z "$(mount | grep ${chrootdir}/union/pkgdest)" ]; then
-        if [ -e "$pkgfile" ]; then
-            if [ -n "$PKGDEST" ]; then
-                echo "Moving completed package file to ${PKGDEST}"
-                mv "$pkgfile" "${PKGDEST}"
-            else
-                echo "Moving completed package file to ${WORKDIR}"
-                mv "$pkgfile" "${WORKDIR}"
-            fi
+    if [ -e "$pkgfile" ]; then
+        if [ -n "$PKGDEST" ]; then
+            echo "Moving completed package file to ${PKGDEST}"
+            mv "$pkgfile" "${PKGDEST}"
+        else
+            echo "Moving completed package file to ${WORKDIR}"
+            mv "$pkgfile" "${WORKDIR}"
         fi
     fi
-    if [ -z "$(mount | grep ${chrootdir}/union/srcdest)" ]; then
-        for f in ${chrootdir}/union/srcdest/*; do
-            [ -e "$f" ] || continue
-            if [ -n "$SRCDEST" ]; then
-                echo "Moving downloaded source file ($(basename $f) to ${SRCDEST}"
-                mv "$f" "${SRCDEST}"
-            else
-                echo "Moving downloaded source file ($(basename $f) to ${WORKDIR}"
-                mv "$f" "${WORKDIR}"
-            fi
-        done
-    fi
+    for f in ${chrootdir}/union/srcdest/*; do
+        [ -e "$f" ] || continue
+        if [ -n "$SRCDEST" ]; then
+            echo "Moving downloaded source file ($(basename $f) to ${SRCDEST}"
+            mv "$f" "${SRCDEST}"
+        else
+            echo "Moving downloaded source file ($(basename $f) to ${WORKDIR}"
+            mv "$f" "${WORKDIR}"
+        fi
+    done
 else
     #just in case. We returned 1, make sure we fail
     touch ${chrootdir}/union/build/BUILD_FAILED
