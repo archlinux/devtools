@@ -231,7 +231,7 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
         popd >/dev/null
     fi
 
-    local pkgfile=${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz
+    pkgfile=${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz
     if [ -e "$pkgfile" ]; then
         if [ -n "$PKGDEST" ]; then
             echo "Moving completed package file to ${PKGDEST}"
