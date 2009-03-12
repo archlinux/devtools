@@ -15,6 +15,14 @@ if [ $# -le 1 ]; then
     exit 1
 fi
 
+# Source makepkg.conf; fail if it is not found
+if [ -r "/etc/makepkg.conf" ]; then
+	source "/etc/makepkg.conf"
+else
+    echo "/etc/makepkg.conf not found!"
+    exit 1
+fi
+
 die () {
     echo $@ >&2
     exit 1
@@ -32,6 +40,12 @@ bump_pkgrel () {
     newrel=$(($rel + 1))
 
     sed -i "s/pkgrel=$oldrel/pkgrel=$newrel/" PKGBUILD 
+}
+
+pkg_from_pkgbuild () {
+    # we want the sourcing to be done in a subshell so we don't pollute our current namespace
+    export CARCH PKGEXT
+    (. PKGBUILD; echo "$pkgname-$pkgver-$pkgrel-$CARCH$PKGEXT")
 }
 
 chrootdir="$1"; shift
@@ -53,6 +67,11 @@ for pkg in $pkgs; do
 
     echo ":: Building '$pkg'"
     /usr/bin/svn update "$pkg"
+    if [ ! -d "$pkg/trunk" ]; then
+        FAILED="$FAILED $pkg"
+        echo ":: $pkg does not exist in SVN"
+        continue
+    fi
     cd "$pkg/trunk/"
 
     bump_pkgrel
@@ -60,9 +79,14 @@ for pkg in $pkgs; do
     if ! sudo makechrootpkg -u -d -r "$chrootdir" -- --noconfirm; then
         FAILED="$FAILED $pkg"
         echo ":: $pkg Failed!"
-        continue
     else
-        echo ":: $pkg Complete"
+        pkgfile=$(pkg_from_pkgbuild)
+        if [ -e "$pkgfile" ]; then
+            echo ":: $pkg Complete"
+        else
+            FAILED="$FAILED $pkg"
+            echo ":: $pkg Failed, no package built!"
+        fi
     fi
 done
 
