@@ -43,6 +43,8 @@ if [ ! -f $pkgfile ]; then
     fi
 fi
 
+# set up repo-specific opts depending on how we were called
+server="archlinux.org"
 if [ "$cmd" == "extrapkg" ]; then
     repo="extra"
 elif [ "$cmd" == "corepkg" ]; then
@@ -53,6 +55,7 @@ elif [ "$cmd" == "unstablepkg" ]; then
     repo="unstable"
 elif [ "$cmd" == "communitypkg" ]; then
     repo="community"
+    server="community.archlinux.org"
 else
     if [ $# -eq 0 ]; then
         echo "usage: commitpkg <reponame> [-l limit] [commit message]"
@@ -69,29 +72,16 @@ if [ "$1" = "-l" ]; then
     shift 2
 fi
 
-if [ "$repo" != "community" ]; then
-    # combine what we know into a variable
-    uploadto="staging/${repo}/$(basename ${pkgfile})"
-    server="archlinux.org"
-    scp ${scpopts} "${pkgfile}" "${server}:${uploadto}"
-    if [ "$(md5sum "${pkgfile}" | cut -d' ' -f1)" != "$(ssh ${server} md5sum "${uploadto}" | cut -d' ' -f1)" ]; then
-        echo "File got corrupted during upload, cancelled."
-        exit 1
-    else
-        echo "File integrity okay."
-    fi
+# combine what we know into a variable
+uploadto="staging/${repo}/$(basename ${pkgfile})"
+scp ${scpopts} "${pkgfile}" "${server}:${uploadto}"
+if [ "$(md5sum "${pkgfile}" | cut -d' ' -f1)" != "$(ssh ${server} md5sum "${uploadto}" | cut -d' ' -f1)" ]; then
+    echo "File got corrupted during upload, cancelled."
+    exit 1
 else
-    if [ ! -f ~/.tupkg ]; then
-        echo "Must configure tupkg via ~/.tupkg, cancelled"
-        exit 1
-    fi
-    if [ "$(basename $pkgfile)" != "$(basename $oldstylepkgfile)" ]; then
-        echo "Renaming makepkg3 package for compatibility"
-        mv $pkgfile $oldstylepkgfile
-        pkgfile=$oldstylepkgfile
-    fi
-    tupkg $pkgfile
+    echo "File integrity okay."
 fi
+
 if [ $? -ne 0 ]; then
     echo "Cancelled"
     exit 1
