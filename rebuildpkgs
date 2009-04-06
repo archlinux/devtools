@@ -7,6 +7,7 @@
 #
 # FIXME
 # Currently uses $(pwd)/rebuilds as the directory for rebuilding...
+# TODO make this work for community too
 
 if [ $# -le 1 ]; then
     echo "usage: $(basename $0) <chrootdir> <packages to rebuild>"
@@ -36,7 +37,7 @@ bump_pkgrel () {
 chrootdir="$1"; shift
 pkgs="$@"
 
-SVNPATH="svn+ssh://archlinux.org/srv/svn-packages"
+SVNPATH="svn+ssh://svn.archlinux.org/srv/svn-packages"
 
 echo ":: Work will be done in $(pwd)/rebuilds"
 
