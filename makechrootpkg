@@ -223,15 +223,16 @@ chmod +x "$uniondir/chrootbuild"
 if mkarchroot -r "/chrootbuild" "$uniondir"; then
     source ${WORKDIR}/PKGBUILD
 
-    if [ -n "$add_to_db" ]; then
+    pkgfile=${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz
+
+    if [ -n "$add_to_db" -a -e "$pkgfile" ]; then
         [ -d "${chrootdir}/union/repo" ] || mkdir -p "${chrootdir}/union/repo"
         pushd "${chrootdir}/union/repo" >/dev/null
-        cp ${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz .
-        repo-add repo.db.tar.gz *.pkg.tar.gz
+        cp "$pkgfile" .
+        repo-add repo.db.tar.gz "${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz"
         popd >/dev/null
     fi
 
-    pkgfile=${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz
     if [ -e "$pkgfile" ]; then
         if [ -n "$PKGDEST" ]; then
             echo "Moving completed package file to ${PKGDEST}"
