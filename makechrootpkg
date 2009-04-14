@@ -50,7 +50,7 @@ usage ()
     echo "-d         Add the package to a local db at /repo after building"
     echo "-r <dir>   The chroot shell to use"
     echo "-I <pkg>   Install a package into the rw layer of the chroot"
-    echo "-l <layer> The directory to use as the rw layer of the unionfs"
+    echo "-l <layer> The directory to use as the rw layer of the union"
     echo "           Useful for maintain multiple layers. Default: rw"
     exit 1
 }
@@ -118,14 +118,14 @@ cleanup ()
 
 uniondir="$chrootdir/union"
 echo "building union chroot"
-grep -Fq unionfs /proc/filesystems
+grep -Fq aufs /proc/filesystems
 if [ $? -ne 0 ]; then
-    modprobe -q unionfs
+    modprobe -q aufs
     if [ $? -ne 0 ]; then
-        echo "ERROR: No unionfs available. Abandon ship!" && exit 1
+        echo "ERROR: No aufs available. Abandon ship!" && exit 1
     fi
 fi
-mount -t unionfs none -o "dirs=$chrootdir/$LAYER=rw:$chrootdir/root=ro" "$uniondir"
+mount -t aufs none -o "dirs=$chrootdir/$LAYER=rw:$chrootdir/root=ro" "$uniondir"
 trap 'cleanup' 0 1 2 15
 
 if [ -n "$install_pkg" ]; then
