@@ -1,0 +1,33 @@
+#!/bin/bash
+# This script commits an existing package as an 'any'
+# package. It is simply to help aid in the conversion
+# to any-based packages
+
+if [ $# -ne 1 ]; then
+    echo "Syntax: $(basename $0) <repo>"
+    exit 1
+fi
+
+repo=$1
+
+source PKGBUILD
+
+sed -i 's|^arch=.\+$|arch=(any)|' PKGBUILD
+
+svn commit -m "upgpkg: $pkgname $pkgver-$pkgrel
+    Converted to arch=any" > /dev/null
+
+archrelease $repo-any
+if [ $? -ne 0 ]; then
+    echo "Cancelled"
+    exit 1
+fi
+echo "===> Tagged for $repo-any"
+
+pushd ..
+svn rm $repo-i686
+svn rm $repo-x86_64
+svn commit -m "removed $repo-i686 and $repo-x86_64 for $pkgname"
+popd
+
+echo "Don't forget to run \"/arch/db-update $repo\" on gerolde"
