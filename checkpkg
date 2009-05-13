@@ -24,8 +24,8 @@ fi
 
 source PKGBUILD
 
-pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}.pkg.tar.gz
-oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}.pkg.tar.gz
+pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
+oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}${PKGEXT}
 
 if [ -f "$(pwd)/$pkgfile" ]; then
     pkgfile=$(pwd)/$pkgfile
@@ -64,8 +64,8 @@ if [ ! -f $oldpkg ]; then
 	fi
 fi
 
-tar tzf $oldpkg > filelist-old
-tar tzf "$pkgfile" > filelist
+bsdtar tf $oldpkg > filelist-old
+bsdtar tf "$pkgfile" > filelist
 
 sort -o filelist filelist
 sort -o filelist-old filelist-old
@@ -75,7 +75,7 @@ diff filelist-old filelist
 if diff filelist-old filelist | grep '\.so\.' > /dev/null 2>&1; then
 	mkdir -p pkg
 	cd pkg
-	tar xzf "$pkgfile" > /dev/null
+	bsdtar xf "$pkgfile" > /dev/null
 	for i in `diff ../filelist-old ../filelist | grep \> | grep \.so\. | awk '{print $2}'`; do
 		echo -n "${i}: "
 		objdump -p $i | grep SONAME

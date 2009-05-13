@@ -214,7 +214,7 @@ export LANG=$LOCALE
 cd /build
 export HOME=/build
 sudo -u nobody makepkg $MAKEPKG_ARGS || touch BUILD_FAILED
-which namcap 2>&1 >/dev/null && namcap *.pkg.tar.gz > /pkgdest/namcap.log
+which namcap 2>&1 >/dev/null && namcap *${PKGEXT} > /pkgdest/namcap.log
 exit 0
 EOF
 ) > "$uniondir/chrootbuild"
@@ -223,13 +223,13 @@ chmod +x "$uniondir/chrootbuild"
 if mkarchroot -r "/chrootbuild" "$uniondir"; then
     source ${WORKDIR}/PKGBUILD
 
-    pkgfile=${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz
+    pkgfile=${chrootdir}/union/pkgdest/${pkgname}-${pkgver}-${pkgrel}-*${PKGEXT}
 
     if [ -n "$add_to_db" -a -e "$pkgfile" ]; then
         [ -d "${chrootdir}/union/repo" ] || mkdir -p "${chrootdir}/union/repo"
         pushd "${chrootdir}/union/repo" >/dev/null
         cp "$pkgfile" .
-        repo-add repo.db.tar.gz "${pkgname}-${pkgver}-${pkgrel}-*.pkg.tar.gz"
+        repo-add repo.db.tar.${DB_COMPRESSION} "${pkgname}-${pkgver}-${pkgrel}-*${PKGEXT}"
         popd >/dev/null
     fi
 

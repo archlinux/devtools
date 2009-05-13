@@ -26,8 +26,8 @@ if [ -z "$CARCH" ]; then
 fi
 
 source PKGBUILD
-pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}.pkg.tar.gz
-oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}.pkg.tar.gz
+pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
+oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}${PKGEXT}
 
 if [ ! -f $pkgfile ]; then
     if [ -f $PKGDEST/$pkgfile ]; then
