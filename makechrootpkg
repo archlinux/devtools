@@ -214,6 +214,7 @@ export LANG=$LOCALE
 cd /build
 export HOME=/build
 sudo -u nobody makepkg $MAKEPKG_ARGS || touch BUILD_FAILED
+[ -f BUILD_FAILED ] && exit 1
 which namcap 2>&1 >/dev/null && namcap *${PKGEXT} > /pkgdest/namcap.log
 exit 0
 EOF
