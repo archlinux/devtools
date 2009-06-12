@@ -98,7 +98,7 @@ if [ "$1" != "" ]; then
     echo "===> Commited with \"upgpkg: $pkgname $pkgver-$pkgrel
     $1\" message"
 else
-    svn commit -m "upgpkg: $pkgname $pkgver-$pkgrel" > /dev/null
+    svn commit >/dev/null
     if [ $? -ne 0 ]; then
         echo "Cancelled"
         exit 1
