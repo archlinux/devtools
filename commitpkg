@@ -55,7 +55,7 @@ elif [ "$cmd" == "unstablepkg" ]; then
     repo="unstable"
 elif [ "$cmd" == "communitypkg" ]; then
     repo="community"
-    server="community.archlinux.org"
+    server="aur.archlinux.org"
 else
     if [ $# -eq 0 ]; then
         echo "usage: commitpkg <reponame> [-l limit] [commit message]"
