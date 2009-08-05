@@ -191,9 +191,14 @@ for f in ${source[@]}; do
         cp "$SRCDEST/$basef" "$uniondir/srcdest/"
     fi
 done
-if [ "$install" != "" -a -f "$install" ]; then
-    cp "$install" "$uniondir/build/"
-fi
+
+install_files=$(grep "install=" PKGBUILD)
+for f in $install_files;do
+    install="${f#"install="}"
+    if [ "$install" != "" -a -f "$install" ]; then
+        cp "$install" "$uniondir/build/"
+    fi
+done
 
 if [ -f "ChangeLog" ]; then
     cp ChangeLog "$uniondir/build/"
