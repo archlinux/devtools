@@ -27,14 +27,22 @@ fi
 
 source PKGBUILD
 pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
+anypkgfile=${pkgname}-${pkgver}-${pkgrel}-any${PKGEXT}
 oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}${PKGEXT}
 
 if [ ! -f $pkgfile ]; then
     if [ -f $PKGDEST/$pkgfile ]; then
         pkgfile=$PKGDEST/$pkgfile
+	anypkgfile=$PKGDEST/$anypkgfile
         oldstylepkgfile=$PKGDEST/$oldstylepkgfile
+    elif [ -f $anypkgfile ]; then
+	pkgfile=$anypkgfile
+	CARCH=any
     elif [ -f $oldstylepkgfile ]; then
         pkgfile=$oldstylepkgfile
+    elif [ -f $PKGDEST/$anypkgfile ]; then
+	pkgfile=$PKGDEST/$anypkgfile
+	CARCH=any
     elif [ -f $PKGDEST/$oldstylepkgfile ]; then
         pkgfile=$PKGDEST/$oldstylepkgfile
     else
