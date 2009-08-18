@@ -254,10 +254,10 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
     for f in ${chrootdir}/union/srcdest/*; do
         [ -e "$f" ] || continue
         if [ -n "$SRCDEST" ]; then
-            echo "Moving downloaded source file ($(basename $f) to ${SRCDEST}"
+            echo "Moving downloaded source file $(basename $f) to ${SRCDEST}"
             mv "$f" "${SRCDEST}"
         else
-            echo "Moving downloaded source file ($(basename $f) to ${WORKDIR}"
+            echo "Moving downloaded source file $(basename $f) to ${WORKDIR}"
             mv "$f" "${WORKDIR}"
         fi
     done
