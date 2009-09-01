@@ -52,7 +52,7 @@ if [ ! -f $pkgfile ]; then
 fi
 
 # set up repo-specific opts depending on how we were called
-server="archlinux.org"
+server="gerolde.archlinux.org"
 if [ "$cmd" == "extrapkg" ]; then
     repo="extra"
 elif [ "$cmd" == "corepkg" ]; then
