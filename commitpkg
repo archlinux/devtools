@@ -13,7 +13,7 @@ if [ -r ~/.makepkg.conf ]; then
 	source ~/.makepkg.conf
 fi
 
-cmd=`basename $0`
+cmd=$(basename $0)
 
 if [ ! -f PKGBUILD ]; then
     echo "No PKGBUILD file"
@@ -28,23 +28,17 @@ fi
 source PKGBUILD
 pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
 anypkgfile=${pkgname}-${pkgver}-${pkgrel}-any${PKGEXT}
-oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}${PKGEXT}
 
 if [ ! -f $pkgfile ]; then
     if [ -f $PKGDEST/$pkgfile ]; then
         pkgfile=$PKGDEST/$pkgfile
 	anypkgfile=$PKGDEST/$anypkgfile
-        oldstylepkgfile=$PKGDEST/$oldstylepkgfile
     elif [ -f $anypkgfile ]; then
 	pkgfile=$anypkgfile
 	CARCH=any
-    elif [ -f $oldstylepkgfile ]; then
-        pkgfile=$oldstylepkgfile
     elif [ -f $PKGDEST/$anypkgfile ]; then
 	pkgfile=$PKGDEST/$anypkgfile
 	CARCH=any
-    elif [ -f $PKGDEST/$oldstylepkgfile ]; then
-        pkgfile=$PKGDEST/$oldstylepkgfile
     else
         echo "File $pkgfile doesn't exist"
         exit 1
@@ -59,8 +53,6 @@ elif [ "$cmd" == "corepkg" ]; then
     repo="core"
 elif [ "$cmd" == "testingpkg" ]; then
     repo="testing"
-elif [ "$cmd" == "unstablepkg" ]; then
-    repo="unstable"
 elif [ "$cmd" == "communitypkg" ]; then
     repo="community"
     server="aur.archlinux.org"
