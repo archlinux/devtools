@@ -183,6 +183,13 @@ for f in ${source[@]}; do
 done
 
 install_files=$(grep "install=" PKGBUILD)
+for pkg in ${pkgname[@]}; do
+    install_files+=' '
+    install_files+=$(echo $install_files |sed "s/\$pkgname/$pkg/"|sed "s/\${pkgname}/$pkg/")
+done
+
+install_files=$(eval echo $install_files |tr '[:blank:]' '\n'|sort |uniq)
+
 for f in $install_files;do
     install="${f#"install="}"
     if [ "$install" != "" -a -f "$install" ]; then
