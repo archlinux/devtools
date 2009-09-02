@@ -26,76 +26,79 @@ if [ -z "$CARCH" ]; then
 fi
 
 source PKGBUILD
-pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
-anypkgfile=${pkgname}-${pkgver}-${pkgrel}-any${PKGEXT}
+pkgbase=${pkgbase:-${pkgname[0]}}
 
-if [ ! -f $pkgfile ]; then
-    if [ -f $PKGDEST/$pkgfile ]; then
-        pkgfile=$PKGDEST/$pkgfile
-	anypkgfile=$PKGDEST/$anypkgfile
-    elif [ -f $anypkgfile ]; then
-	pkgfile=$anypkgfile
-	CARCH=any
-    elif [ -f $PKGDEST/$anypkgfile ]; then
-	pkgfile=$PKGDEST/$anypkgfile
-	CARCH=any
-    else
-        echo "File $pkgfile doesn't exist"
-        exit 1
+for _pkgname in ${pkgname[@]}; do
+    pkgfile=${_pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
+    anypkgfile=${_pkgname}-${pkgver}-${pkgrel}-any${PKGEXT}
+
+    if [ ! -f $pkgfile ]; then
+	if [ -f $PKGDEST/$pkgfile ]; then
+            pkgfile=$PKGDEST/$pkgfile
+	elif [ -f $anypkgfile ]; then
+	    pkgfile=$anypkgfile
+	    CARCH=any
+	elif [ -f $PKGDEST/$anypkgfile ]; then
+	    pkgfile=$PKGDEST/$anypkgfile
+	    CARCH=any
+	else
+            echo "File $pkgfile doesn't exist"
+            exit 1
+	fi
     fi
-fi
 
 # set up repo-specific opts depending on how we were called
-server="gerolde.archlinux.org"
-if [ "$cmd" == "extrapkg" ]; then
-    repo="extra"
-elif [ "$cmd" == "corepkg" ]; then
-    repo="core"
-elif [ "$cmd" == "testingpkg" ]; then
-    repo="testing"
-elif [ "$cmd" == "communitypkg" ]; then
-    repo="community"
-    server="aur.archlinux.org"
-else
-    if [ $# -eq 0 ]; then
-        echo "usage: commitpkg <reponame> [-l limit] [commit message]"
-        exit 1
+    server="gerolde.archlinux.org"
+    if [ "$cmd" == "extrapkg" ]; then
+	repo="extra"
+    elif [ "$cmd" == "corepkg" ]; then
+	repo="core"
+    elif [ "$cmd" == "testingpkg" ]; then
+	repo="testing"
+    elif [ "$cmd" == "communitypkg" ]; then
+	repo="community"
+	server="aur.archlinux.org"
+    else
+	if [ $# -eq 0 ]; then
+            echo "usage: commitpkg <reponame> [-l limit] [commit message]"
+            exit 1
+	fi
+	repo="$1"
+	shift
     fi
-    repo="$1"
-    shift
-fi
 
 # see if any limit options were passed, we'll send them to SCP
-unset scpopts
-if [ "$1" = "-l" ]; then
-    scpopts="$1 $2"
-    shift 2
-fi
+    unset scpopts
+    if [ "$1" = "-l" ]; then
+	scpopts="$1 $2"
+	shift 2
+    fi
 
 # combine what we know into a variable
-uploadto="staging/${repo}/$(basename ${pkgfile})"
-scp ${scpopts} "${pkgfile}" "${server}:${uploadto}"
-if [ "$(md5sum "${pkgfile}" | cut -d' ' -f1)" != "$(ssh ${server} md5sum "${uploadto}" | cut -d' ' -f1)" ]; then
-    echo "File got corrupted during upload, cancelled."
-    exit 1
-else
-    echo "File integrity okay."
-fi
+    uploadto="staging/${repo}/$(basename ${pkgfile})"
+    scp ${scpopts} "${pkgfile}" "${server}:${uploadto}"
+    if [ "$(md5sum "${pkgfile}" | cut -d' ' -f1)" != "$(ssh ${server} md5sum "${uploadto}" | cut -d' ' -f1)" ]; then
+	echo "File got corrupted during upload, cancelled."
+	exit 1
+    else
+	echo "File integrity okay."
+    fi
 
-if [ $? -ne 0 ]; then
-    echo "Cancelled"
-    exit 1
-fi
-echo "===> Uploaded $pkgfile"
+    if [ $? -ne 0 ]; then
+	echo "Cancelled"
+	exit 1
+    fi
+    echo "===> Uploaded $pkgfile"
+done
 
 if [ "$1" != "" ]; then
-    svn commit -m "upgpkg: $pkgname $pkgver-$pkgrel
+    svn commit -m "upgpkg: $pkgbase $pkgver-$pkgrel
     $1" > /dev/null
     if [ $? -ne 0 ]; then
         echo "Cancelled"
         exit 1
     fi
-    echo "===> Commited with \"upgpkg: $pkgname $pkgver-$pkgrel
+    echo "===> Commited with \"upgpkg: $pkgbase $pkgver-$pkgrel
     $1\" message"
 else
     svn commit >/dev/null
@@ -103,7 +106,7 @@ else
         echo "Cancelled"
         exit 1
     fi
-    echo "===> Commited with \"upgpkg: $pkgname $pkgver-$pkgrel\" message"
+    echo "===> Commited with \"upgpkg: $pkgbase $pkgver-$pkgrel\" message"
 fi
 
 archrelease $repo-$CARCH
