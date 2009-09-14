@@ -5,6 +5,7 @@ install:
 	mkdir -p $(DESTDIR)/usr/bin
 	install -m 755 checkpkg $(DESTDIR)/usr/bin
 	install -m 755 commitpkg $(DESTDIR)/usr/bin
+	install -m 755 commitpkg2any $(DESTDIR)/usr/bin
 	ln -sf commitpkg $(DESTDIR)/usr/bin/extrapkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/corepkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/testingpkg
@@ -12,6 +13,7 @@ install:
 	ln -sf commitpkg $(DESTDIR)/usr/bin/community-testingpkg
 	# arch{co,release,rm}
 	install -m 755 archco $(DESTDIR)/usr/bin
+	install -m 755 communityco $(DESTDIR)/usr/bin
 	install -m 755 archrelease $(DESTDIR)/usr/bin
 	install -m 755 archrm $(DESTDIR)/usr/bin
 	# new chroot tools, only usable by root
@@ -21,6 +23,7 @@ install:
 	#Additional packaging helper scripts
 	install -m 755 lddd $(DESTDIR)/usr/bin
 	install -m 755 finddeps $(DESTDIR)/usr/bin
+	install -m 755 rebuildpkgs $(DESTDIR)/usr/bin
 
 uninstall:
 	# remove all files we installed
@@ -38,3 +41,6 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/archco
 	rm $(DESTDIR)/usr/bin/archrelease
 	rm $(DESTDIR)/usr/bin/archrm
+	rm $(DESTDIR)/usr/bin/communityco
+	rm $(DESTDIR)/usr/bin/commitpkg2any
+	rm $(DESTDIR)/usr/bin/rebuildpkgs
