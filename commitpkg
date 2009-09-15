@@ -101,12 +101,12 @@ if [ "$1" != "" ]; then
     echo "===> Commited with \"upgpkg: $pkgbase $pkgver-$pkgrel
     $1\" message"
 else
-    svn commit >/dev/null
+    svn commit
     if [ $? -ne 0 ]; then
         echo "Cancelled"
         exit 1
     fi
-    echo "===> Commited with \"upgpkg: $pkgbase $pkgver-$pkgrel\" message"
+    echo "===> Commited"
 fi
 
 archrelease $repo-$CARCH
