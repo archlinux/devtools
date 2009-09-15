@@ -229,23 +229,23 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
     for _pkgname in ${pkgname[@]}; do
         pkgfile="${chrootdir}"/union/pkgdest/${_pkgname}-*${PKGEXT}
 
-	if [ -n "$add_to_db" -a -e "$pkgfile" ]; then
-            [ -d "${chrootdir}/union/repo" ] || mkdir -p "${chrootdir}/union/repo"
-            pushd "${chrootdir}/union/repo" >/dev/null
-            cp "$pkgfile" .
-            repo-add repo.db.tar.${DB_COMPRESSION} ${_pkgname}-${pkgver}-${pkgrel}-*${PKGEXT}
-            popd >/dev/null
-	fi
+        if [ -n "$add_to_db" -a -e "$pkgfile" ]; then
+                [ -d "${chrootdir}/union/repo" ] || mkdir -p "${chrootdir}/union/repo"
+                pushd "${chrootdir}/union/repo" >/dev/null
+                cp "$pkgfile" .
+                repo-add repo.db.tar.${DB_COMPRESSION} ${_pkgname}-${pkgver}-${pkgrel}-*${PKGEXT}
+                popd >/dev/null
+        fi
 
-	if [ -e $pkgfile ]; then
+        if [ -e $pkgfile ]; then
             if [ -n "$PKGDEST" ]; then
-		echo "Moving completed ${_pkgname} package file to ${PKGDEST}"
-		mv $pkgfile "${PKGDEST}"
+                echo "Moving completed ${_pkgname} package file to ${PKGDEST}"
+                mv $pkgfile "${PKGDEST}"
             else
-		echo "Moving completed ${_pkgname} package file to ${WORKDIR}"
-		mv $pkgfile "${WORKDIR}"
+                echo "Moving completed ${_pkgname} package file to ${WORKDIR}"
+                mv $pkgfile "${WORKDIR}"
             fi
-	fi
+        fi
     done
 
     for f in ${chrootdir}/union/srcdest/*; do
