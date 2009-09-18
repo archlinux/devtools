@@ -9,6 +9,7 @@ install:
 	ln -sf commitpkg $(DESTDIR)/usr/bin/corepkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/testingpkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/communitypkg
+	ln -sf commitpkg $(DESTDIR)/usr/bin/community-testingpkg
 	# arch{co,release,rm}
 	install -m 755 archco $(DESTDIR)/usr/bin
 	install -m 755 archrelease $(DESTDIR)/usr/bin
@@ -29,6 +30,7 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/corepkg
 	rm $(DESTDIR)/usr/bin/testingpkg
 	rm $(DESTDIR)/usr/bin/communitypkg
+	rm $(DESTDIR)/usr/bin/community-testingpkg
 	rm $(DESTDIR)/usr/sbin/mkarchroot
 	rm $(DESTDIR)/usr/sbin/makechrootpkg
 	rm $(DESTDIR)/usr/bin/lddd

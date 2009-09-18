@@ -58,6 +58,9 @@ for _pkgname in ${pkgname[@]}; do
     elif [ "$cmd" == "communitypkg" ]; then
 	repo="community"
 	server="aur.archlinux.org"
+    elif [ "$cmd" == "community-testingpkg" ]; then
+	repo="community-testing"
+	server="aur.archlinux.org"
     else
 	if [ $# -eq 0 ]; then
             echo "usage: commitpkg <reponame> [-l limit] [commit message]"
