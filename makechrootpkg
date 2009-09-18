@@ -225,31 +225,28 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
     [ -f /etc/makepkg.conf ] && source /etc/makepkg.conf
     [ -f ~/.makepkg.conf ] && source ~/.makepkg.conf
 
-    source ${WORKDIR}/PKGBUILD
+    for pkgfile in "${chrootdir}"/union/pkgdest/*${PKGEXT}; do
+        [ -e "$pkgfile" ] || continue
+        _pkgname=$(basename "$pkgfile")
+        if [ -n "$add_to_db" ]; then
 
-    for _pkgname in ${pkgname[@]}; do
-        pkgfile="${chrootdir}"/union/pkgdest/${_pkgname}-*${PKGEXT}
-
-        if [ -n "$add_to_db" -a -e "$pkgfile" ]; then
                 [ -d "${chrootdir}/union/repo" ] || mkdir -p "${chrootdir}/union/repo"
                 pushd "${chrootdir}/union/repo" >/dev/null
                 cp "$pkgfile" .
-                repo-add repo.db.tar.${DB_COMPRESSION} ${_pkgname}-${pkgver}-${pkgrel}-*${PKGEXT}
+                repo-add repo.db.tar.${DB_COMPRESSION} "$_pkgname"
                 popd >/dev/null
         fi
 
-        if [ -e $pkgfile ]; then
-            if [ -n "$PKGDEST" ]; then
-                echo "Moving completed ${_pkgname} package file to ${PKGDEST}"
-                mv $pkgfile "${PKGDEST}"
-            else
-                echo "Moving completed ${_pkgname} package file to ${WORKDIR}"
-                mv $pkgfile "${WORKDIR}"
-            fi
+        if [ -n "$PKGDEST" ]; then
+            echo "Moving completed ${_pkgname%${PKGEXT}} package file to ${PKGDEST}"
+            mv "$pkgfile" "${PKGDEST}"
+        else
+            echo "Moving completed ${_pkgname%${PKGEXT}} package file to ${WORKDIR}"
+            mv "$pkgfile" "${WORKDIR}"
         fi
     done
 
-    for f in ${chrootdir}/union/srcdest/*; do
+    for f in "${chrootdir}"/union/srcdest/*; do
         [ -e "$f" ] || continue
         if [ -n "$SRCDEST" ]; then
             echo "Moving downloaded source file $(basename $f) to ${SRCDEST}"
@@ -261,14 +258,14 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
     done
 else
     #just in case. We returned 1, make sure we fail
-    touch ${chrootdir}/union/build/BUILD_FAILED
+    touch "${chrootdir}/union/build/BUILD_FAILED"
 fi
 
-if [ -e ${chrootdir}/union/build/BUILD_FAILED ]; then
+if [ -e "${chrootdir}/union/build/BUILD_FAILED" ]; then
     echo "Build failed, check $chrootdir/$LAYER/build"
-    rm ${chrootdir}/union/build/BUILD_FAILED
+    rm "${chrootdir}/union/build/BUILD_FAILED"
 else
-    rm -rf ${chrootdir}/union/build/*
+    rm -rf "${chrootdir}"/union/build/*
     echo "Build complete"
 fi	
 
