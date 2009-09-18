@@ -111,8 +111,6 @@ fi
 cleanup ()
 {
     echo "cleaning up unioned mounts"
-    umount "$chrootdir/union/pkgdest" 2>/dev/null
-    umount "$chrootdir/union/srcdest" 2>/dev/null
     umount "$chrootdir/union"
 }
 
