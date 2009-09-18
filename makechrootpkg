@@ -228,8 +228,7 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
     for pkgfile in "${chrootdir}"/union/pkgdest/*${PKGEXT}; do
         [ -e "$pkgfile" ] || continue
         _pkgname=$(basename "$pkgfile")
-        if [ -n "$add_to_db" ]; then
-
+        if [ "$add_to_db" -eq "1" ]; then
                 [ -d "${chrootdir}/union/repo" ] || mkdir -p "${chrootdir}/union/repo"
                 pushd "${chrootdir}/union/repo" >/dev/null
                 cp "$pkgfile" .
