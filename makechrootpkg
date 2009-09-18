@@ -150,18 +150,6 @@ if [ "$REPACK" != "1" ]; then
     rm -rf "$uniondir/build/"*
 fi
 
-# Copy makepkg.conf and ~/.makepkg.conf into the chroot so packager has
-# all their custom variables set.
-if [ -r "/etc/makepkg.conf" ]; then
-  rm $uniondir/etc/makepkg.conf
-  cp /etc/makepkg.conf $uniondir/etc/makepkg.conf
-fi
-if [ -r ~/.makepkg.conf ]; then
-  cat ~/.makepkg.conf >> $uniondir/etc/makepkg.conf
-fi
-
-source $uniondir/etc/makepkg.conf
-
 [ -d "$uniondir/pkgdest" ] || mkdir "$uniondir/pkgdest"
 if ! grep "PKGDEST=/pkgdest" "$uniondir/etc/makepkg.conf" >/dev/null 2>&1; then
     echo "Setting PKGDEST in makepkg.conf"
@@ -232,6 +220,11 @@ EOF
 chmod +x "$uniondir/chrootbuild"
 
 if mkarchroot -r "/chrootbuild" "$uniondir"; then
+
+    # Source global makepkg.conf for SRCDEST and PKGDEST vars
+    [ -f /etc/makepkg.conf ] && source /etc/makepkg.conf
+    [ -f ~/.makepkg.conf ] && source ~/.makepkg.conf
+
     source ${WORKDIR}/PKGBUILD
 
     for _pkgname in ${pkgname[@]}; do
