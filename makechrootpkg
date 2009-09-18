@@ -104,7 +104,7 @@ if [ ! -d "$chrootdir/root" ]; then
     usage
 fi
 
-[ -d "$chrootdir/$LAYER" -a "$clean_first" -eq "1" ] && rm -rf "$chrootdir/$LAYER/"
+[ -d "$chrootdir/$LAYER" -a "$clean_first" -eq "1" ] && rm -rf "$chrootdir/$LAYER/" 
 [ -d "$chrootdir/$LAYER" ] || mkdir "$chrootdir/$LAYER"
 [ -d "$chrootdir/union" ] || mkdir "$chrootdir/union"
 
@@ -150,6 +150,16 @@ echo "moving build files to chroot"
 if [ "$REPACK" != "1" ]; then
     #Remove anything in there UNLESS -R (repack) was passed to makepkg
     rm -rf "$uniondir/build/"*
+fi
+
+# Copy makepkg.conf and ~/.makepkg.conf into the chroot so packager has
+# all their custom variables set.
+if [ -r "/etc/makepkg.conf" ]; then
+  rm $uniondir/etc/makepkg.conf
+  cp /etc/makepkg.conf $uniondir/etc/makepkg.conf
+fi
+if [ -r ~/.makepkg.conf ]; then
+  cat ~/.makepkg.conf >> $uniondir/etc/makepkg.conf
 fi
 
 source $uniondir/etc/makepkg.conf
@@ -269,6 +279,7 @@ if [ -e ${chrootdir}/union/build/BUILD_FAILED ]; then
 else
     rm -rf ${chrootdir}/union/build/*
     echo "Build complete"
-fi
+fi	
+
 
 # vim:ft=sh:ts=4:sw=4:et:
