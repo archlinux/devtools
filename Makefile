@@ -5,7 +5,6 @@ install:
 	mkdir -p $(DESTDIR)/usr/bin
 	install -m 755 checkpkg $(DESTDIR)/usr/bin
 	install -m 755 commitpkg $(DESTDIR)/usr/bin
-	install -m 755 commitpkg2any $(DESTDIR)/usr/bin
 	ln -sf commitpkg $(DESTDIR)/usr/bin/extrapkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/corepkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/testingpkg
@@ -42,5 +41,4 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/archrelease
 	rm $(DESTDIR)/usr/bin/archrm
 	rm $(DESTDIR)/usr/bin/communityco
-	rm $(DESTDIR)/usr/bin/commitpkg2any
 	rm $(DESTDIR)/usr/bin/rebuildpkgs
