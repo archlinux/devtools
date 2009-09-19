@@ -119,7 +119,7 @@ if [ $? -ne 0 ]; then
 fi
 echo "===> Tagged for $repo-$CARCH"
 
-if [ "$CARCH" == "any"]; then
+if [ "$CARCH" == "any" ]; then
     if [ -d ../repos/${repo}-i686 -a -d ../repos/${repo}-x86_64 ]; then
         pushd ..
         svn rm $repo-i686
