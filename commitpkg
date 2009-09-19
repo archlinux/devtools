@@ -33,18 +33,18 @@ for _pkgname in ${pkgname[@]}; do
     anypkgfile=${_pkgname}-${pkgver}-${pkgrel}-any${PKGEXT}
 
     if [ ! -f $pkgfile ]; then
-	if [ -f $PKGDEST/$pkgfile ]; then
+        if [ -f $PKGDEST/$pkgfile ]; then
             pkgfile=$PKGDEST/$pkgfile
-	elif [ -f $anypkgfile ]; then
-	    pkgfile=$anypkgfile
-	    CARCH=any
-	elif [ -f $PKGDEST/$anypkgfile ]; then
-	    pkgfile=$PKGDEST/$anypkgfile
-	    CARCH=any
-	else
+        elif [ -f $anypkgfile ]; then
+            pkgfile=$anypkgfile
+            CARCH=any
+        elif [ -f $PKGDEST/$anypkgfile ]; then
+            pkgfile=$PKGDEST/$anypkgfile
+            CARCH=any
+        else
             echo "File $pkgfile doesn't exist"
             exit 1
-	fi
+        fi
     fi
 
 # set up repo-specific opts depending on how we were called
