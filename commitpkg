@@ -20,11 +20,6 @@ if [ ! -f PKGBUILD ]; then
     exit 1
 fi
 
-if [ -z "$CARCH" ]; then
-    echo "CARCH must be set to a recognized value!"
-    exit 1
-fi
-
 source PKGBUILD
 pkgbase=${pkgbase:-${pkgname[0]}}
 
@@ -58,68 +53,67 @@ if [ "$1" = "-l" ]; then
     shift 2
 fi
 
-for _pkgname in ${pkgname[@]}; do
-    pkgfile=${_pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
-    anypkgfile=${_pkgname}-${pkgver}-${pkgrel}-any${PKGEXT}
+for CARCH in ${arch[@]}; do
+    echo "===> Uploading to $repo-$CARCH"
+    for _pkgname in ${pkgname[@]}; do
+        pkgfile=${_pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
 
-    if [ ! -f $pkgfile ]; then
-        if [ -f $PKGDEST/$pkgfile ]; then
+        if [ ! -f $pkgfile -a -f $PKGDEST/$pkgfile ]; then
             pkgfile=$PKGDEST/$pkgfile
-        elif [ -f $anypkgfile ]; then
-            pkgfile=$anypkgfile
-            CARCH=any
-        elif [ -f $PKGDEST/$anypkgfile ]; then
-            pkgfile=$PKGDEST/$anypkgfile
-            CARCH=any
-        else
+        elif [ ! -f $pkgfile ]; then
             echo "File $pkgfile doesn't exist"
+            # skip to next architecture
+            continue 2
+        fi
+
+        # combine what we know into a variable
+        uploadto="staging/${repo}/$(basename ${pkgfile})"
+        # don't re-upload the same package (useful for -any sub packages)
+        if [ "$(md5sum "${pkgfile}" | cut -d' ' -f1)" != "$(ssh ${server} md5sum "${uploadto}" | cut -d' ' -f1)" ]; then
+            scp ${scpopts} "${pkgfile}" "${server}:${uploadto}"
+        fi
+        if [ "$(md5sum "${pkgfile}" | cut -d' ' -f1)" != "$(ssh ${server} md5sum "${uploadto}" | cut -d' ' -f1)" ]; then
+            echo "File got corrupted during upload, cancelled."
+            exit 1
+        else
+            echo "File integrity okay."
+        fi
+
+        if [ $? -ne 0 ]; then
+            echo "Cancelled"
             exit 1
         fi
-    fi
+        echo "===> Uploaded $pkgfile"
+    done
 
-    # combine what we know into a variable
-    uploadto="staging/${repo}/$(basename ${pkgfile})"
-    scp ${scpopts} "${pkgfile}" "${server}:${uploadto}"
-    if [ "$(md5sum "${pkgfile}" | cut -d' ' -f1)" != "$(ssh ${server} md5sum "${uploadto}" | cut -d' ' -f1)" ]; then
-        echo "File got corrupted during upload, cancelled."
-        exit 1
+    if [ "$1" != "" ]; then
+        svn commit -m "upgpkg: $pkgbase $pkgver-$pkgrel
+        $1" > /dev/null
+        if [ $? -ne 0 ]; then
+            echo "Cancelled"
+            exit 1
+        fi
+        echo "===> Commited with message:
+  upgpkg: $pkgbase $pkgver-$pkgrel
+     $1"
     else
-        echo "File integrity okay."
+        svn commit
+        if [ $? -ne 0 ]; then
+            echo "Cancelled"
+            exit 1
+        fi
+        echo "===> Commited"
     fi
 
+    archrelease $repo-$CARCH
     if [ $? -ne 0 ]; then
         echo "Cancelled"
         exit 1
     fi
-    echo "===> Uploaded $pkgfile"
+    echo "===> Tagged for $repo-$CARCH"
 done
 
-if [ "$1" != "" ]; then
-    svn commit -m "upgpkg: $pkgbase $pkgver-$pkgrel
-    $1" > /dev/null
-    if [ $? -ne 0 ]; then
-        echo "Cancelled"
-        exit 1
-    fi
-    echo "===> Commited with \"upgpkg: $pkgbase $pkgver-$pkgrel
-    $1\" message"
-else
-    svn commit
-    if [ $? -ne 0 ]; then
-        echo "Cancelled"
-        exit 1
-    fi
-    echo "===> Commited"
-fi
-
-archrelease $repo-$CARCH
-if [ $? -ne 0 ]; then
-    echo "Cancelled"
-    exit 1
-fi
-echo "===> Tagged for $repo-$CARCH"
-
-if [ "$CARCH" == "any" ]; then
+if [ "${arch[*]}" == "any" ]; then
     if [ -d ../repos/${repo}-i686 -a -d ../repos/${repo}-x86_64 ]; then
         pushd ..
         svn rm $repo-i686
