@@ -88,14 +88,14 @@ for CARCH in ${arch[@]}; do
 
     if [ "$1" != "" ]; then
         svn commit -m "upgpkg: $pkgbase $pkgver-$pkgrel
-        $1" > /dev/null
+    $1" > /dev/null
         if [ $? -ne 0 ]; then
             echo "Cancelled"
             exit 1
         fi
         echo "===> Commited with message:
   upgpkg: $pkgbase $pkgver-$pkgrel
-     $1"
+      $1"
     else
         svn commit
         if [ $? -ne 0 ]; then
