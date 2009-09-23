@@ -28,6 +28,36 @@ fi
 source PKGBUILD
 pkgbase=${pkgbase:-${pkgname[0]}}
 
+# set up repo-specific opts depending on how we were called
+server="gerolde.archlinux.org"
+if [ "$cmd" == "extrapkg" ]; then
+    repo="extra"
+elif [ "$cmd" == "corepkg" ]; then
+    repo="core"
+elif [ "$cmd" == "testingpkg" ]; then
+    repo="testing"
+elif [ "$cmd" == "communitypkg" ]; then
+    repo="community"
+    server="aur.archlinux.org"
+elif [ "$cmd" == "community-testingpkg" ]; then
+    repo="community-testing"
+    server="aur.archlinux.org"
+else
+    if [ $# -eq 0 ]; then
+        echo "usage: commitpkg <reponame> [-l limit] [commit message]"
+        exit 1
+    fi
+    repo="$1"
+    shift
+fi
+
+# see if any limit options were passed, we'll send them to SCP
+unset scpopts
+if [ "$1" = "-l" ]; then
+    scpopts="$1 $2"
+    shift 2
+fi
+
 for _pkgname in ${pkgname[@]}; do
     pkgfile=${_pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
     anypkgfile=${_pkgname}-${pkgver}-${pkgrel}-any${PKGEXT}
@@ -45,36 +75,6 @@ for _pkgname in ${pkgname[@]}; do
             echo "File $pkgfile doesn't exist"
             exit 1
         fi
-    fi
-
-    # set up repo-specific opts depending on how we were called
-    server="gerolde.archlinux.org"
-    if [ "$cmd" == "extrapkg" ]; then
-        repo="extra"
-    elif [ "$cmd" == "corepkg" ]; then
-        repo="core"
-    elif [ "$cmd" == "testingpkg" ]; then
-        repo="testing"
-    elif [ "$cmd" == "communitypkg" ]; then
-        repo="community"
-        server="aur.archlinux.org"
-    elif [ "$cmd" == "community-testingpkg" ]; then
-        repo="community-testing"
-        server="aur.archlinux.org"
-    else
-        if [ $# -eq 0 ]; then
-            echo "usage: commitpkg <reponame> [-l limit] [commit message]"
-            exit 1
-        fi
-        repo="$1"
-        shift
-    fi
-
-    # see if any limit options were passed, we'll send them to SCP
-    unset scpopts
-    if [ "$1" = "-l" ]; then
-        scpopts="$1 $2"
-        shift 2
     fi
 
     # combine what we know into a variable
