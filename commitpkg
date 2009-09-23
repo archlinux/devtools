@@ -2,7 +2,7 @@
 
 # Source makepkg.conf; fail if it is not found
 if [ -r "/etc/makepkg.conf" ]; then
-	source "/etc/makepkg.conf"
+    source "/etc/makepkg.conf"
 else
     echo "/etc/makepkg.conf not found!"
     exit 1
@@ -10,7 +10,7 @@ fi
 
 # Source user-specific makepkg.conf overrides
 if [ -r ~/.makepkg.conf ]; then
-	source ~/.makepkg.conf
+    source ~/.makepkg.conf
 fi
 
 cmd=$(basename $0)
@@ -47,49 +47,49 @@ for _pkgname in ${pkgname[@]}; do
         fi
     fi
 
-# set up repo-specific opts depending on how we were called
+    # set up repo-specific opts depending on how we were called
     server="gerolde.archlinux.org"
     if [ "$cmd" == "extrapkg" ]; then
-	repo="extra"
+        repo="extra"
     elif [ "$cmd" == "corepkg" ]; then
-	repo="core"
+        repo="core"
     elif [ "$cmd" == "testingpkg" ]; then
-	repo="testing"
+        repo="testing"
     elif [ "$cmd" == "communitypkg" ]; then
-	repo="community"
-	server="aur.archlinux.org"
+        repo="community"
+        server="aur.archlinux.org"
     elif [ "$cmd" == "community-testingpkg" ]; then
-	repo="community-testing"
-	server="aur.archlinux.org"
+        repo="community-testing"
+        server="aur.archlinux.org"
     else
-	if [ $# -eq 0 ]; then
+        if [ $# -eq 0 ]; then
             echo "usage: commitpkg <reponame> [-l limit] [commit message]"
             exit 1
-	fi
-	repo="$1"
-	shift
+        fi
+        repo="$1"
+        shift
     fi
 
-# see if any limit options were passed, we'll send them to SCP
+    # see if any limit options were passed, we'll send them to SCP
     unset scpopts
     if [ "$1" = "-l" ]; then
-	scpopts="$1 $2"
-	shift 2
+        scpopts="$1 $2"
+        shift 2
     fi
 
-# combine what we know into a variable
+    # combine what we know into a variable
     uploadto="staging/${repo}/$(basename ${pkgfile})"
     scp ${scpopts} "${pkgfile}" "${server}:${uploadto}"
     if [ "$(md5sum "${pkgfile}" | cut -d' ' -f1)" != "$(ssh ${server} md5sum "${uploadto}" | cut -d' ' -f1)" ]; then
-	echo "File got corrupted during upload, cancelled."
-	exit 1
+        echo "File got corrupted during upload, cancelled."
+        exit 1
     else
-	echo "File integrity okay."
+        echo "File integrity okay."
     fi
 
     if [ $? -ne 0 ]; then
-	echo "Cancelled"
-	exit 1
+        echo "Cancelled"
+        exit 1
     fi
     echo "===> Uploaded $pkgfile"
 done
