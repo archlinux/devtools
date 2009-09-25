@@ -5,6 +5,18 @@ abort() {
     exit 1
 }
 
+# Verify that a remote file exists and is identical to a local one
+# Usage: package_verify <local path> <remote host> <remote path>
+package_verify() {
+    local remote_checksum=$(ssh $2 openssl sha1 "'$3'" 2>/dev/null |
+                            grep -o '[0-9a-f]\{40\}$')
+    local local_checksum=$(openssl sha1 "$1" | grep -o '[0-9a-f]\{40\}$')
+    if [ -n "$remote_checksum" -a "$remote_checksum" == "$local_checksum" ]; then
+        return 0
+    fi
+    return 1
+}
+
 # Source makepkg.conf; fail if it is not found
 if [ -r "/etc/makepkg.conf" ]; then
     source "/etc/makepkg.conf"
@@ -71,10 +83,10 @@ for CARCH in ${arch[@]}; do
         # combine what we know into a variable
         uploadto="staging/${repo}/$(basename ${pkgfile})"
         # don't re-upload the same package (useful for -any sub packages)
-        if [ "$(md5sum "${pkgfile}" | cut -d' ' -f1)" != "$(ssh ${server} md5sum "${uploadto}" | cut -d' ' -f1)" ]; then
+        if ! package_verify "${pkgfile}" ${server} "${uploadto}"; then
             scp ${scpopts} "${pkgfile}" "${server}:${uploadto}" || abort
         fi
-        if [ "$(md5sum "${pkgfile}" | cut -d' ' -f1)" != "$(ssh ${server} md5sum "${uploadto}" | cut -d' ' -f1)" ]; then
+        if ! package_verify "${pkgfile}" ${server} "${uploadto}"; then
             abort "File got corrupted during upload, cancelled."
         else
             echo "File integrity okay."
