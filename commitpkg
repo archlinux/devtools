@@ -29,14 +29,14 @@ if [ -r ~/.makepkg.conf ]; then
     source ~/.makepkg.conf
 fi
 
-cmd=$(basename $0)
+cmd=$(basename "$0")
 
 if [ ! -f PKGBUILD ]; then
     abort "No PKGBUILD file"
 fi
 
 source PKGBUILD
-pkgbase=${pkgbase:-${pkgname[0]}}
+pkgbase=${pkgbase:-$pkgname}
 
 # set up repo-specific opts depending on how we were called
 server="gerolde.archlinux.org"
@@ -63,17 +63,17 @@ fi
 # see if any limit options were passed, we'll send them to SCP
 unset scpopts
 if [ "$1" = "-l" ]; then
-    scpopts="$1 $2"
+    scpopts="-l $2"
     shift 2
 fi
 
 for CARCH in ${arch[@]}; do
     echo "===> Uploading to $repo-$CARCH"
     for _pkgname in ${pkgname[@]}; do
-        pkgfile=${_pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
+        pkgfile=$_pkgname-$pkgver-$pkgrel-$CARCH$PKGEXT
 
-        if [ ! -f $pkgfile -a -f $PKGDEST/$pkgfile ]; then
-            pkgfile=$PKGDEST/$pkgfile
+        if [ ! -f $pkgfile -a -f "$PKGDEST/$pkgfile" ]; then
+            pkgfile="$PKGDEST/$pkgfile"
         elif [ ! -f $pkgfile ]; then
             echo "File $pkgfile doesn't exist"
             # skip to next architecture
@@ -81,12 +81,12 @@ for CARCH in ${arch[@]}; do
         fi
 
         # combine what we know into a variable
-        uploadto="staging/${repo}/$(basename ${pkgfile})"
+        uploadto=staging/$repo/$(basename "$pkgfile")
         # don't re-upload the same package (useful for -any sub packages)
-        if ! package_verify "${pkgfile}" ${server} "${uploadto}"; then
-            scp ${scpopts} "${pkgfile}" "${server}:${uploadto}" || abort
+        if ! package_verify "$pkgfile" $server "$uploadto"; then
+            scp $scpopts "$pkgfile" $server:"$uploadto" || abort
         fi
-        if ! package_verify "${pkgfile}" ${server} "${uploadto}"; then
+        if ! package_verify "$pkgfile" $server "$uploadto"; then
             abort "File got corrupted during upload, cancelled."
         else
             echo "File integrity okay."
@@ -94,9 +94,9 @@ for CARCH in ${arch[@]}; do
         echo "===> Uploaded $pkgfile"
     done
 
-    if [ "$1" != "" ]; then
+    if [ -n "$1" ]; then
         svn commit -m "upgpkg: $pkgbase $pkgver-$pkgrel
-    $1" > /dev/null || abort
+    $1" >/dev/null || abort
         echo "===> Commited with message:
   upgpkg: $pkgbase $pkgver-$pkgrel
       $1"
@@ -109,7 +109,7 @@ for CARCH in ${arch[@]}; do
 done
 
 if [ "${arch[*]}" == "any" ]; then
-    if [ -d ../repos/${repo}-i686 -a -d ../repos/${repo}-x86_64 ]; then
+    if [ -d ../repos/$repo-i686 -a -d ../repos/$repo-x86_64 ]; then
         pushd ../repos/
         svn rm $repo-i686
         svn rm $repo-x86_64
