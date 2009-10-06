@@ -94,7 +94,6 @@ for CARCH in ${arch[@]}; do
     fi
 
     archrelease $repo-$CARCH || abort
-    echo "===> Tagged for $repo-$CARCH"
 done
 
 if [ "${arch[*]}" == "any" ]; then
