@@ -236,7 +236,7 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
                 popd >/dev/null
         fi
 
-        if [ -n "$PKGDEST" ]; then
+        if [ -d "$PKGDEST" ]; then
             echo "Moving completed ${_pkgname%${PKGEXT}} package file to ${PKGDEST}"
             mv "$pkgfile" "${PKGDEST}"
         else
@@ -247,7 +247,7 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
 
     for f in "${chrootdir}"/union/srcdest/*; do
         [ -e "$f" ] || continue
-        if [ -n "$SRCDEST" ]; then
+        if [ -d "$SRCDEST" ]; then
             echo "Moving downloaded source file $(basename $f) to ${SRCDEST}"
             mv "$f" "${SRCDEST}"
         else
