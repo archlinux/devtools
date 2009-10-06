@@ -23,7 +23,9 @@ if [ ! -f PKGBUILD ]; then
 fi
 
 source PKGBUILD
-
+if [ "$arch" == "any" ]; then
+    CARCH="any"
+fi
 pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
 oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}${PKGEXT}
 
