@@ -68,7 +68,7 @@ if [ "$1" = "-l" ]; then
 fi
 
 for CARCH in ${arch[@]}; do
-    echo "===> Uploading to $repo-$CARCH"
+    echo "===> Uploading to staging/$repo for arch=$CARCH"
     for _pkgname in ${pkgname[@]}; do
         pkgfile=$_pkgname-$pkgver-$pkgrel-$CARCH$PKGEXT
 
