@@ -67,10 +67,10 @@ if [ "$1" = "-l" ]; then
     shift 2
 fi
 
-for CARCH in ${arch[@]}; do
-    echo "===> Uploading to staging/$repo for arch=$CARCH"
+for _arch in ${arch[@]}; do
+    echo "===> Uploading to staging/$repo for arch=${_arch}"
     for _pkgname in ${pkgname[@]}; do
-        pkgfile=$_pkgname-$pkgver-$pkgrel-$CARCH$PKGEXT
+        pkgfile=$_pkgname-$pkgver-$pkgrel-${_arch}$PKGEXT
 
         if [ ! -f $pkgfile -a -f "$PKGDEST/$pkgfile" ]; then
             pkgfile="$PKGDEST/$pkgfile"
@@ -105,7 +105,7 @@ for CARCH in ${arch[@]}; do
         echo "===> Commited"
     fi
 
-    archrelease $repo-$CARCH || abort
+    archrelease $repo-${_arch} || abort
 done
 
 if [ "${arch[*]}" == "any" ]; then
