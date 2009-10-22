@@ -64,7 +64,7 @@ for _pkgname in ${pkgname[@]}; do
 	if echo $pkgurl | grep "^file:///" > /dev/null 2>&1; then
 	    cp `echo $pkgurl | sed 's#^file://##'` .
 	else
-	    wget $pkgurl
+	    wget --quiet $pkgurl
 	fi
     fi
 
