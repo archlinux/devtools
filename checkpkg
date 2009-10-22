@@ -63,6 +63,8 @@ for _pkgname in ${pkgname[@]}; do
     if [ ! -f $oldpkg ]; then
 	if echo $pkgurl | grep "^file:///" > /dev/null 2>&1; then
 	    cp `echo $pkgurl | sed 's#^file://##'` .
+	elif [ -f $PKGDEST/$oldpkg ]; then
+	    cp $PKGDEST/$oldpkg .
 	else
 	    wget --quiet $pkgurl
 	fi
