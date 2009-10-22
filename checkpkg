@@ -26,64 +26,67 @@ source PKGBUILD
 if [ "$arch" == "any" ]; then
     CARCH="any"
 fi
-pkgfile=${pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
-oldstylepkgfile=${pkgname}-${pkgver}-${pkgrel}${PKGEXT}
 
-if [ -f "$(pwd)/$pkgfile" ]; then
-    pkgfile=$(pwd)/$pkgfile
-elif [ -f "$PKGDEST/$pkgfile" ]; then
-    pkgfile=$PKGDEST/$pkgfile
-elif [ -f "$(pwd)/$oldstylepkgfile" ]; then
-    pkgfile=$(pwd)/$oldstylepkgfile
-elif [ -f "$PKGDEST/$oldstylepkgfile" ]; then
-    pkgfile=$PKGDEST/$oldstylepkgfile
-else
-    echo "File \"$pkgfile\" doesn't exist"
-    exit 1
-fi
+for _pkgname in ${pkgname[@]}; do
+    pkgfile=${_pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
+    oldstylepkgfile=${_pkgname}-${pkgver}-${pkgrel}${PKGEXT}
 
-tmp=`pacman -Spd --noconfirm $pkgname`
-
-if [ $? -ne 0 ]; then
-	echo "Couldn't download previous package."
+    if [ -f "$(pwd)/$pkgfile" ]; then
+	pkgfile=$(pwd)/$pkgfile
+    elif [ -f "$PKGDEST/$pkgfile" ]; then
+	pkgfile=$PKGDEST/$pkgfile
+    elif [ -f "$(pwd)/$oldstylepkgfile" ]; then
+	pkgfile=$(pwd)/$oldstylepkgfile
+    elif [ -f "$PKGDEST/$oldstylepkgfile" ]; then
+	pkgfile=$PKGDEST/$oldstylepkgfile
+    else
+	echo "File \"$pkgfile\" doesn't exist"
 	exit 1
-fi
+    fi
 
-pkgurl=`echo $tmp | rev | cut -d ' ' -f 1 | rev`
+    tmp=`pacman -Spd --noconfirm $_pkgname`
 
-oldpkg=`strip_url $pkgurl`
-
-if [ "$(basename $oldpkg)" = "$(basename $pkgfile)" ]; then
-	echo "The built package is the one in the repo right now!"
+    if [ $? -ne 0 ]; then
+	echo "Couldn't download previous package for $_pkgname."
 	exit 1
-fi
+    fi
 
-if [ ! -f $oldpkg ]; then
+    pkgurl=`echo $tmp | rev | cut -d ' ' -f 1 | rev`
+
+    oldpkg=`strip_url $pkgurl`
+
+    if [ "$(basename $oldpkg)" = "$(basename $pkgfile)" ]; then
+	echo "The built package ($_pkgname) is the one in the repo right now!"
+	exit 1
+    fi
+
+    if [ ! -f $oldpkg ]; then
 	if echo $pkgurl | grep "^file:///" > /dev/null 2>&1; then
-		cp `echo $pkgurl | sed 's#^file://##'` .
+	    cp `echo $pkgurl | sed 's#^file://##'` .
 	else
-		wget $pkgurl
+	    wget $pkgurl
 	fi
-fi
+    fi
 
-bsdtar tf $oldpkg > filelist-old
-bsdtar tf "$pkgfile" > filelist
+    bsdtar tf $oldpkg > filelist-$_pkgname-old
+    bsdtar tf "$pkgfile" > filelist-$_pkgname
 
-sort -o filelist filelist
-sort -o filelist-old filelist-old
+    sort -o filelist-$_pkgname filelist-$_pkgname
+    sort -o filelist-$_pkgname-old filelist-$_pkgname-old
 
-diff filelist-old filelist
+    diff filelist-$_pkgname-old filelist-$_pkgname
 
-if diff filelist-old filelist | grep '\.so\.' > /dev/null 2>&1; then
+    if diff filelist-$_pkgname-old filelist-$_pkgname | grep '\.so\.' > /dev/null 2>&1; then
 	mkdir -p pkg
 	cd pkg
 	bsdtar xf "$pkgfile" > /dev/null
-	for i in `diff ../filelist-old ../filelist | grep \> | grep \.so\. | awk '{print $2}'`; do
-		echo -n "${i}: "
-		objdump -p $i | grep SONAME
+	for i in `diff ../filelist-$_pkgname-old ../filelist-$_pkgname | grep \> | grep \.so\. | awk '{print $2}'`; do
+	    echo -n "${i}: "
+	    objdump -p $i | grep SONAME
 	done
-else
-	echo "No filename differences"
-fi
+    else
+	echo "No filename differences for $_pkgname."
+    fi
+done
 
 # vim:ft=sh:ts=4:sw=4:et:
