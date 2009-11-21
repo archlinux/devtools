@@ -5,6 +5,9 @@ if [ "$1" = "" ]; then
 	exit 1
 fi
 
+url=$(svn info | grep URL)
+url="${url##*URL: }"
+
 for i in "$@"; do
-     svn co svn+ssh://gerolde.archlinux.org/srv/svn-packages/$i
+     svn co "$url/$i"
 done
