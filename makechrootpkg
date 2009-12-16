@@ -150,6 +150,10 @@ if [ "$REPACK" != "1" ]; then
     rm -rf "$uniondir/build/"*
 fi
 
+# Get SRC/PKGDEST from makepkg.conf
+SRCDEST=$(grep '^SRCDEST=' /etc/makepkg.conf | cut -d= -f2)
+PKGDEST=$(grep '^PKGDEST=' /etc/makepkg.conf | cut -d= -f2)
+
 [ -d "$uniondir/pkgdest" ] || mkdir "$uniondir/pkgdest"
 if ! grep "PKGDEST=/pkgdest" "$uniondir/etc/makepkg.conf" >/dev/null 2>&1; then
     echo "Setting PKGDEST in makepkg.conf"
