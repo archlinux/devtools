@@ -235,7 +235,7 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
                 [ -d "${chrootdir}/union/repo" ] || mkdir -p "${chrootdir}/union/repo"
                 pushd "${chrootdir}/union/repo" >/dev/null
                 cp "$pkgfile" .
-                repo-add repo.db.tar.${DB_COMPRESSION} "$_pkgname"
+                repo-add repo.db.tar.gz "$_pkgname"
                 popd >/dev/null
         fi
 
