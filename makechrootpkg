@@ -223,11 +223,6 @@ EOF
 chmod +x "$uniondir/chrootbuild"
 
 if mkarchroot -r "/chrootbuild" "$uniondir"; then
-
-    # Source global makepkg.conf for SRCDEST and PKGDEST vars
-    [ -f /etc/makepkg.conf ] && source /etc/makepkg.conf
-    [ -f ~/.makepkg.conf ] && source ~/.makepkg.conf
-
     for pkgfile in "${chrootdir}"/union/pkgdest/*${PKGEXT}; do
         [ -e "$pkgfile" ] || continue
         _pkgname=$(basename "$pkgfile")
