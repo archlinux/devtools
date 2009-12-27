@@ -167,10 +167,6 @@ if ! grep "SRCDEST=/srcdest" "$uniondir/etc/makepkg.conf" >/dev/null 2>&1; then
     echo "SRCDEST=/srcdest" >> "$uniondir/etc/makepkg.conf"
 fi
 
-chown -R nobody "$uniondir/build"
-chown -R nobody "$uniondir/srcdest"
-chown -R nobody "$uniondir/pkgdest"
-
 # Copy PKGBUILD and sources
 source PKGBUILD
 cp PKGBUILD "$uniondir/build/"
@@ -200,6 +196,10 @@ done
 if [ -f "ChangeLog" ]; then
     cp ChangeLog "$uniondir/build/"
 fi
+
+chown -R nobody "$uniondir/build"
+chown -R nobody "$uniondir/srcdest"
+chown -R nobody "$uniondir/pkgdest"
 
 if ! grep "^nobody" "$uniondir/etc/sudoers" >/dev/null 2>&1; then
     echo "allowing 'nobody' sudo rights in the chroot"
