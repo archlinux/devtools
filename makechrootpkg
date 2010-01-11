@@ -104,6 +104,7 @@ if [ ! -d "$chrootdir/root" ]; then
     usage
 fi
 
+umask 000
 [ -d "$chrootdir/$LAYER" -a "$clean_first" -eq "1" ] && rm -rf "$chrootdir/$LAYER/" 
 [ -d "$chrootdir/$LAYER" ] || mkdir "$chrootdir/$LAYER"
 [ -d "$chrootdir/union" ] || mkdir "$chrootdir/union"

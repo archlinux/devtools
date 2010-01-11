@@ -107,6 +107,7 @@ chroot_umount ()
 }
 # }}}
 
+umask 000
 if [ "$RUN" != "" ]; then
     # run chroot {{{
     #Sanity check
