@@ -56,7 +56,7 @@ fi
     abort "$s is not under version control"
 done) || true
 
-# see if any limit options were passed, we'll send them to SCP
+# see if any limit options were passed, we'll send them to rsync
 unset rsyncopts
 if [ "$1" = "-l" ]; then
     rsyncopts="--bwlimit=$2"
