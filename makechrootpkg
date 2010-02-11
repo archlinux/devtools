@@ -254,6 +254,10 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
             mv "$f" "${WORKDIR}"
         fi
     done
+
+    for l in "${uniondir}"/build/*-{build,package}.log; do
+        [ -f "$l" ] && mv "$l" "${WORKDIR}"
+    done
 else
     #just in case. We returned 1, make sure we fail
     touch "${chrootdir}/union/build/BUILD_FAILED"
