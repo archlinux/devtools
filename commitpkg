@@ -50,7 +50,7 @@ else
 fi
 
 # check if all local source files are under version control
-(for s in ${source[@]}; do
+(for s in ${source[@]} $install; do
     echo $s | grep -vq '://' && \
     svn status $s | grep -q '?' && \
     abort "$s is not under version control"
