@@ -57,18 +57,13 @@ if [ "$1" = "-l" ]; then
 fi
 
 if [ -n "$1" ]; then
-    svn commit -m "upgpkg: $pkgbase $pkgver-$pkgrel
-$1" >/dev/null || abort
-    echo "===> Commited with message:
-upgpkg: $pkgbase $pkgver-$pkgrel
-    $1"
+    svn commit -q -m "upgpkg: $pkgbase $pkgver-$pkgrel
+$1" || abort
 else
-    svn commit || abort
-    echo "===> Commited"
+    svn commit -q || abort
 fi
 
 for _arch in ${arch[@]}; do
-    echo "===> Uploading to staging/$repo for arch=${_arch}"
     pkgfiles=''
     for _pkgname in ${pkgname[@]}; do
         pkgfile=$_pkgname-$pkgver-$pkgrel-${_arch}$PKGEXT
@@ -76,15 +71,13 @@ for _arch in ${arch[@]}; do
         if [ ! -f $pkgfile -a -f "$PKGDEST/$pkgfile" ]; then
             pkgfile="$PKGDEST/$pkgfile"
         elif [ ! -f $pkgfile ]; then
-            echo "File $pkgfile doesn't exist"
-            # skip to next architecture
+            echo "Skipping ${_arch}"
             continue 2
         fi
 
         pkgfiles="${pkgfiles} ${pkgfile}"
     done
-    rsync -c -h --progress $rsyncopts "${pkgfiles}" -e ssh $server:staging/$repo || abort "error during upload"
-
+    rsync -c -h --progress $rsyncopts "${pkgfiles}" -e ssh $server:staging/$repo || abort
     archrelease $repo-${_arch} || abort
 done
 
