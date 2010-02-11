@@ -5,17 +5,6 @@ abort() {
     exit 1
 }
 
-# Verify that a remote file exists and is identical to a local one
-# Usage: package_verify <local path> <remote host> <remote path>
-package_verify() {
-    local remote_checksum=$(ssh $2 openssl sha1 "'$3'" 2>/dev/null |
-                            grep -o '[0-9a-f]\{40\}$')
-    local local_checksum=$(openssl sha1 "$1" | grep -o '[0-9a-f]\{40\}$')
-    if [ -n "$remote_checksum" -a "$remote_checksum" == "$local_checksum" ]; then
-        return 0
-    fi
-    return 1
-}
 
 # Source makepkg.conf; fail if it is not found
 if [ -r "/etc/makepkg.conf" ]; then
@@ -61,14 +50,26 @@ else
 fi
 
 # see if any limit options were passed, we'll send them to SCP
-unset scpopts
+unset rsyncopts
 if [ "$1" = "-l" ]; then
-    scpopts="-l $2"
+    rsyncopts="--bwlimit=$2"
     shift 2
+fi
+
+if [ -n "$1" ]; then
+    svn commit -m "upgpkg: $pkgbase $pkgver-$pkgrel
+$1" >/dev/null || abort
+    echo "===> Commited with message:
+upgpkg: $pkgbase $pkgver-$pkgrel
+    $1"
+else
+    svn commit || abort
+    echo "===> Commited"
 fi
 
 for _arch in ${arch[@]}; do
     echo "===> Uploading to staging/$repo for arch=${_arch}"
+    pkgfiles=''
     for _pkgname in ${pkgname[@]}; do
         pkgfile=$_pkgname-$pkgver-$pkgrel-${_arch}$PKGEXT
 
@@ -80,30 +81,9 @@ for _arch in ${arch[@]}; do
             continue 2
         fi
 
-        # combine what we know into a variable
-        uploadto=staging/$repo/$(basename "$pkgfile")
-        # don't re-upload the same package (useful for -any sub packages)
-        if ! package_verify "$pkgfile" $server "$uploadto"; then
-            scp $scpopts "$pkgfile" $server:"$uploadto" || abort
-        fi
-        if ! package_verify "$pkgfile" $server "$uploadto"; then
-            abort "File got corrupted during upload, cancelled."
-        else
-            echo "File integrity okay."
-        fi
-        echo "===> Uploaded $pkgfile"
+        pkgfiles="${pkgfiles} ${pkgfile}"
     done
-
-    if [ -n "$1" ]; then
-        svn commit -m "upgpkg: $pkgbase $pkgver-$pkgrel
-    $1" >/dev/null || abort
-        echo "===> Commited with message:
-  upgpkg: $pkgbase $pkgver-$pkgrel
-      $1"
-    else
-        svn commit || abort
-        echo "===> Commited"
-    fi
+    rsync -c -h --progress $rsyncopts "${pkgfiles}" -e ssh $server:staging/$repo || abort "error during upload"
 
     archrelease $repo-${_arch} || abort
 done
