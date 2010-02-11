@@ -81,6 +81,7 @@ chroot_mount ()
     mount -o bind /dev "${working_dir}/dev"
 
     [ -e "${working_dir}/var/cache/pacman/pkg" ] || mkdir -p "${working_dir}/var/cache/pacman/pkg"
+    [ -e "${cache_dir}" ] || mkdir -p "${cache_dir}"
     mount -o bind "${cache_dir}" "${working_dir}/var/cache/pacman/pkg"
 
     trap 'chroot_umount' 0 1 2 15
