@@ -49,6 +49,13 @@ else
     shift
 fi
 
+# check if all local source files are under version control
+(for s in ${source[@]}; do
+    echo $s | grep -vq '://' && \
+    svn status $s | grep -q '?' && \
+    abort "$s is not under version control"
+done) || true
+
 # see if any limit options were passed, we'll send them to SCP
 unset rsyncopts
 if [ "$1" = "-l" ]; then
