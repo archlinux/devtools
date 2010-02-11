@@ -21,35 +21,11 @@ if [ "$(svn diff)" != "" ]; then
     exit 1
 fi
 
-if [ ! -d ../repos/$1 ]; then
-    pushd ..
-    [ -d repos ] || mkdir repos
-    svn copy -r HEAD trunk repos/$1
-    svn commit -m "archrelease: new repo $1"
-    pushd repos/$1
-    svnmerge init
-    svn commit -F svnmerge-commit-message.txt
-    rm svnmerge-commit-message.txt
-    popd
-    popd
-else
-    svnmerge merge ../repos/$1
-    pushd ..
-    if [ -f trunk/svnmerge-commit-message.txt ]; then
-        svn commit -F trunk/svnmerge-commit-message.txt
-        if [ $? -ne 0 ]; then
-            # The user is going to have to clean things up a bit
-            echo "*** ATTENTION: There was a problem merging the package changes ***"
-            echo "To fix it, edit the conflicting files in repos/$1 (the ones that are C in svn status)."
-            echo "Once you have resolved conflicts, execute 'svn resolved <path to file>' to tell svn the error was resolved."
-            echo "Then to finish the merge commit, execute 'svn commit -F trunk/svnmerge-commit-message.txt' and, if there are no problems, delete trunk/svnmerge-commit-message.txt"
-            exit $?
-        fi
-        rm trunk/svnmerge-commit-message.txt
-    else
-        echo "Nothing to commit"
-    fi
-    popd
+pushd ..
+if [ -d repos/$1 ]; then
+    svn rm --force -q repos/$1
+    svn commit -q -m "archrelease: remove $1"
 fi
-
-echo "===> Tagged for $1"
+svn copy -q -r HEAD trunk repos/$1
+svn commit -q -m "archrelease: copy trunk to $1"
+popd
