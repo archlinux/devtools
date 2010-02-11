@@ -12,7 +12,7 @@ FORCE="n"
 RUN=""
 MAKEPKG_ARGS="-sr"
 REPACK=""
-LAYER="rw"
+COPY="copy"
 WORKDIR=$PWD
 
 update_first="0"
@@ -32,8 +32,8 @@ usage ()
     echo " will be passed to makepkg."
     echo ""
     echo " The chroot dir consists of the following directories:"
-    echo " <chrootdir>/{root, rw, union} but only 'root' is required"
-    echo " by default. The rest will be created as needed"
+    echo " <chrootdir>/{root, copy} but only 'root' is required"
+    echo " by default. The working copy will be created as needed"
     echo ""
     echo "The chroot 'root' directory must be created via the following"
     echo "command:"
@@ -44,14 +44,14 @@ usage ()
     echo "Flags:"
     echo "-h         This help"
     echo "-c         Clean the chroot before building"
-    echo "-u         Update the rw layer of the chroot before building"
+    echo "-u         Update the working copy of the chroot before building"
     echo "           This is useful for rebuilds without dirtying the pristine"
     echo "           chroot"
     echo "-d         Add the package to a local db at /repo after building"
-    echo "-r <dir>   The chroot shell to use"
-    echo "-I <pkg>   Install a package into the rw layer of the chroot"
-    echo "-l <layer> The directory to use as the rw layer of the union"
-    echo "           Useful for maintain multiple layers. Default: rw"
+    echo "-r <dir>   The chroot dir to use"
+    echo "-I <pkg>   Install a package into the working copy of the chroot"
+    echo "-l <copy>  The directory to use as the working copy of the chroot"
+    echo "           Useful for maintain multiple copies Default: copy"
     exit 1
 }
 
@@ -63,13 +63,14 @@ while getopts 'hcudr:I:l:' arg; do
         d) add_to_db=1 ;;
         r) chrootdir="$OPTARG" ;;
         I) install_pkg="$OPTARG" ;;
-        l) LAYER="$OPTARG" ;;
+        l) COPY="$OPTARG" ;;
         *) MAKEPKG_ARGS="$MAKEPKG_ARGS -$arg $OPTARG" ;;
     esac
 done
 
 #Get rid of trailing / in chrootdir
 [ "$chrootdir" != "/" ] && chrootdir=$(echo $chrootdir | sed 's#/$##')
+copydir="$chrootdir/$COPY"
 
 # Pass all arguments after -- right to makepkg
 MAKEPKG_ARGS="$MAKEPKG_ARGS ${*:$OPTIND}"
@@ -105,77 +106,61 @@ if [ ! -d "$chrootdir/root" ]; then
 fi
 
 umask 000
-[ -d "$chrootdir/$LAYER" -a "$clean_first" -eq "1" ] && rm -rf "$chrootdir/$LAYER/" 
-[ -d "$chrootdir/$LAYER" ] || mkdir "$chrootdir/$LAYER"
-[ -d "$chrootdir/union" ] || mkdir "$chrootdir/union"
-
-cleanup ()
-{
-    echo "cleaning up unioned mounts"
-    umount "$chrootdir/union"
-}
-
-uniondir="$chrootdir/union"
-echo "building union chroot"
-grep -Fq aufs /proc/filesystems
-if [ $? -ne 0 ]; then
-    modprobe -q aufs
-    if [ $? -ne 0 ]; then
-        echo "ERROR: No aufs available. Abandon ship!" && exit 1
-    fi
+if [ ! -d "$copydir" -o "$clean_first" -eq "1" ]; then
+    echo "creating clean working copy"
+    mkdir -p "$copydir"
+    rsync -a --delete -q -W "$chrootdir/root/" "$copydir"
 fi
-mount -t aufs none -o "dirs=$chrootdir/$LAYER=rw:$chrootdir/root=ro" "$uniondir"
-trap 'cleanup' 0 1 2 15
 
 if [ -n "$install_pkg" ]; then
     pkgname="$(basename "$install_pkg")"
     echo "installing '$pkgname' in chroot"
-    cp "$install_pkg" "$uniondir/$pkgname"
-    mkarchroot -r "pacman -U /$pkgname" "$uniondir"
+    cp "$install_pkg" "$copydir/$pkgname"
+    mkarchroot -r "pacman -U /$pkgname" "$copydir"
     ret=$?
-    rm "$uniondir/$pkgname"
+    rm "$copydir/$pkgname"
     #exit early, we've done all we need to
     exit $ret
 fi
 
 if [ $update_first -eq 1 ]; then
     echo "updating chroot"
-    mkarchroot -r "pacman -Syu --noconfirm" "$uniondir"
+    mkarchroot -r "pacman -Syu --noconfirm" "$copydir"
 fi
 
 echo "moving build files to chroot"
-[ -d "$uniondir/build" ] || mkdir "$uniondir/build"
+[ -d "$copydir/build" ] || mkdir "$copydir/build"
 
 if [ "$REPACK" != "1" ]; then
     #Remove anything in there UNLESS -R (repack) was passed to makepkg
-    rm -rf "$uniondir/build/"*
+    rm -rf "$copydir/build/"*
 fi
 
 # Get SRC/PKGDEST from makepkg.conf
 SRCDEST=$(grep '^SRCDEST=' /etc/makepkg.conf | cut -d= -f2)
 PKGDEST=$(grep '^PKGDEST=' /etc/makepkg.conf | cut -d= -f2)
 
-[ -d "$uniondir/pkgdest" ] || mkdir "$uniondir/pkgdest"
-if ! grep "PKGDEST=/pkgdest" "$uniondir/etc/makepkg.conf" >/dev/null 2>&1; then
+[ -d "$copydir/pkgdest" ] || mkdir "$copydir/pkgdest"
+if ! grep "PKGDEST=/pkgdest" "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
     echo "Setting PKGDEST in makepkg.conf"
-    echo "PKGDEST=/pkgdest" >> "$uniondir/etc/makepkg.conf"
+    echo "PKGDEST=/pkgdest" >> "$copydir/etc/makepkg.conf"
 fi
 
-[ -d "$uniondir/srcdest" ] || mkdir "$uniondir/srcdest"
-if ! grep "SRCDEST=/srcdest" "$uniondir/etc/makepkg.conf" >/dev/null 2>&1; then
+[ -d "$copydir/srcdest" ] || mkdir "$copydir/srcdest"
+if ! grep "SRCDEST=/srcdest" "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
     echo "Setting SRCDEST in makepkg.conf"
-    echo "SRCDEST=/srcdest" >> "$uniondir/etc/makepkg.conf"
+    echo "SRCDEST=/srcdest" >> "$copydir/etc/makepkg.conf"
 fi
 
 # Copy PKGBUILD and sources
 source PKGBUILD
-cp PKGBUILD "$uniondir/build/"
+cp PKGBUILD "$copydir/build/"
 for f in ${source[@]}; do
     basef=$(echo $f | sed 's|::.*||' | sed 's|^.*://.*/||g')
     if [ -f "$basef" ]; then
-        cp "$basef" "$uniondir/srcdest/"
+        cp "$basef" "$copydir/srcdest/"
     elif [ -f "$SRCDEST/$basef" ]; then
-        cp "$SRCDEST/$basef" "$uniondir/srcdest/"
+        cp "$SRCDEST/$basef" "$copydir/srcdest/"
     fi
 done
 
@@ -189,27 +174,27 @@ done
 for f in $install_files;do
     install="${f#"install="}"
     if [ "$install" != "" -a -f "$install" ]; then
-        cp "$install" "$uniondir/build/"
+        cp "$install" "$copydir/build/"
     fi
 done
 
 if [ -f "ChangeLog" ]; then
-    cp ChangeLog "$uniondir/build/"
+    cp ChangeLog "$copydir/build/"
 fi
 
-chown -R nobody "$uniondir/build"
-chown -R nobody "$uniondir/srcdest"
-chown -R nobody "$uniondir/pkgdest"
+chown -R nobody "$copydir/build"
+chown -R nobody "$copydir/srcdest"
+chown -R nobody "$copydir/pkgdest"
 
-if ! grep "^nobody" "$uniondir/etc/sudoers" >/dev/null 2>&1; then
+if ! grep "^nobody" "$copydir/etc/sudoers" >/dev/null 2>&1; then
     echo "allowing 'nobody' sudo rights in the chroot"
-    touch "$uniondir/etc/sudoers"
-    echo "nobody	ALL=(ALL) NOPASSWD: ALL" >> "$uniondir/etc/sudoers"
-    chmod 440 "$uniondir/etc/sudoers"
+    touch "$copydir/etc/sudoers"
+    echo "nobody	ALL=(ALL) NOPASSWD: ALL" >> "$copydir/etc/sudoers"
+    chmod 440 "$copydir/etc/sudoers"
 fi
 
 #This is a little gross, but this way the script is recreated every time in the
-#rw portion of the union
+#working copy
 (cat <<EOF
 #!/bin/bash
 export LANG=$LOCALE
@@ -220,16 +205,16 @@ sudo -u nobody makepkg $MAKEPKG_ARGS || touch BUILD_FAILED
 which namcap &>/dev/null && namcap /build/PKGBUILD /pkgdest/*${PKGEXT} > /pkgdest/namcap.log
 exit 0
 EOF
-) > "$uniondir/chrootbuild"
-chmod +x "$uniondir/chrootbuild"
+) > "$copydir/chrootbuild"
+chmod +x "$copydir/chrootbuild"
 
-if mkarchroot -r "/chrootbuild" "$uniondir"; then
-    for pkgfile in "${chrootdir}"/union/pkgdest/*${PKGEXT}; do
+if mkarchroot -r "/chrootbuild" "$copydir"; then
+    for pkgfile in "${copydir}"/pkgdest/*${PKGEXT}; do
         [ -e "$pkgfile" ] || continue
         _pkgname=$(basename "$pkgfile")
         if [ "$add_to_db" -eq "1" ]; then
-                [ -d "${chrootdir}/union/repo" ] || mkdir -p "${chrootdir}/union/repo"
-                pushd "${chrootdir}/union/repo" >/dev/null
+                [ -d "${copydir}/repo" ] || mkdir -p "${copydir}/repo"
+                pushd "${copydir}/repo" >/dev/null
                 cp "$pkgfile" .
                 repo-add repo.db.tar.gz "$_pkgname"
                 popd >/dev/null
@@ -244,7 +229,7 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
         fi
     done
 
-    for f in "${chrootdir}"/union/srcdest/*; do
+    for f in "${copydir}"/srcdest/*; do
         [ -e "$f" ] || continue
         if [ -d "$SRCDEST" ]; then
             echo "Moving downloaded source file $(basename $f) to ${SRCDEST}"
@@ -255,19 +240,19 @@ if mkarchroot -r "/chrootbuild" "$uniondir"; then
         fi
     done
 
-    for l in "${uniondir}"/build/*-{build,package}.log; do
+    for l in "${copydir}"/build/*-{build,package}.log; do
         [ -f "$l" ] && mv "$l" "${WORKDIR}"
     done
 else
     #just in case. We returned 1, make sure we fail
-    touch "${chrootdir}/union/build/BUILD_FAILED"
+    touch "${copydir}/build/BUILD_FAILED"
 fi
 
-if [ -e "${chrootdir}/union/build/BUILD_FAILED" ]; then
-    echo "Build failed, check $chrootdir/$LAYER/build"
-    rm "${chrootdir}/union/build/BUILD_FAILED"
+if [ -e "${copydir}/build/BUILD_FAILED" ]; then
+    echo "Build failed, check $copydir/build"
+    rm "${copydir}/build/BUILD_FAILED"
 else
-    rm -rf "${chrootdir}"/union/build/*
+    rm -rf "${copydir}"/build/*
     echo "Build complete"
 fi	
 
