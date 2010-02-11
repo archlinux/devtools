@@ -33,7 +33,7 @@ usage ()
     exit $1
 }
 
-while getopts 'r:ufhC:M:c:' arg; do
+while getopts 'r:ufnhC:M:c:' arg; do
     case "${arg}" in
         r) RUN="$OPTARG" ;;
         u) RUN="pacman -Syu" ;;
