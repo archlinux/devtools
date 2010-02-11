@@ -71,19 +71,15 @@ shift 1
 
 chroot_mount ()
 {
-    echo "mounting sysfs : /sys"
     [ -e "${working_dir}/sys" ] || mkdir "${working_dir}/sys"
     mount -t sysfs sysfs "${working_dir}/sys"
 
-    echo "mounting procfs : /proc"
     [ -e "${working_dir}/proc" ] || mkdir "${working_dir}/proc"
     mount -t proc proc "${working_dir}/proc"
 
-    echo "binding device nodes : /dev"
     [ -e "${working_dir}/dev" ] || mkdir "${working_dir}/dev"
     mount -o bind /dev "${working_dir}/dev"
 
-    echo "binding pacman cache : ${cache_dir}"
     [ -e "${working_dir}/var/cache/pacman/pkg" ] || mkdir -p "${working_dir}/var/cache/pacman/pkg"
     mount -o bind "${cache_dir}" "${working_dir}/var/cache/pacman/pkg"
 
@@ -92,17 +88,13 @@ chroot_mount ()
 
 copy_hostconf ()
 {
-    echo "copying mtab : /etc/mtab"
     cp /etc/mtab "${working_dir}/etc/mtab"
-
-    echo "copying resolv.conf : /etc/resolv.conf"
     cp /etc/resolv.conf "${working_dir}/etc/resolv.conf"
 
 }
 
 chroot_umount ()
 {
-    echo "cleaning up mounts"
     umount "${working_dir}/proc"
     umount "${working_dir}/sys"
     umount "${working_dir}/dev"
@@ -123,7 +115,6 @@ if [ "$RUN" != "" ]; then
     chroot_mount
     copy_hostconf
 
-    echo "starting chroot ($RUN)"
     chroot "${working_dir}" ${RUN}
 
     # }}}
@@ -147,12 +138,7 @@ else
         pacargs="$pacargs --config=${pac_conf}"
     fi
 
-    if [ $# -eq 0 ]; then
-        echo "no packages to install"
-    else
-        echo "installing packages:"
-        for i in $@; do echo -e "\t$i"; done
-
+    if [ $# -ne 0 ]; then
         op="-Sy"
         if [ "$FORCE" = "y" ]; then
             op="${op}f"
@@ -164,22 +150,18 @@ else
     fi
 
     if [ -d "${working_dir}/lib/modules" ]; then
-        echo "running ldconfig"
         ldconfig -r "${working_dir}"
     fi
 
     if [ "$pac_conf" != "" -a "$NOCOPY" = "n" ]; then
-        echo "installing custom pacman.conf"
         cp ${pac_conf} ${working_dir}/etc/pacman.conf
     fi
 
     if [ "$makepkg_conf" != "" -a "$NOCOPY" = "n" ]; then
-        echo "installing custom makepkg.conf"
         cp ${makepkg_conf} ${working_dir}/etc/makepkg.conf
     fi
 
     if [ -e "${working_dir}/etc/locale.gen" ]; then
-        echo "generating default locales from host system"
         cp /etc/locale.gen "${working_dir}/etc/locale.gen"
         chroot "${working_dir}" locale-gen
     fi

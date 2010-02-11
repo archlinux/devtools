@@ -114,7 +114,6 @@ fi
 
 if [ -n "$install_pkg" ]; then
     pkgname="$(basename "$install_pkg")"
-    echo "installing '$pkgname' in chroot"
     cp "$install_pkg" "$copydir/$pkgname"
     mkarchroot -r "pacman -U /$pkgname" "$copydir"
     ret=$?
@@ -124,11 +123,9 @@ if [ -n "$install_pkg" ]; then
 fi
 
 if [ $update_first -eq 1 ]; then
-    echo "updating chroot"
     mkarchroot -r "pacman -Syu --noconfirm" "$copydir"
 fi
 
-echo "moving build files to chroot"
 [ -d "$copydir/build" ] || mkdir "$copydir/build"
 
 if [ "$REPACK" != "1" ]; then
@@ -142,13 +139,11 @@ PKGDEST=$(grep '^PKGDEST=' /etc/makepkg.conf | cut -d= -f2)
 
 [ -d "$copydir/pkgdest" ] || mkdir "$copydir/pkgdest"
 if ! grep "PKGDEST=/pkgdest" "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
-    echo "Setting PKGDEST in makepkg.conf"
     echo "PKGDEST=/pkgdest" >> "$copydir/etc/makepkg.conf"
 fi
 
 [ -d "$copydir/srcdest" ] || mkdir "$copydir/srcdest"
 if ! grep "SRCDEST=/srcdest" "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
-    echo "Setting SRCDEST in makepkg.conf"
     echo "SRCDEST=/srcdest" >> "$copydir/etc/makepkg.conf"
 fi
 
@@ -187,7 +182,6 @@ chown -R nobody "$copydir/srcdest"
 chown -R nobody "$copydir/pkgdest"
 
 if ! grep "^nobody" "$copydir/etc/sudoers" >/dev/null 2>&1; then
-    echo "allowing 'nobody' sudo rights in the chroot"
     touch "$copydir/etc/sudoers"
     echo "nobody	ALL=(ALL) NOPASSWD: ALL" >> "$copydir/etc/sudoers"
     chmod 440 "$copydir/etc/sudoers"
@@ -221,10 +215,8 @@ if mkarchroot -r "/chrootbuild" "$copydir"; then
         fi
 
         if [ -d "$PKGDEST" ]; then
-            echo "Moving completed ${_pkgname%${PKGEXT}} package file to ${PKGDEST}"
             mv "$pkgfile" "${PKGDEST}"
         else
-            echo "Moving completed ${_pkgname%${PKGEXT}} package file to ${WORKDIR}"
             mv "$pkgfile" "${WORKDIR}"
         fi
     done
@@ -232,10 +224,8 @@ if mkarchroot -r "/chrootbuild" "$copydir"; then
     for f in "${copydir}"/srcdest/*; do
         [ -e "$f" ] || continue
         if [ -d "$SRCDEST" ]; then
-            echo "Moving downloaded source file $(basename $f) to ${SRCDEST}"
             mv "$f" "${SRCDEST}"
         else
-            echo "Moving downloaded source file $(basename $f) to ${WORKDIR}"
             mv "$f" "${WORKDIR}"
         fi
     done
@@ -253,7 +243,6 @@ if [ -e "${copydir}/build/BUILD_FAILED" ]; then
     rm "${copydir}/build/BUILD_FAILED"
 else
     rm -rf "${copydir}"/build/*
-    echo "Build complete"
 fi	
 
 
