@@ -21,11 +21,11 @@ if [ "$(svn diff)" != "" ]; then
     exit 1
 fi
 
-pushd ..
+pushd .. >/dev/null
 if [ -d repos/$1 ]; then
     svn rm --force -q repos/$1
     svn commit -q -m "archrelease: remove $1"
 fi
 svn copy -q -r HEAD trunk repos/$1
 svn commit -q -m "archrelease: copy trunk to $1"
-popd
+popd >/dev/null
