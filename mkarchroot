@@ -13,7 +13,7 @@ RUN=""
 NOCOPY="n"
 
 working_dir=""
-cache_dir=$(grep -m 1 '^CacheDir' /etc/pacman.conf | sed 's/CacheDir\s*=\s*//')
+cache_dir=$((grep -m 1 '^CacheDir' /etc/pacman.conf || echo 'CacheDir = /var/cache/pacman/pkg') | sed 's/CacheDir\s*=\s*//')
 
 APPNAME=$(basename "${0}")
 
