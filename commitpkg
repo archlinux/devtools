@@ -71,7 +71,6 @@ else
 fi
 
 for _arch in ${arch[@]}; do
-    pkgfiles=''
     for _pkgname in ${pkgname[@]}; do
         pkgfile=$_pkgname-$pkgver-$pkgrel-${_arch}$PKGEXT
 
@@ -82,9 +81,8 @@ for _arch in ${arch[@]}; do
             continue 2
         fi
 
-        pkgfiles="${pkgfiles} ${pkgfile}"
+        rsync -c -h --progress $rsyncopts "${pkgfile}" -e ssh $server:staging/$repo || abort
     done
-    rsync -c -h --progress $rsyncopts "${pkgfiles}" -e ssh $server:staging/$repo || abort
     archrelease $repo-${_arch} || abort
 done
 
