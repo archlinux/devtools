@@ -107,9 +107,10 @@ fi
 
 umask 000
 if [ ! -d "$copydir" -o "$clean_first" -eq "1" ]; then
-    echo "creating clean working copy"
+    echo -n 'creating clean working copy...'
     mkdir -p "$copydir"
     rsync -a --delete -q -W -x "$chrootdir/root/" "$copydir"
+    echo 'done'
 fi
 
 if [ -n "$install_pkg" ]; then

@@ -63,12 +63,14 @@ if [ "$1" = "-l" ]; then
     shift 2
 fi
 
+echo -n 'committing changes to trunk...'
 if [ -n "$1" ]; then
     svn commit -q -m "upgpkg: $pkgbase $pkgver-$pkgrel
 $1" || abort
 else
     svn commit -q || abort
 fi
+echo 'done'
 
 for _arch in ${arch[@]}; do
     for _pkgname in ${pkgname[@]}; do
@@ -77,10 +79,11 @@ for _arch in ${arch[@]}; do
         if [ ! -f $pkgfile -a -f "$PKGDEST/$pkgfile" ]; then
             pkgfile="$PKGDEST/$pkgfile"
         elif [ ! -f $pkgfile ]; then
-            echo "Skipping ${_arch}"
+            echo "skipping ${_arch}"
             continue 2
         fi
 
+        echo -n 'uploading '
         rsync -c -h --progress $rsyncopts "${pkgfile}" -e ssh $server:staging/$repo || abort
     done
     archrelease $repo-${_arch} || abort
@@ -89,9 +92,11 @@ done
 if [ "${arch[*]}" == "any" ]; then
     if [ -d ../repos/$repo-i686 -a -d ../repos/$repo-x86_64 ]; then
         pushd ../repos/ >/dev/null
+        echo -n "removing $repo-i686 and $repo-x86_64..."
         svn rm $repo-i686
         svn rm $repo-x86_64
-        svn commit -m "removed $repo-i686 and $repo-x86_64 for $pkgname"
+        svn commit -q -m "removed $repo-i686 and $repo-x86_64 for $pkgname"
+        echo 'done'
         popd >/dev/null
     fi
 fi

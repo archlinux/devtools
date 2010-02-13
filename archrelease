@@ -21,6 +21,7 @@ if [ "$(svn diff)" != "" ]; then
     exit 1
 fi
 
+echo -n 'releasing package...'
 pushd .. >/dev/null
 if [ -d repos/$1 ]; then
     svn rm --force -q repos/$1
@@ -29,3 +30,4 @@ fi
 svn copy -q -r HEAD trunk repos/$1
 svn commit -q -m "archrelease: copy trunk to $1"
 popd >/dev/null
+echo 'done'
