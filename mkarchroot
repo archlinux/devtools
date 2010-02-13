@@ -66,7 +66,7 @@ shift 1
 
 [ "${working_dir}" = "" ] && echo "error: please specify a working directory" && usage 1
 
-if [ -z "$cachedir" ]; then
+if [ -z "$cache_dir" ]; then
     cache_conf=${working_dir}/etc/pacman.conf
     [ ! -f $cache_conf ] && cache_conf=${pac_conf:-/etc/pacman.conf}
     cache_dir=$((grep -m 1 '^CacheDir' $cache_conf || echo 'CacheDir = /var/cache/pacman/pkg') | sed 's/CacheDir\s*=\s*//')
@@ -140,7 +140,7 @@ else
     pacargs="--noconfirm -v " #--noprogressbar -v
     pacargs="$pacargs --root=${working_dir}"
     # pacman takes these as relative to the given root
-    pacargs="$pacargs --cachedir=/var/cache/pacman/pkg"
+    pacargs="$pacargs --cachedir=${cache_dir}"
     if [ "$pac_conf" != "" ]; then
         pacargs="$pacargs --config=${pac_conf}"
     fi
