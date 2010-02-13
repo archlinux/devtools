@@ -8,64 +8,63 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-FORCE="n"
-RUN=""
-MAKEPKG_ARGS="-sr"
-REPACK=""
-COPY="copy"
+FORCE='n'
+RUN=''
+MAKEPKG_ARGS='-sr'
+REPACK=''
+COPY='copy'
 WORKDIR=$PWD
 
-update_first="0"
-clean_first="0"
-install_pkg=""
+update_first='0'
+clean_first='0'
+install_pkg=''
 add_to_db=0
 
-chrootdir=""
+chrootdir=''
 
 APPNAME=$(basename "${0}")
 
-usage ()
-{
-    echo "usage ${APPNAME} [options] -r <chrootdir> [--] [makepkg args]"
-    echo " Run this script in a PKGBUILD dir to build a package inside a"
-    echo " clean chroot. All unrecognized arguments passed to this script"
-    echo " will be passed to makepkg."
-    echo ""
-    echo " The chroot dir consists of the following directories:"
-    echo " <chrootdir>/{root, copy} but only 'root' is required"
-    echo " by default. The working copy will be created as needed"
-    echo ""
-    echo "The chroot 'root' directory must be created via the following"
-    echo "command:"
-    echo "    mkarchroot <chrootdir>/root base base-devel sudo"
-    echo ""
-    echo "Default makepkg args: $MAKEPKG_ARGS"
-    echo ""
-    echo "Flags:"
-    echo "-h         This help"
-    echo "-c         Clean the chroot before building"
-    echo "-u         Update the working copy of the chroot before building"
-    echo "           This is useful for rebuilds without dirtying the pristine"
-    echo "           chroot"
-    echo "-d         Add the package to a local db at /repo after building"
-    echo "-r <dir>   The chroot dir to use"
-    echo "-I <pkg>   Install a package into the working copy of the chroot"
-    echo "-l <copy>  The directory to use as the working copy of the chroot"
-    echo "           Useful for maintain multiple copies Default: copy"
-    exit 1
+usage() {
+	echo "usage ${APPNAME} [options] -r <chrootdir> [--] [makepkg args]"
+	echo ' Run this script in a PKGBUILD dir to build a package inside a'
+	echo ' clean chroot. All unrecognized arguments passed to this script'
+	echo ' will be passed to makepkg.'
+	echo ''
+	echo ' The chroot dir consists of the following directories:'
+	echo ' <chrootdir>/{root, copy} but only "root" is required'
+	echo ' by default. The working copy will be created as needed'
+	echo ''
+	echo 'The chroot "root" directory must be created via the following'
+	echo 'command:'
+	echo '    mkarchroot <chrootdir>/root base base-devel sudo'
+	echo ''
+	echo "Default makepkg args: $MAKEPKG_ARGS"
+	echo ''
+	echo 'Flags:'
+	echo '-h         This help'
+	echo '-c         Clean the chroot before building'
+	echo '-u         Update the working copy of the chroot before building'
+	echo '           This is useful for rebuilds without dirtying the pristine'
+	echo '           chroot'
+	echo '-d         Add the package to a local db at /repo after building'
+	echo '-r <dir>   The chroot dir to use'
+	echo '-I <pkg>   Install a package into the working copy of the chroot'
+	echo '-l <copy>  The directory to use as the working copy of the chroot'
+	echo '           Useful for maintain multiple copies Default: copy'
+	exit 1
 }
 
 while getopts 'hcudr:I:l:' arg; do
-    case "${arg}" in
-        h) usage ;;
-        c) clean_first=1 ;;
-        u) update_first=1 ;;
-        d) add_to_db=1 ;;
-        r) chrootdir="$OPTARG" ;;
-        I) install_pkg="$OPTARG" ;;
-        l) COPY="$OPTARG" ;;
-        *) MAKEPKG_ARGS="$MAKEPKG_ARGS -$arg $OPTARG" ;;
-    esac
+	case "${arg}" in
+		h) usage ;;
+		c) clean_first=1 ;;
+		u) update_first=1 ;;
+		d) add_to_db=1 ;;
+		r) chrootdir="$OPTARG" ;;
+		I) install_pkg="$OPTARG" ;;
+		l) COPY="$OPTARG" ;;
+		*) MAKEPKG_ARGS="$MAKEPKG_ARGS -$arg $OPTARG" ;;
+	esac
 done
 
 #Get rid of trailing / in chrootdir
@@ -77,61 +76,61 @@ MAKEPKG_ARGS="$MAKEPKG_ARGS ${*:$OPTIND}"
 
 # See if -R was passed to makepkg
 for arg in ${*:$OPTIND}; do
-    if [ "$arg" = "-R" ]; then
-        REPACK=1
-        break;
-    fi
+	if [ "$arg" = '-R' ]; then
+		REPACK=1
+		break;
+	fi
 done
 
-if [ "$EUID" != "0" ]; then
-    echo "This script must be run as root."
-    exit 1
+if [ "$EUID" != '0' ]; then
+	echo 'This script must be run as root.'
+	exit 1
 fi
 
 if [ ! -f PKGBUILD ]; then
-    echo "This must be run in a directory containing a PKGBUILD."
-    exit 1
+	echo 'This must be run in a directory containing a PKGBUILD.'
+	exit 1
 fi
 source PKGBUILD
 
 if [ ! -d "$chrootdir" ]; then
-    echo "No chroot dir defined, or invalid path '$chrootdir'"
-    exit 1
+	echo "No chroot dir defined, or invalid path '$chrootdir'"
+	exit 1
 fi
 
 if [ ! -d "$chrootdir/root" ]; then
-    echo "Missing chroot dir root directory."
-    echo "Try using: mkarchroot $chrootdir/root base base-devel sudo"
-    usage
+	echo 'Missing chroot dir root directory.'
+	echo "Try using: mkarchroot $chrootdir/root base base-devel sudo"
+	usage
 fi
 
 umask 0022
 if [ ! -d "$copydir" -o "$clean_first" -eq "1" ]; then
-    echo -n 'creating clean working copy...'
-    mkdir -p "$copydir"
-    rsync -a --delete -q -W -x "$chrootdir/root/" "$copydir"
-    echo 'done'
+	echo -n 'creating clean working copy...'
+	mkdir -p "$copydir"
+	rsync -a --delete -q -W -x "$chrootdir/root/" "$copydir"
+	echo 'done'
 fi
 
 if [ -n "$install_pkg" ]; then
-    pkgname="$(basename "$install_pkg")"
-    cp "$install_pkg" "$copydir/$pkgname"
-    mkarchroot -r "pacman -U /$pkgname" "$copydir"
-    ret=$?
-    rm "$copydir/$pkgname"
-    #exit early, we've done all we need to
-    exit $ret
+	pkgname="$(basename "$install_pkg")"
+	cp "$install_pkg" "$copydir/$pkgname"
+	mkarchroot -r "pacman -U /$pkgname" "$copydir"
+	ret=$?
+	rm "$copydir/$pkgname"
+	#exit early, we've done all we need to
+	exit $ret
 fi
 
 if [ $update_first -eq 1 ]; then
-    mkarchroot -r "pacman -Syu --noconfirm" "$copydir"
+	mkarchroot -r 'pacman -Syu --noconfirm' "$copydir"
 fi
 
 [ -d "$copydir/build" ] || mkdir "$copydir/build"
 
 if [ "$REPACK" != "1" ]; then
-    #Remove anything in there UNLESS -R (repack) was passed to makepkg
-    rm -rf "$copydir/build/"*
+	#Remove anything in there UNLESS -R (repack) was passed to makepkg
+	rm -rf "$copydir/build/"*
 fi
 
 # Get SRC/PKGDEST from makepkg.conf
@@ -139,43 +138,43 @@ SRCDEST=$(grep '^SRCDEST=' /etc/makepkg.conf | cut -d= -f2)
 PKGDEST=$(grep '^PKGDEST=' /etc/makepkg.conf | cut -d= -f2)
 
 [ -d "$copydir/pkgdest" ] || mkdir "$copydir/pkgdest"
-if ! grep "PKGDEST=/pkgdest" "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
-    echo "PKGDEST=/pkgdest" >> "$copydir/etc/makepkg.conf"
+if ! grep 'PKGDEST=/pkgdest' "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
+	echo 'PKGDEST=/pkgdest' >> "$copydir/etc/makepkg.conf"
 fi
 
 [ -d "$copydir/srcdest" ] || mkdir "$copydir/srcdest"
-if ! grep "SRCDEST=/srcdest" "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
-    echo "SRCDEST=/srcdest" >> "$copydir/etc/makepkg.conf"
+if ! grep 'SRCDEST=/srcdest' "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
+	echo 'SRCDEST=/srcdest' >> "$copydir/etc/makepkg.conf"
 fi
 
 # Copy PKGBUILD and sources
 source PKGBUILD
 cp PKGBUILD "$copydir/build/"
 for f in ${source[@]}; do
-    basef=$(echo $f | sed 's|::.*||' | sed 's|^.*://.*/||g')
-    if [ -f "$basef" ]; then
-        cp "$basef" "$copydir/srcdest/"
-    elif [ -f "$SRCDEST/$basef" ]; then
-        cp "$SRCDEST/$basef" "$copydir/srcdest/"
-    fi
+	basef=$(echo $f | sed 's|::.*||' | sed 's|^.*://.*/||g')
+	if [ -f "$basef" ]; then
+		cp "$basef" "$copydir/srcdest/"
+	elif [ -f "$SRCDEST/$basef" ]; then
+		cp "$SRCDEST/$basef" "$copydir/srcdest/"
+	fi
 done
 
-install_files=$(grep "install=" PKGBUILD)
+install_files=$(grep 'install=' PKGBUILD)
 for pkg in ${pkgname[@]}; do
-    install_files+=' '
-    install_files+=$(echo $install_files |sed "s/\$pkgname/$pkg/"|sed "s/\${pkgname}/$pkg/")
-    install_files=$(eval echo $install_files |tr '[:blank:]' '\n'|sort |uniq)
+	install_files+=' '
+	install_files+=$(echo $install_files |sed "s/\$pkgname/$pkg/"|sed "s/\${pkgname}/$pkg/")
+	install_files=$(eval echo $install_files |tr '[:blank:]' '\n'|sort |uniq)
 done
 
 for f in $install_files;do
-    install="${f#"install="}"
-    if [ "$install" != "" -a -f "$install" ]; then
-        cp "$install" "$copydir/build/"
-    fi
+	install="${f#"install="}"
+	if [ "$install" != "" -a -f "$install" ]; then
+		cp "$install" "$copydir/build/"
+	fi
 done
 
-if [ -f "ChangeLog" ]; then
-    cp ChangeLog "$copydir/build/"
+if [ -f 'ChangeLog' ]; then
+	cp ChangeLog "$copydir/build/"
 fi
 
 chown -R nobody "$copydir/build"
@@ -183,9 +182,9 @@ chown -R nobody "$copydir/srcdest"
 chown -R nobody "$copydir/pkgdest"
 
 if ! grep "^nobody" "$copydir/etc/sudoers" >/dev/null 2>&1; then
-    touch "$copydir/etc/sudoers"
-    echo "nobody	ALL=(ALL) NOPASSWD: ALL" >> "$copydir/etc/sudoers"
-    chmod 440 "$copydir/etc/sudoers"
+	touch "$copydir/etc/sudoers"
+	echo 'nobody	ALL=(ALL) NOPASSWD: ALL' >> "$copydir/etc/sudoers"
+	chmod 440 "$copydir/etc/sudoers"
 fi
 
 #This is a little gross, but this way the script is recreated every time in the
@@ -204,47 +203,47 @@ EOF
 chmod +x "$copydir/chrootbuild"
 
 if mkarchroot -r "/chrootbuild" "$copydir"; then
-    for pkgfile in "${copydir}"/pkgdest/*${PKGEXT}; do
-        [ -e "$pkgfile" ] || continue
-        _pkgname=$(basename "$pkgfile")
-        if [ "$add_to_db" -eq "1" ]; then
-                [ -d "${copydir}/repo" ] || mkdir -p "${copydir}/repo"
-                pushd "${copydir}/repo" >/dev/null
-                cp "$pkgfile" .
-                repo-add repo.db.tar.gz "$_pkgname"
-                popd >/dev/null
-        fi
+	for pkgfile in "${copydir}"/pkgdest/*${PKGEXT}; do
+		[ -e "$pkgfile" ] || continue
+		_pkgname=$(basename "$pkgfile")
+		if [ "$add_to_db" -eq "1" ]; then
+			[ -d "${copydir}/repo" ] || mkdir -p "${copydir}/repo"
+			pushd "${copydir}/repo" >/dev/null
+			cp "$pkgfile" .
+			repo-add repo.db.tar.gz "$_pkgname"
+			popd >/dev/null
+		fi
 
-        if [ -d "$PKGDEST" ]; then
-            mv "$pkgfile" "${PKGDEST}"
-        else
-            mv "$pkgfile" "${WORKDIR}"
-        fi
-    done
+		if [ -d "$PKGDEST" ]; then
+			mv "$pkgfile" "${PKGDEST}"
+		else
+			mv "$pkgfile" "${WORKDIR}"
+		fi
+	done
 
-    for f in "${copydir}"/srcdest/*; do
-        [ -e "$f" ] || continue
-        if [ -d "$SRCDEST" ]; then
-            mv "$f" "${SRCDEST}"
-        else
-            mv "$f" "${WORKDIR}"
-        fi
-    done
+	for f in "${copydir}"/srcdest/*; do
+		[ -e "$f" ] || continue
+		if [ -d "$SRCDEST" ]; then
+			mv "$f" "${SRCDEST}"
+		else
+			mv "$f" "${WORKDIR}"
+		fi
+	done
 
-    for l in "${copydir}"/build/*-{build,package}.log; do
-        [ -f "$l" ] && mv "$l" "${WORKDIR}"
-    done
+	for l in "${copydir}"/build/*-{build,package}.log; do
+		[ -f "$l" ] && mv "$l" "${WORKDIR}"
+	done
 else
-    #just in case. We returned 1, make sure we fail
-    touch "${copydir}/build/BUILD_FAILED"
+	#just in case. We returned 1, make sure we fail
+	touch "${copydir}/build/BUILD_FAILED"
 fi
 
 if [ -e "${copydir}/build/BUILD_FAILED" ]; then
-    echo "Build failed, check $copydir/build"
-    rm "${copydir}/build/BUILD_FAILED"
+	echo "Build failed, check $copydir/build"
+	rm "${copydir}/build/BUILD_FAILED"
 else
-    rm -rf "${copydir}"/build/*
-fi	
+	rm -rf "${copydir}"/build/*
+fi
 
-
-# vim:ft=sh:ts=4:sw=4:et:
+# vim: set noexpandtab tabstop=8 shiftwidth=8 wrap:textwidth=132 autoindent
+# kate: indent-mode normal; indent-width 8; tab-indents on; tab-width 8; word-wrap on; word-wrap-column 132

@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Source makepkg.conf; fail if it is not found
-if [ -r "/etc/makepkg.conf" ]; then
-	source "/etc/makepkg.conf"
+if [ -r '/etc/makepkg.conf' ]; then
+	source '/etc/makepkg.conf'
 else
-    echo "/etc/makepkg.conf not found!"
-    exit 1
+	echo '/etc/makepkg.conf not found!'
+	exit 1
 fi
 
 # Source user-specific makepkg.conf overrides
@@ -18,77 +18,78 @@ strip_url() {
 }
 
 if [ ! -f PKGBUILD ]; then
-	echo "This must be run in the directory of a built package."
+	echo 'This must be run in the directory of a built package.'
 	exit 1
 fi
 
-source PKGBUILD
-if [ "$arch" == "any" ]; then
-    CARCH="any"
+. PKGBUILD
+if [ "$arch" == 'any' ]; then
+	CARCH='any'
 fi
 
 for _pkgname in ${pkgname[@]}; do
-    pkgfile=${_pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
-    oldstylepkgfile=${_pkgname}-${pkgver}-${pkgrel}${PKGEXT}
+	pkgfile=${_pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
+	oldstylepkgfile=${_pkgname}-${pkgver}-${pkgrel}${PKGEXT}
 
-    if [ -f "$(pwd)/$pkgfile" ]; then
-	pkgfile=$(pwd)/$pkgfile
-    elif [ -f "$PKGDEST/$pkgfile" ]; then
-	pkgfile=$PKGDEST/$pkgfile
-    elif [ -f "$(pwd)/$oldstylepkgfile" ]; then
-	pkgfile=$(pwd)/$oldstylepkgfile
-    elif [ -f "$PKGDEST/$oldstylepkgfile" ]; then
-	pkgfile=$PKGDEST/$oldstylepkgfile
-    else
-	echo "File \"$pkgfile\" doesn't exist"
-	exit 1
-    fi
-
-    tmp=`pacman -Spd --noconfirm $_pkgname`
-
-    if [ $? -ne 0 ]; then
-	echo "Couldn't download previous package for $_pkgname."
-	exit 1
-    fi
-
-    pkgurl=`echo $tmp | rev | cut -d ' ' -f 1 | rev`
-
-    oldpkg=`strip_url $pkgurl`
-
-    if [ "$(basename $oldpkg)" = "$(basename $pkgfile)" ]; then
-	echo "The built package ($_pkgname) is the one in the repo right now!"
-	exit 1
-    fi
-
-    if [ ! -f $oldpkg ]; then
-	if echo $pkgurl | grep "^file:///" > /dev/null 2>&1; then
-	    cp `echo $pkgurl | sed 's#^file://##'` .
-	elif [ -f $PKGDEST/$oldpkg ]; then
-	    cp $PKGDEST/$oldpkg .
+	if [ -f "$(pwd)/$pkgfile" ]; then
+		pkgfile=$(pwd)/$pkgfile
+	elif [ -f "$PKGDEST/$pkgfile" ]; then
+		pkgfile=$PKGDEST/$pkgfile
+	elif [ -f "$(pwd)/$oldstylepkgfile" ]; then
+		pkgfile=$(pwd)/$oldstylepkgfile
+	elif [ -f "$PKGDEST/$oldstylepkgfile" ]; then
+		pkgfile=$PKGDEST/$oldstylepkgfile
 	else
-	    wget --quiet $pkgurl
+		echo "File \"$pkgfile\" doesn't exist"
+		exit 1
 	fi
-    fi
 
-    bsdtar tf $oldpkg > filelist-$_pkgname-old
-    bsdtar tf "$pkgfile" > filelist-$_pkgname
+	tmp=`pacman -Spd --noconfirm $_pkgname`
 
-    sort -o filelist-$_pkgname filelist-$_pkgname
-    sort -o filelist-$_pkgname-old filelist-$_pkgname-old
+	if [ $? -ne 0 ]; then
+		echo "Couldn't download previous package for $_pkgname."
+		exit 1
+	fi
 
-    diff filelist-$_pkgname-old filelist-$_pkgname
+	pkgurl=`echo $tmp | rev | cut -d ' ' -f 1 | rev`
 
-    if diff filelist-$_pkgname-old filelist-$_pkgname | grep '\.so\.' > /dev/null 2>&1; then
-	mkdir -p pkg
-	cd pkg
-	bsdtar xf "$pkgfile" > /dev/null
-	for i in `diff ../filelist-$_pkgname-old ../filelist-$_pkgname | grep \> | grep \.so\. | awk '{print $2}'`; do
-	    echo -n "${i}: "
-	    objdump -p $i | grep SONAME
-	done
-    else
-	echo "No filename differences for $_pkgname."
-    fi
+	oldpkg=`strip_url $pkgurl`
+
+	if [ "$(basename $oldpkg)" = "$(basename $pkgfile)" ]; then
+		echo "The built package ($_pkgname) is the one in the repo right now!"
+		exit 1
+	fi
+
+	if [ ! -f $oldpkg ]; then
+		if echo $pkgurl | grep '^file:///' > /dev/null 2>&1; then
+			cp `echo $pkgurl | sed 's#^file://##'` .
+		elif [ -f $PKGDEST/$oldpkg ]; then
+			cp $PKGDEST/$oldpkg .
+		else
+			wget --quiet $pkgurl
+		fi
+	fi
+
+	bsdtar tf $oldpkg > filelist-$_pkgname-old
+	bsdtar tf "$pkgfile" > filelist-$_pkgname
+
+	sort -o filelist-$_pkgname filelist-$_pkgname
+	sort -o filelist-$_pkgname-old filelist-$_pkgname-old
+
+	diff filelist-$_pkgname-old filelist-$_pkgname
+
+	if diff filelist-$_pkgname-old filelist-$_pkgname | grep '\.so\.' > /dev/null 2>&1; then
+		mkdir -p pkg
+		cd pkg
+		bsdtar xf "$pkgfile" > /dev/null
+		for i in `diff ../filelist-$_pkgname-old ../filelist-$_pkgname | grep \> | grep \.so\. | awk '{print $2}'`; do
+			echo -n "${i}: "
+			objdump -p $i | grep SONAME
+		done
+	else
+		echo "No filename differences for $_pkgname."
+	fi
 done
 
-# vim:ft=sh:ts=4:sw=4:et:
+# vim: set noexpandtab tabstop=8 shiftwidth=8 wrap:textwidth=132 autoindent
+# kate: indent-mode normal; indent-width 8; tab-indents on; tab-width 8; word-wrap on; word-wrap-column 132

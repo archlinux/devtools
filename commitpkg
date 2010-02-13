@@ -1,104 +1,105 @@
 #!/bin/bash
 
 abort() {
-    echo ${1:-"Cancelled"}
-    exit 1
+	echo ${1:-'Cancelled'}
+	exit 1
 }
 
 
 # Source makepkg.conf; fail if it is not found
-if [ -r "/etc/makepkg.conf" ]; then
-    source "/etc/makepkg.conf"
+if [ -r '/etc/makepkg.conf' ]; then
+	source '/etc/makepkg.conf'
 else
-    abort "/etc/makepkg.conf not found!"
+	abort '/etc/makepkg.conf not found!'
 fi
 
 # Source user-specific makepkg.conf overrides
 if [ -r ~/.makepkg.conf ]; then
-    source ~/.makepkg.conf
+	. ~/.makepkg.conf
 fi
 
 cmd=$(basename "$0")
 
 if [ ! -f PKGBUILD ]; then
-    abort "No PKGBUILD file"
+	abort 'No PKGBUILD file'
 fi
 
-source PKGBUILD
+. PKGBUILD
 pkgbase=${pkgbase:-$pkgname}
 
 # set up repo-specific opts depending on how we were called
-server="gerolde.archlinux.org"
-if [ "$cmd" == "extrapkg" ]; then
-    repo="extra"
-elif [ "$cmd" == "corepkg" ]; then
-    repo="core"
-elif [ "$cmd" == "testingpkg" ]; then
-    repo="testing"
-elif [ "$cmd" == "communitypkg" ]; then
-    repo="community"
-    server="aur.archlinux.org"
-elif [ "$cmd" == "community-testingpkg" ]; then
-    repo="community-testing"
-    server="aur.archlinux.org"
+server='gerolde.archlinux.org'
+if [ "$cmd" == 'extrapkg' ]; then
+	repo='extra'
+elif [ "$cmd" == 'corepkg' ]; then
+	repo='core'
+elif [ "$cmd" == 'testingpkg' ]; then
+	repo='testing'
+elif [ "$cmd" == 'communitypkg' ]; then
+	repo='community'
+	server='aur.archlinux.org'
+elif [ "$cmd" == 'community-testingpkg' ]; then
+	repo='community-testing'
+	server='aur.archlinux.org'
 else
-    if [ $# -eq 0 ]; then
-        abort "usage: commitpkg <reponame> [-l limit] [commit message]"
-    fi
-    repo="$1"
-    shift
+	if [ $# -eq 0 ]; then
+		abort 'usage: commitpkg <reponame> [-l limit] [commit message]'
+	fi
+	repo="$1"
+	shift
 fi
 
 # check if all local source files are under version control
 (for s in ${source[@]} $install; do
-    echo $s | grep -vq '://' && \
-    svn status $s | grep -q '?' && \
-    abort "$s is not under version control"
+	echo $s | grep -vq '://' && \
+	svn status $s | grep -q '?' && \
+	abort "$s is not under version control"
 done) || true
 
 # see if any limit options were passed, we'll send them to rsync
 unset rsyncopts
-if [ "$1" = "-l" ]; then
-    rsyncopts="--bwlimit=$2"
-    shift 2
+if [ "$1" = '-l' ]; then
+	rsyncopts="--bwlimit=$2"
+	shift 2
 fi
 
 echo -n 'committing changes to trunk...'
 if [ -n "$1" ]; then
-    svn commit -q -m "upgpkg: $pkgbase $pkgver-$pkgrel
+	svn commit -q -m "upgpkg: $pkgbase $pkgver-$pkgrel
 $1" || abort
 else
-    svn commit -q || abort
+	svn commit -q || abort
 fi
 echo 'done'
 
 for _arch in ${arch[@]}; do
-    for _pkgname in ${pkgname[@]}; do
-        pkgfile=$_pkgname-$pkgver-$pkgrel-${_arch}$PKGEXT
+	for _pkgname in ${pkgname[@]}; do
+		pkgfile=$_pkgname-$pkgver-$pkgrel-${_arch}$PKGEXT
 
-        if [ ! -f $pkgfile -a -f "$PKGDEST/$pkgfile" ]; then
-            pkgfile="$PKGDEST/$pkgfile"
-        elif [ ! -f $pkgfile ]; then
-            echo "skipping ${_arch}"
-            continue 2
-        fi
+		if [ ! -f $pkgfile -a -f "$PKGDEST/$pkgfile" ]; then
+			pkgfile="$PKGDEST/$pkgfile"
+		elif [ ! -f $pkgfile ]; then
+			echo "skipping ${_arch}"
+			continue 2
+		fi
 
-        echo -n 'uploading '
-        rsync -c -h --progress $rsyncopts "${pkgfile}" -e ssh $server:staging/$repo || abort
-    done
-    archrelease $repo-${_arch} || abort
+		echo -n 'uploading '
+		rsync -c -h --progress $rsyncopts "${pkgfile}" -e ssh $server:staging/$repo || abort
+	done
+	archrelease $repo-${_arch} || abort
 done
 
-if [ "${arch[*]}" == "any" ]; then
-    if [ -d ../repos/$repo-i686 -a -d ../repos/$repo-x86_64 ]; then
-        pushd ../repos/ >/dev/null
-        echo -n "removing $repo-i686 and $repo-x86_64..."
-        svn rm $repo-i686
-        svn rm $repo-x86_64
-        svn commit -q -m "removed $repo-i686 and $repo-x86_64 for $pkgname"
-        echo 'done'
-        popd >/dev/null
-    fi
+if [ "${arch[*]}" == 'any' ]; then
+	if [ -d ../repos/$repo-i686 -a -d ../repos/$repo-x86_64 ]; then
+		pushd ../repos/ >/dev/null
+		echo -n "removing $repo-i686 and $repo-x86_64..."
+		svn rm $repo-i686
+		svn rm $repo-x86_64
+		svn commit -q -m "removed $repo-i686 and $repo-x86_64 for $pkgname"
+		echo 'done'
+		popd >/dev/null
+	fi
 fi
 
-# vim:ft=sh:ts=4:sw=4:et:
+# vim: set noexpandtab tabstop=8 shiftwidth=8 wrap:textwidth=132 autoindent
+# kate: indent-mode normal; indent-width 8; tab-indents on; tab-width 8; word-wrap on; word-wrap-column 132

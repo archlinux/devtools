@@ -1,33 +1,36 @@
 #!/bin/bash
 
-if [ "$1" = "" ]; then
-    echo "Usage: archrelease <repo>"
-    exit 1
+if [ "$1" = '' ]; then
+	echo 'Usage: archrelease <repo>'
+	exit 1
 fi
 
 if [ ! -f PKGBUILD ]; then
-    echo "archrelease: PKGBUILD not found"
-    exit 1
+	echo 'archrelease: PKGBUILD not found'
+	exit 1
 fi
 
-if [ "$(basename $(readlink -f .))" != "trunk" ]; then
-    echo "archrelease: Not in a package trunk dir"
-    exit 1
+if [ "$(basename $(readlink -f .))" != 'trunk' ]; then
+	echo 'archrelease: Not in a package trunk dir'
+	exit 1
 fi
 
-if [ "$(svn diff)" != "" ]; then
-    echo "archrelease: You have not committed your changes yet!"
-    echo "             Please run 'upgpkg' or 'svn commit' first"
-    exit 1
+if [ "$(svn diff)" != '' ]; then
+	echo 'archrelease: You have not committed your changes yet!'
+	echo '             Please run "svn commit" first'
+	exit 1
 fi
 
 echo -n 'releasing package...'
 pushd .. >/dev/null
 if [ -d repos/$1 ]; then
-    svn rm --force -q repos/$1
-    svn commit -q -m "archrelease: remove $1"
+	svn rm --force -q repos/$1
+	svn commit -q -m "archrelease: remove $1"
 fi
 svn copy -q -r HEAD trunk repos/$1
 svn commit -q -m "archrelease: copy trunk to $1"
 popd >/dev/null
 echo 'done'
+
+# vim: set noexpandtab tabstop=8 shiftwidth=8 wrap:textwidth=132 autoindent
+# kate: indent-mode normal; indent-width 8; tab-indents on; tab-width 8; word-wrap on; word-wrap-column 132

@@ -3,39 +3,40 @@
 # finddeps - find packages that depend on a given depname
 #
 
-if [ "$1" = "" ]; then
-    echo "usage: finddeps <depname>"
-    echo ""
-    echo "Find packages that depend on a given depname."
-    echo "Run this script from the top-level directory of your ABS tree."
-    echo ""
-    exit 0
+if [ "$1" = '' ]; then
+	echo 'usage: finddeps <depname>'
+	echo ''
+	echo 'Find packages that depend on a given depname.'
+	echo 'Run this script from the top-level directory of your ABS tree.'
+	echo ''
+	exit 0
 fi
 
 match=$1
 tld=$(pwd)
 
 for d in $(find . -type d); do
-    cd $d
-    if [ -f PKGBUILD ]; then
-        unset pkgname depends makedepends
-        . PKGBUILD
-        for dep in "${depends[@]}"; do
-            # lose the version comaparator, if any
-            depname=${dep%%[<>=]*}
-            if [ "$depname" = "$match" ]; then
-                echo "$d (depends)"
-            fi
-        done
-        for dep in "${makedepends[@]}"; do
-            # lose the version comaparator, if any
-            depname=${dep%%[<>=]*}
-            if [ "$depname" = "$match" ]; then
-                echo "$d (makedepends)"
-            fi
-        done
-    fi
-    cd $tld
+	cd $d
+	if [ -f PKGBUILD ]; then
+		unset pkgname depends makedepends
+		. PKGBUILD
+		for dep in "${depends[@]}"; do
+			# lose the version comaparator, if any
+			depname=${dep%%[<>=]*}
+			if [ "$depname" = "$match" ]; then
+				echo "$d (depends)"
+			fi
+		done
+		for dep in "${makedepends[@]}"; do
+			# lose the version comaparator, if any
+			depname=${dep%%[<>=]*}
+			if [ "$depname" = "$match" ]; then
+				echo "$d (makedepends)"
+			fi
+		done
+	fi
+	cd $tld
 done
 
-# vim:ft=sh:ts=4:sw=4:et:
+# vim: set noexpandtab tabstop=8 shiftwidth=8 wrap:textwidth=132 autoindent
+# kate: indent-mode normal; indent-width 8; tab-indents on; tab-width 8; word-wrap on; word-wrap-column 132

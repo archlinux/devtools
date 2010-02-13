@@ -10,48 +10,48 @@
 # TODO make this work for community too
 
 if [ $# -le 1 ]; then
-    echo "usage: $(basename $0) <chrootdir> <packages to rebuild>"
-    echo "  example: $(basename $0) ~/chroot readline bash foo bar baz"
-    exit 1
+	echo "usage: $(basename $0) <chrootdir> <packages to rebuild>"
+	echo "  example: $(basename $0) ~/chroot readline bash foo bar baz"
+	exit 1
 fi
 
 # Source makepkg.conf; fail if it is not found
-if [ -r "/etc/makepkg.conf" ]; then
-	source "/etc/makepkg.conf"
+if [ -r '/etc/makepkg.conf' ]; then
+	source '/etc/makepkg.conf'
 else
-    echo "/etc/makepkg.conf not found!"
-    exit 1
+	echo '/etc/makepkg.conf not found!'
+	exit 1
 fi
 
 die () {
-    echo $@ >&2
-    exit 1
+	echo $@ >&2
+	exit 1
 }
 
-bump_pkgrel () {
-    # Get the current pkgrel from SVN and update the working copy with it
-    # This prevents us from incrementing out of control :)
-    pbuild=".svn/text-base/PKGBUILD.svn-base"
-    oldrel=$(grep "pkgrel=" $pbuild | cut -d= -f2)
+bump_pkgrel() {
+	# Get the current pkgrel from SVN and update the working copy with it
+	# This prevents us from incrementing out of control :)
+	pbuild='.svn/text-base/PKGBUILD.svn-base'
+	oldrel=$(grep 'pkgrel=' $pbuild | cut -d= -f2)
 
-    #remove decimals
-    rel=$(echo $oldrel | cut -d. -f1)
-    
-    newrel=$(($rel + 1))
+	#remove decimals
+	rel=$(echo $oldrel | cut -d. -f1)
 
-    sed -i "s/pkgrel=$oldrel/pkgrel=$newrel/" PKGBUILD 
+	newrel=$(($rel + 1))
+
+	sed -i "s/pkgrel=$oldrel/pkgrel=$newrel/" PKGBUILD
 }
 
-pkg_from_pkgbuild () {
-    # we want the sourcing to be done in a subshell so we don't pollute our current namespace
-    export CARCH PKGEXT
-    (. PKGBUILD; echo "$pkgname-$pkgver-$pkgrel-$CARCH$PKGEXT")
+pkg_from_pkgbuild() {
+	# we want the sourcing to be done in a subshell so we don't pollute our current namespace
+	export CARCH PKGEXT
+	(source PKGBUILD; echo "$pkgname-$pkgver-$pkgrel-$CARCH$PKGEXT")
 }
 
 chrootdir="$1"; shift
 pkgs="$@"
 
-SVNPATH="svn+ssh://gerolde.archlinux.org/srv/svn-packages"
+SVNPATH='svn+ssh://gerolde.archlinux.org/srv/svn-packages'
 
 echo ":: Work will be done in $(pwd)/rebuilds"
 
@@ -63,39 +63,42 @@ cd "$REBUILD_ROOT"
 
 FAILED=""
 for pkg in $pkgs; do
-    cd "$REBUILD_ROOT/svn-packages"
+	cd "$REBUILD_ROOT/svn-packages"
 
-    echo ":: Building '$pkg'"
-    /usr/bin/svn update "$pkg"
-    if [ ! -d "$pkg/trunk" ]; then
-        FAILED="$FAILED $pkg"
-        echo ":: $pkg does not exist in SVN"
-        continue
-    fi
-    cd "$pkg/trunk/"
+	echo ":: Building '$pkg'"
+	/usr/bin/svn update "$pkg"
+	if [ ! -d "$pkg/trunk" ]; then
+		FAILED="$FAILED $pkg"
+		echo ":: $pkg does not exist in SVN"
+		continue
+	fi
+	cd "$pkg/trunk/"
 
-    bump_pkgrel
+	bump_pkgrel
 
-    if ! sudo makechrootpkg -u -d -r "$chrootdir" -- --noconfirm; then
-        FAILED="$FAILED $pkg"
-        echo ":: $pkg Failed!"
-    else
-        pkgfile=$(pkg_from_pkgbuild)
-        if [ -e "$pkgfile" ]; then
-            echo ":: $pkg Complete"
-        else
-            FAILED="$FAILED $pkg"
-            echo ":: $pkg Failed, no package built!"
-        fi
-    fi
+	if ! sudo makechrootpkg -u -d -r "$chrootdir" -- --noconfirm; then
+		FAILED="$FAILED $pkg"
+		echo ":: $pkg Failed!"
+	else
+		pkgfile=$(pkg_from_pkgbuild)
+		if [ -e "$pkgfile" ]; then
+			echo ":: $pkg Complete"
+		else
+			FAILED="$FAILED $pkg"
+			echo ":: $pkg Failed, no package built!"
+		fi
+	fi
 done
 
 cd "$REBUILD_ROOT"
 if [ "$FAILED" != "" ]; then
-    echo "Packages failed:"
-    for pkg in $FAILED; do
-        echo -e "\t$pkg"
-    done
+	echo 'Packages failed:'
+	for pkg in $FAILED; do
+		echo -e "\t$pkg"
+	done
 fi
 
-echo "SVN pkgbumps in svn-packages/ - commit when ready"
+echo 'SVN pkgbumps in svn-packages/ - commit when ready'
+
+# vim: set noexpandtab tabstop=8 shiftwidth=8 wrap:textwidth=132 autoindent
+# kate: indent-mode normal; indent-width 8; tab-indents on; tab-width 8; word-wrap on; word-wrap-column 132

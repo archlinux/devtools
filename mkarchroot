@@ -8,175 +8,171 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-FORCE="n"
-RUN=""
-NOCOPY="n"
+FORCE='n'
+RUN=''
+NOCOPY='n'
 
-working_dir=""
+working_dir=''
 
 APPNAME=$(basename "${0}")
 
 # usage: usage <exitvalue>
-usage ()
-{
-    echo "usage ${APPNAME} [options] working-dir [package-list | app]"
-    echo " options:"
-    echo "    -r <app>      Run 'app' within the context of the chroot"
-    echo "    -u            Update the chroot via pacman"
-    echo "    -f            Force overwrite of files in the working-dir"
-    echo "    -C <file>     Location of a pacman config file"
-    echo "    -M <file>     Location of a makepkg config file"
-    echo "    -n            Do not copy config files into the chroot"
-    echo "    -c <dir>      Set pacman cache. Default: ${cache_dir}"
-    echo "    -h            This message"
-    exit $1
+usage() {
+	echo "usage ${APPNAME} [options] working-dir [package-list | app]"
+	echo ' options:'
+	echo '    -r <app>      Run "app" within the context of the chroot'
+	echo '    -u            Update the chroot via pacman'
+	echo '    -f            Force overwrite of files in the working-dir'
+	echo '    -C <file>     Location of a pacman config file'
+	echo '    -M <file>     Location of a makepkg config file'
+	echo '    -n            Do not copy config files into the chroot'
+	echo "    -c <dir>      Set pacman cache. Default: ${cache_dir}"
+	echo '    -h            This message'
+	exit $1
 }
 
 while getopts 'r:ufnhC:M:c:' arg; do
-    case "${arg}" in
-        r) RUN="$OPTARG" ;;
-        u) RUN="pacman -Syu" ;;
-        f) FORCE="y" ;;
-        C) pac_conf="$OPTARG" ;;
-        M) makepkg_conf="$OPTARG" ;;
-        n) NOCOPY="y" ;;
-        c) cache_dir="$OPTARG" ;;
-        h|?) usage 0 ;;
-        *) echo "invalid argument '${arg}'"; usage 1 ;;
-    esac
+	case "${arg}" in
+		r) RUN="$OPTARG" ;;
+		u) RUN='pacman -Syu' ;;
+		f) FORCE='y' ;;
+		C) pac_conf="$OPTARG" ;;
+		M) makepkg_conf="$OPTARG" ;;
+		n) NOCOPY='y' ;;
+		c) cache_dir="$OPTARG" ;;
+		h|?) usage 0 ;;
+		*) echo "invalid argument '${arg}'"; usage 1 ;;
+	esac
 done
 
-if [ "$EUID" != "0" ]; then
-    echo "error: this script must be run as root."
-    exit 1
+if [ "$EUID" != '0' ]; then
+	echo 'error: this script must be run as root.'
+	exit 1
 fi
 
 shift $(($OPTIND - 1))
 
-if [ "$RUN" = "" -a $# -lt 2 ]; then
-    echo "you must specify a directory and one or more packages"
-    usage 1
+if [ "$RUN" = '' -a $# -lt 2 ]; then
+	echo 'you must specify a directory and one or more packages'
+	usage 1
 elif [ $# -lt 1 ]; then
-    echo "you must specify a directory"
-    usage 1
+	echo 'you must specify a directory'
+	usage 1
 fi
 
 working_dir="$(readlink -f ${1})"
 shift 1
 
-[ "${working_dir}" = "" ] && echo "error: please specify a working directory" && usage 1
+[ "${working_dir}" = '' ] && echo 'error: please specify a working directory' && usage 1
 
 if [ -z "$cache_dir" ]; then
-    cache_conf=${working_dir}/etc/pacman.conf
-    [ ! -f $cache_conf ] && cache_conf=${pac_conf:-/etc/pacman.conf}
-    cache_dir=$((grep -m 1 '^CacheDir' $cache_conf || echo 'CacheDir = /var/cache/pacman/pkg') | sed 's/CacheDir\s*=\s*//')
-    unset cache_conf
+	cache_conf=${working_dir}/etc/pacman.conf
+	[ ! -f $cache_conf ] && cache_conf=${pac_conf:-/etc/pacman.conf}
+	cache_dir=$((grep -m 1 '^CacheDir' $cache_conf || echo 'CacheDir = /var/cache/pacman/pkg') | sed 's/CacheDir\s*=\s*//')
+	unset cache_conf
 fi
 
 # {{{ functions 
 
-chroot_mount ()
-{
-    [ -e "${working_dir}/sys" ] || mkdir "${working_dir}/sys"
-    mount -t sysfs sysfs "${working_dir}/sys"
+chroot_mount() {
+	[ -e "${working_dir}/sys" ] || mkdir "${working_dir}/sys"
+	mount -t sysfs sysfs "${working_dir}/sys"
 
-    [ -e "${working_dir}/proc" ] || mkdir "${working_dir}/proc"
-    mount -t proc proc "${working_dir}/proc"
+	[ -e "${working_dir}/proc" ] || mkdir "${working_dir}/proc"
+	mount -t proc proc "${working_dir}/proc"
 
-    [ -e "${working_dir}/dev" ] || mkdir "${working_dir}/dev"
-    mount -o bind /dev "${working_dir}/dev"
+	[ -e "${working_dir}/dev" ] || mkdir "${working_dir}/dev"
+	mount -o bind /dev "${working_dir}/dev"
 
-    [ -e "${cache_dir}" ] || mkdir -p "${cache_dir}"
-    [ -e "${working_dir}/${cache_dir}" ] || mkdir -p "${working_dir}/${cache_dir}"
-    mount -o bind "${cache_dir}" "${working_dir}/${cache_dir}"
+	[ -e "${cache_dir}" ] || mkdir -p "${cache_dir}"
+	[ -e "${working_dir}/${cache_dir}" ] || mkdir -p "${working_dir}/${cache_dir}"
+	mount -o bind "${cache_dir}" "${working_dir}/${cache_dir}"
 
-    trap 'chroot_umount' 0 1 2 15
+	trap 'chroot_umount' 0 1 2 15
 }
 
-copy_hostconf ()
-{
-    cp /etc/mtab "${working_dir}/etc/mtab"
-    cp /etc/resolv.conf "${working_dir}/etc/resolv.conf"
-
+copy_hostconf () {
+	cp /etc/mtab "${working_dir}/etc/mtab"
+	cp /etc/resolv.conf "${working_dir}/etc/resolv.conf"
 }
 
-chroot_umount ()
-{
-    umount "${working_dir}/proc"
-    umount "${working_dir}/sys"
-    umount "${working_dir}/dev"
-    umount "${working_dir}/${cache_dir}"
+chroot_umount () {
+	umount "${working_dir}/proc"
+	umount "${working_dir}/sys"
+	umount "${working_dir}/dev"
+	umount "${working_dir}/${cache_dir}"
 }
 # }}}
 
 umask 0022
 if [ "$RUN" != "" ]; then
-    # run chroot {{{
-    #Sanity check
-    if [ ! -f "${working_dir}/.arch-chroot" ]; then
-        echo "error: '${working_dir}' does not appear to be a Arch chroot"
-        echo "  please build the image using mkarchroot"
-        exit 1
-    fi
+	# run chroot {{{
+	#Sanity check
+	if [ ! -f "${working_dir}/.arch-chroot" ]; then
+		echo "error: '${working_dir}' does not appear to be a Arch chroot"
+		echo '       please build the image using mkarchroot'
+		exit 1
+	fi
 
-    chroot_mount
-    copy_hostconf
+	chroot_mount
+	copy_hostconf
 
-    chroot "${working_dir}" ${RUN}
+	chroot "${working_dir}" ${RUN}
 
-    # }}}
-else
-    # {{{ build chroot
-    if [ -e "${working_dir}" -a "${FORCE}" = "n" ]; then
-        echo "error: working dir '${working_dir}' already exists - try using -f"
-        exit 1
-    fi
+	# }}}
+	else
+	# {{{ build chroot
+	if [ -e "${working_dir}" -a "${FORCE}" = "n" ]; then
+		echo "error: working dir '${working_dir}' already exists - try using -f"
+		exit 1
+	fi
 
-    mkdir -p "${working_dir}/var/lib/pacman/"
-    mkdir -p "${working_dir}/etc/"
+	mkdir -p "${working_dir}/var/lib/pacman/"
+	mkdir -p "${working_dir}/etc/"
 
-    chroot_mount
+	chroot_mount
 
-    pacargs="--noconfirm -v " #--noprogressbar -v
-    pacargs="$pacargs --root=${working_dir}"
-    # pacman takes these as relative to the given root
-    pacargs="$pacargs --cachedir=${cache_dir}"
-    if [ "$pac_conf" != "" ]; then
-        pacargs="$pacargs --config=${pac_conf}"
-    fi
+	pacargs='--noconfirm -v ' #--noprogressbar -v
+	pacargs="$pacargs --root=${working_dir}"
+	# pacman takes these as relative to the given root
+	pacargs="$pacargs --cachedir=${cache_dir}"
+	if [ "$pac_conf" != "" ]; then
+		pacargs="$pacargs --config=${pac_conf}"
+	fi
 
-    if [ $# -ne 0 ]; then
-        op="-Sy"
-        if [ "$FORCE" = "y" ]; then
-            op="${op}f"
-        fi
-        if ! pacman ${op} ${pacargs} $@; then
-            echo "error: failed to install all packages"
-            exit 1
-        fi
-    fi
+	if [ $# -ne 0 ]; then
+		op='-Sy'
+		if [ "$FORCE" = "y" ]; then
+			op="${op}f"
+		fi
+		if ! pacman ${op} ${pacargs} $@; then
+			echo 'error: failed to install all packages'
+			exit 1
+		fi
+	fi
 
-    if [ -d "${working_dir}/lib/modules" ]; then
-        ldconfig -r "${working_dir}"
-    fi
+	if [ -d "${working_dir}/lib/modules" ]; then
+		ldconfig -r "${working_dir}"
+	fi
 
-    if [ "$pac_conf" != "" -a "$NOCOPY" = "n" ]; then
-        cp ${pac_conf} ${working_dir}/etc/pacman.conf
-    fi
+	if [ "$pac_conf" != "" -a "$NOCOPY" = "n" ]; then
+		cp ${pac_conf} ${working_dir}/etc/pacman.conf
+	fi
 
-    if [ "$makepkg_conf" != "" -a "$NOCOPY" = "n" ]; then
-        cp ${makepkg_conf} ${working_dir}/etc/makepkg.conf
-    fi
+	if [ "$makepkg_conf" != "" -a "$NOCOPY" = "n" ]; then
+		cp ${makepkg_conf} ${working_dir}/etc/makepkg.conf
+	fi
 
-    if [ -e "${working_dir}/etc/locale.gen" ]; then
-        cp /etc/locale.gen "${working_dir}/etc/locale.gen"
-        chroot "${working_dir}" locale-gen
-    fi
+	if [ -e "${working_dir}/etc/locale.gen" ]; then
+		cp /etc/locale.gen "${working_dir}/etc/locale.gen"
+		chroot "${working_dir}" locale-gen
+	fi
 
-    if [ ! -e "${working_dir}/.arch-chroot" ]; then
-        date +%s > "${working_dir}/.arch-chroot"
-    fi
-    # }}}
+	if [ ! -e "${working_dir}/.arch-chroot" ]; then
+		date +%s > "${working_dir}/.arch-chroot"
+	fi
+	# }}}
 fi
 
-# vim:ft=sh:ts=4:sw=4:et:
+# vim: set noexpandtab tabstop=8 shiftwidth=8 wrap:textwidth=132 autoindent
+# kate: indent-mode normal; indent-width 8; tab-indents on; tab-width 8; word-wrap on; word-wrap-column 132
