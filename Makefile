@@ -42,3 +42,6 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/archrm
 	rm $(DESTDIR)/usr/bin/communityco
 	rm $(DESTDIR)/usr/bin/rebuildpkgs
+
+dist:
+	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip -9 > devtools-$(V).tar.gz
