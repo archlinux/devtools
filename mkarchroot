@@ -13,7 +13,6 @@ RUN=""
 NOCOPY="n"
 
 working_dir=""
-cache_dir=$((grep -m 1 '^CacheDir' /etc/pacman.conf || echo 'CacheDir = /var/cache/pacman/pkg') | sed 's/CacheDir\s*=\s*//')
 
 APPNAME=$(basename "${0}")
 
@@ -67,6 +66,13 @@ shift 1
 
 [ "${working_dir}" = "" ] && echo "error: please specify a working directory" && usage 1
 
+if [ -z "$cachedir" ]; then
+    cache_conf=${working_dir}/etc/pacman.conf
+    [ ! -f $cache_conf ] && cache_conf=${pac_conf:-/etc/pacman.conf}
+    cache_dir=$((grep -m 1 '^CacheDir' $cache_conf || echo 'CacheDir = /var/cache/pacman/pkg') | sed 's/CacheDir\s*=\s*//')
+    unset cache_conf
+fi
+
 # {{{ functions 
 
 chroot_mount ()
@@ -80,9 +86,9 @@ chroot_mount ()
     [ -e "${working_dir}/dev" ] || mkdir "${working_dir}/dev"
     mount -o bind /dev "${working_dir}/dev"
 
-    [ -e "${working_dir}/var/cache/pacman/pkg" ] || mkdir -p "${working_dir}/var/cache/pacman/pkg"
     [ -e "${cache_dir}" ] || mkdir -p "${cache_dir}"
-    mount -o bind "${cache_dir}" "${working_dir}/var/cache/pacman/pkg"
+    [ -e "${working_dir}/${cache_dir}" ] || mkdir -p "${working_dir}/${cache_dir}"
+    mount -o bind "${cache_dir}" "${working_dir}/${cache_dir}"
 
     trap 'chroot_umount' 0 1 2 15
 }
@@ -99,7 +105,7 @@ chroot_umount ()
     umount "${working_dir}/proc"
     umount "${working_dir}/sys"
     umount "${working_dir}/dev"
-    umount "${working_dir}/var/cache/pacman/pkg"
+    umount "${working_dir}/${cache_dir}"
 }
 # }}}
 
