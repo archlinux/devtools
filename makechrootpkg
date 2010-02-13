@@ -105,7 +105,7 @@ if [ ! -d "$chrootdir/root" ]; then
     usage
 fi
 
-umask 000
+umask 0022
 if [ ! -d "$copydir" -o "$clean_first" -eq "1" ]; then
     echo -n 'creating clean working copy...'
     mkdir -p "$copydir"
