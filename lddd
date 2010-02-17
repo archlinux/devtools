@@ -19,12 +19,12 @@ for tree in $PATH $libdirs $extras; do
 	echo DIR $tree
 
 	#  Get list of files in tree.
-	files=$(find $tree -type f ! -name '*.a' ! -name '*.la' ! -name '*.py*' ! -name '*.txt' ! -name '*.h' ! -name '*.ttf' !
-	-name '*.rb' ! -name '*.ko' ! -name '*.pc' ! -name '*.enc' ! -name '*.cf' ! -name '*.def' ! -name '*.rules' ! -name
-	'*.cmi' ! -name  '*.mli' ! -name '*.ml' ! -name '*.cma' ! -name '*.cmx' ! -name '*.cmxa' ! -name '*.pod' ! -name '*.pm'
-	! -name '*.pl' ! -name '*.al' ! -name '*.tcl' ! -name '*.bs' ! -name '*.o' ! -name '*.png' ! -name '*.gif' ! -name '*.cmo'
-	! -name '*.cgi' ! -name '*.defs' ! -name '*.conf' ! -name '*_LOCALE' ! -name 'Compose' ! -name '*_OBJS' ! -name
-	'*.msg' ! -name '*.mcopclass' ! -name '*.mcoptype')
+	files=$(find $tree -type f ! -name '*.a' ! -name '*.la' ! -name '*.py*' ! -name '*.txt' ! -name '*.h' ! -name '*.ttf' ! \
+	-name '*.rb' ! -name '*.ko' ! -name '*.pc' ! -name '*.enc' ! -name '*.cf' ! -name '*.def' ! -name '*.rules' ! -name \
+	'*.cmi' ! -name  '*.mli' ! -name '*.ml' ! -name '*.cma' ! -name '*.cmx' ! -name '*.cmxa' ! -name '*.pod' ! -name '*.pm' \
+	! -name '*.pl' ! -name '*.al' ! -name '*.tcl' ! -name '*.bs' ! -name '*.o' ! -name '*.png' ! -name '*.gif' ! -name '*.cmo' \
+	! -name '*.cgi' ! -name '*.defs' ! -name '*.conf' ! -name '*_LOCALE' ! -name 'Compose' ! -name '*_OBJS' ! -name '*.msg' ! \
+	-name '*.mcopclass' ! -name '*.mcoptype')
 	IFS=$ifs
 	for i in $files; do
 		if [ `file $i | grep -c 'ELF'` -ne 0 ]; then
