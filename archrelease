@@ -24,8 +24,8 @@ fi
 echo -n 'releasing package...'
 pushd .. >/dev/null
 
-trunk=$(LANG=C svn info trunk | grep 'Last Changed Rev:' | awk '{ print $4 }')
-repo=$(LANG=C svn info "repos/${1}" 2>/dev/null | grep 'Last Changed Rev:' | awk '{ print $4 }')
+trunk=$(svnversion -cn trunk | cut -f1 -d:)
+repo=$(svnversion -cn "repos/${1}" 2>/dev/null | cut -f1 -d:)
 if [[ ${trunk} -le ${repo} ]]; then
 	echo 'already done'
 	exit 1
