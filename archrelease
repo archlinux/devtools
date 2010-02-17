@@ -23,6 +23,12 @@ fi
 
 echo -n 'releasing package...'
 pushd .. >/dev/null
+url=$(svn info | grep URL)
+url="${url##*URL: }"
+if [ -z "$(svn diff ${url}/trunk ${url}/repos/${1} 2>/dev/null)" -a $? -eq 0 ]; then
+	echo 'already done'
+	exit 1
+fi
 if [ -d repos/$1 ]; then
 	svn rm --force -q repos/$1
 	svn commit -q -m "archrelease: remove $1"
