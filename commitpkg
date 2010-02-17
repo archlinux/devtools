@@ -84,7 +84,7 @@ for _arch in ${arch[@]}; do
 		fi
 
 		echo -n 'uploading '
-		rsync -c -h --progress $rsyncopts "${pkgfile}" -e ssh $server:staging/$repo || abort
+		rsync -c -h -L --progress $rsyncopts "${pkgfile}" -e ssh $server:staging/$repo || abort
 	done
 	archrelease $repo-${_arch} || abort
 done
