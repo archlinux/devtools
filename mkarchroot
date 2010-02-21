@@ -26,7 +26,7 @@ usage() {
 	echo '    -C <file>     Location of a pacman config file'
 	echo '    -M <file>     Location of a makepkg config file'
 	echo '    -n            Do not copy config files into the chroot'
-	echo "    -c <dir>      Set pacman cache. Default: ${cache_dir}"
+	echo "    -c <dir>      Set pacman cache. Default: /var/cache/pacman/pkg"
 	echo '    -h            This message'
 	exit $1
 }
