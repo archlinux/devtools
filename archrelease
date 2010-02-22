@@ -1,44 +1,43 @@
 #!/bin/bash
 
-if [ "$1" = '' ]; then
-	echo 'Usage: archrelease <repo>'
+abort() {
+	echo ${1:-'archrelease: Cancelled'}
 	exit 1
+}
+
+if [ "$1" = '' ]; then
+	abort 'Usage: archrelease <repo>'
 fi
 
 if [ ! -f PKGBUILD ]; then
-	echo 'archrelease: PKGBUILD not found'
-	exit 1
+	abort 'archrelease: PKGBUILD not found'
 fi
 
 if [ "$(basename $(readlink -f .))" != 'trunk' ]; then
-	echo 'archrelease: Not in a package trunk dir'
-	exit 1
+	abort 'archrelease: Not in a package trunk dir'
 fi
 
 if [ ! -z "$(svn status -q)" ]; then
-	echo 'archrelease: You have not committed your changes yet!'
-	echo '             Please run "svn commit" first'
-	exit 1
+	abort 'archrelease: You have not committed your changes yet!'
 fi
 
 echo -n 'releasing package...'
 pushd .. >/dev/null
 
-trunk=$(svnversion -cn trunk | cut -f1 -d:)
-repo=$(svnversion -cn "repos/${1}" 2>/dev/null | cut -f1 -d:)
-if [[ ${trunk} -le ${repo} ]]; then
+trunk=$(svnversion -cn trunk)
+[[ $? -gt 0 ]] && abort
+repo=$(svnversion -cn "repos/${1}" 2>/dev/null)
+if [[ $? -eq 0 ]] && [[ ${trunk%:*} -le ${repo%:*} ]]; then
 	echo 'already done'
-	exit 1
+else
+	if [ -d "repos/${1}" ]; then
+		svn rm --force -q "repos/${1}"
+		svn commit -q -m "archrelease: remove ${1}" || abort
+	fi
+	svn copy -q -r HEAD trunk "repos/${1}"
+	svn commit -q -m "archrelease: copy trunk to ${1}" || abort
+	popd >/dev/null
+	echo 'done'
 fi
-
-if [ -d "repos/${1}" ]; then
-	svn rm --force -q "repos/${1}"
-	svn commit -q -m "archrelease: remove ${1}"
-fi
-svn copy -q -r HEAD trunk "repos/${1}"
-svn commit -q -m "archrelease: copy trunk to ${1}"
-popd >/dev/null
-echo 'done'
-
 # vim: set noexpandtab tabstop=8 shiftwidth=8 wrap:textwidth=132 autoindent
 # kate: indent-mode normal; indent-width 8; tab-indents on; tab-width 8; word-wrap on; word-wrap-column 132
