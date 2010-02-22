@@ -23,21 +23,14 @@ fi
 
 echo -n 'releasing package...'
 pushd .. >/dev/null
-
-trunk=$(svnversion -cn trunk)
-[[ $? -gt 0 ]] && abort
-repo=$(svnversion -cn "repos/${1}" 2>/dev/null)
-if [[ $? -eq 0 ]] && [[ ${trunk%:*} -le ${repo%:*} ]]; then
-	echo 'already done'
-else
-	if [ -d "repos/${1}" ]; then
-		svn rm --force -q "repos/${1}"
-		svn commit -q -m "archrelease: remove ${1}" || abort
-	fi
-	svn copy -q -r HEAD trunk "repos/${1}"
-	svn commit -q -m "archrelease: copy trunk to ${1}" || abort
-	popd >/dev/null
-	echo 'done'
+if [ -d "repos/${1}" ]; then
+	svn rm --force -q "repos/${1}"
+	svn commit -q -m "archrelease: remove ${1}" || abort
 fi
+svn copy -q -r HEAD trunk "repos/${1}"
+svn commit -q -m "archrelease: copy trunk to ${1}" || abort
+popd >/dev/null
+echo 'done'
+
 # vim: set noexpandtab tabstop=8 shiftwidth=8 wrap:textwidth=132 autoindent
 # kate: indent-mode normal; indent-width 8; tab-indents on; tab-width 8; word-wrap on; word-wrap-column 132
