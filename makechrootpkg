@@ -221,15 +221,6 @@ if mkarchroot -r "/chrootbuild" "$copydir"; then
 		fi
 	done
 
-	for f in "${copydir}"/srcdest/*; do
-		[ -e "$f" ] || continue
-		if [ -d "$SRCDEST" ]; then
-			mv "$f" "${SRCDEST}"
-		else
-			mv "$f" "${WORKDIR}"
-		fi
-	done
-
 	for l in "${copydir}"/build/*-{build,package}.log; do
 		[ -f "$l" ] && mv "$l" "${WORKDIR}"
 	done
@@ -237,6 +228,15 @@ else
 	#just in case. We returned 1, make sure we fail
 	touch "${copydir}/build/BUILD_FAILED"
 fi
+
+for f in "${copydir}"/srcdest/*; do
+	[ -e "$f" ] || continue
+	if [ -d "$SRCDEST" ]; then
+		mv "$f" "${SRCDEST}"
+	else
+		mv "$f" "${WORKDIR}"
+	fi
+done
 
 if [ -e "${copydir}/build/BUILD_FAILED" ]; then
 	echo "Build failed, check $copydir/build"
