@@ -5,6 +5,17 @@ abort() {
 	exit 1
 }
 
+getpkgfile() {
+	if [[ ${#} -ne 1 ]]; then
+		echo 'ERROR: No canonical package found!' >&2
+		exit 1
+	elif [ ! -f "${1}" ]; then
+		echo "ERROR: Package ${1} not found!" >&2
+		exit 1
+	fi
+
+	echo ${1}
+}
 
 # Source makepkg.conf; fail if it is not found
 if [ -r '/etc/makepkg.conf' ]; then
@@ -74,11 +85,12 @@ echo 'done'
 
 for _arch in ${arch[@]}; do
 	for _pkgname in ${pkgname[@]}; do
-		pkgfile=$_pkgname-$pkgver-$pkgrel-${_arch}$PKGEXT
+		pkgfile=$(getpkgfile "$_pkgname-$pkgver-$pkgrel-${_arch}".pkg.tar.* 2>/dev/null)
+		pkgdestfile=$(getpkgfile "$PKGDEST/$_pkgname-$pkgver-$pkgrel-${_arch}".pkg.tar.* 2>/dev/null)
 
-		if [ ! -f $pkgfile -a -f "$PKGDEST/$pkgfile" ]; then
-			pkgfile="$PKGDEST/$pkgfile"
-		elif [ ! -f $pkgfile ]; then
+		if [ ! -f "$pkgfile" -a -f "$pkgdestfile" ]; then
+			pkgfile="$pkgdestfile"
+		elif [ ! -f "$pkgfile" ]; then
 			echo "skipping ${_arch}"
 			continue 2
 		fi
