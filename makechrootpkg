@@ -196,14 +196,14 @@ cd /build
 export HOME=/build
 sudo -u nobody makepkg $MAKEPKG_ARGS || touch BUILD_FAILED
 [ -f BUILD_FAILED ] && exit 1
-which namcap &>/dev/null && namcap /build/PKGBUILD /pkgdest/*${PKGEXT} > /pkgdest/namcap.log
+which namcap &>/dev/null && namcap /build/PKGBUILD /pkgdest/*.pkg.tar.* > /pkgdest/namcap.log
 exit 0
 EOF
 ) > "$copydir/chrootbuild"
 chmod +x "$copydir/chrootbuild"
 
 if mkarchroot -r "/chrootbuild" "$copydir"; then
-	for pkgfile in "${copydir}"/pkgdest/*${PKGEXT}; do
+	for pkgfile in "${copydir}"/pkgdest/*.pkg.tar.*; do
 		[ -e "$pkgfile" ] || continue
 		_pkgname=$(basename "$pkgfile")
 		if [ "$add_to_db" -eq "1" ]; then
