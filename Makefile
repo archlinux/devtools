@@ -1,3 +1,5 @@
+V=0.9.6
+
 all:
 
 install:
