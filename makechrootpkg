@@ -198,7 +198,7 @@ cd /build
 export HOME=/build
 sudo -u nobody makepkg $MAKEPKG_ARGS || touch BUILD_FAILED
 [ -f BUILD_FAILED ] && exit 1
-which namcap &>/dev/null && namcap /build/PKGBUILD /pkgdest/*.pkg.tar.* > /pkgdest/namcap.log
+which namcap &>/dev/null && namcap /build/PKGBUILD /pkgdest/*.pkg.tar.* > /build/namcap.log
 exit 0
 EOF
 ) > "$copydir/chrootbuild"
@@ -207,12 +207,11 @@ chmod +x "$copydir/chrootbuild"
 if mkarchroot -r "/chrootbuild" "$copydir"; then
 	for pkgfile in "${copydir}"/pkgdest/*.pkg.tar.*; do
 		[ -e "$pkgfile" ] || continue
-		_pkgname=$(basename "$pkgfile")
 		if [ "$add_to_db" -eq "1" ]; then
-			[ -d "${copydir}/repo" ] || mkdir -p "${copydir}/repo"
+			mkdir -p "${copydir}/repo"
 			pushd "${copydir}/repo" >/dev/null
 			cp "$pkgfile" .
-			repo-add repo.db.tar.gz "$_pkgname"
+			repo-add repo.db.tar.gz "$(basename "$pkgfile")"
 			popd >/dev/null
 		fi
 
@@ -223,7 +222,7 @@ if mkarchroot -r "/chrootbuild" "$copydir"; then
 		fi
 	done
 
-	for l in "${copydir}"/build/*-{build,package}.log; do
+	for l in "${copydir}"/build/{namcap,*-{build,package}}.log; do
 		[ -f "$l" ] && mv "$l" "${WORKDIR}"
 	done
 else
