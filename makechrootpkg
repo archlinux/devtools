@@ -147,6 +147,8 @@ if ! grep 'SRCDEST=/srcdest' "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
 	echo 'SRCDEST=/srcdest' >> "$copydir/etc/makepkg.conf"
 fi
 
+# Set target CARCH as it might be used within the PKGBUILD to select correct sources
+CARCH=$(eval $(grep '^CARCH=' "$copydir/etc/makepkg.conf"))
 # Copy PKGBUILD and sources
 source PKGBUILD
 cp PKGBUILD "$copydir/build/"
