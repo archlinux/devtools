@@ -104,7 +104,7 @@ done
 if [ "${arch[*]}" == 'any' ]; then
 	if [ -d ../repos/$repo-i686 -a -d ../repos/$repo-x86_64 ]; then
 		pushd ../repos/ >/dev/null
-		echo -n "removing $repo-i686 and $repo-x86_64..."
+		echo "removing $repo-i686 and $repo-x86_64..."
 		svn rm $repo-i686
 		svn rm $repo-x86_64
 		svn commit -q -m "removed $repo-i686 and $repo-x86_64 for $pkgname"
