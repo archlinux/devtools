@@ -99,6 +99,3 @@ if [ "$FAILED" != "" ]; then
 fi
 
 echo 'SVN pkgbumps in svn-packages/ - commit when ready'
-
-# vim: set noexpandtab tabstop=8 shiftwidth=8 wrap:textwidth=132 autoindent
-# kate: indent-mode normal; indent-width 8; tab-indents on; tab-width 8; word-wrap on; word-wrap-column 132

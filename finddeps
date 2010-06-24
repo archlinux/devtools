@@ -37,6 +37,3 @@ for d in $(find . -type d); do
 	fi
 	cd $tld
 done
-
-# vim: set noexpandtab tabstop=8 shiftwidth=8 wrap:textwidth=132 autoindent
-# kate: indent-mode normal; indent-width 8; tab-indents on; tab-width 8; word-wrap on; word-wrap-column 132
