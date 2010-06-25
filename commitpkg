@@ -96,7 +96,7 @@ for _arch in ${arch[@]}; do
 		fi
 
 		echo -n 'uploading '
-		rsync -p --chmod 'ug=rw,o=r' -c -h -L --progress $rsyncopts "${pkgfile}" -e ssh $server:staging/$repo || abort
+		rsync -p --chmod 'ug=rw,o=r' -c -h -L --progress $rsyncopts --partial "${pkgfile}" -e ssh $server:staging/$repo || abort
 	done
 	archrelease $repo-${_arch} || abort
 done
