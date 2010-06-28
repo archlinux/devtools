@@ -69,8 +69,7 @@ done) || true
 
 # check if changelog and install files are under version control
 (for i in 'changelog' 'install'; do
-	local filelist=$(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
-	local file
+	filelist=$(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
 	for file in $filelist; do
 		# evaluate any bash variables used
 		eval file=${file}
