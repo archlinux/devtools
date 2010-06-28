@@ -61,10 +61,23 @@ else
 fi
 
 # check if all local source files are under version control
-(for s in ${source[@]} $install; do
+(for s in ${source[@]}; do
 	echo $s | grep -vq '://' && \
 	svn status $s | grep -q '?' && \
 	abort "$s is not under version control"
+done) || true
+
+# check if changelog and install files are under version control
+(for i in 'changelog' 'install'; do
+	local filelist=$(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
+	local file
+	for file in $filelist; do
+		# evaluate any bash variables used
+		eval file=${file}
+		if svn status ${file} | grep -q '?'; then
+			abort "${file} is not under version control"
+		fi
+	done
 done) || true
 
 # see if any limit options were passed, we'll send them to rsync
