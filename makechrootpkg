@@ -163,32 +163,16 @@ for f in ${source[@]}; do
 	fi
 done
 
-install_files=$(grep 'install=' PKGBUILD)
-for pkg in ${pkgname[@]}; do
-	install_files+=' '
-	install_files+=$(echo $install_files |sed "s/\$pkgname/$pkg/"|sed "s/\${pkgname}/$pkg/")
-	install_files=$(eval echo $install_files |tr '[:blank:]' '\n'|sort |uniq)
-done
-
-for f in $install_files;do
-	install="${f#"install="}"
-	if [ "$install" != "" -a -f "$install" ]; then
-		cp "$install" "$copydir/build/"
-	fi
-done
-
-changelog_files=$(grep 'changelog=' PKGBUILD)
-for pkg in ${pkgname[@]}; do
-	changelog_files+=' '
-	changelog_files+=$(echo $changelog_files |sed "s/\$pkgname/$pkg/"|sed "s/\${pkgname}/$pkg/")
-	changelog_files=$(eval echo $changelog_files |tr '[:blank:]' '\n'|sort |uniq)
-done
-
-for f in $changelog_files;do
-	changelog="${f#"changelog="}"
-	if [ "$changelog" != "" -a -f "$changelog" ]; then
-		cp "$changelog" "$copydir/build/"
-	fi
+for i in 'changelog' 'install'; do
+	local filelist=$(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
+	local file
+	for file in $filelist; do
+		# evaluate any bash variables used
+		eval file=${file}
+		if [[ -f "$file" ]]; then
+			cp "$file" "$copydir/build/"
+		fi
+	done
 done
 
 chown -R nobody "$copydir/build"
