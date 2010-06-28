@@ -175,9 +175,19 @@ for f in $install_files;do
 	fi
 done
 
-if [ -f 'ChangeLog' ]; then
-	cp ChangeLog "$copydir/build/"
-fi
+changelog_files=$(grep 'changelog=' PKGBUILD)
+for pkg in ${pkgname[@]}; do
+	changelog_files+=' '
+	changelog_files+=$(echo $changelog_files |sed "s/\$pkgname/$pkg/"|sed "s/\${pkgname}/$pkg/")
+	changelog_files=$(eval echo $changelog_files |tr '[:blank:]' '\n'|sort |uniq)
+done
+
+for f in $changelog_files;do
+	changelog="${f#"changelog="}"
+	if [ "$changelog" != "" -a -f "$changelog" ]; then
+		cp "$changelog" "$copydir/build/"
+	fi
+done
 
 chown -R nobody "$copydir/build"
 chown -R nobody "$copydir/srcdest"
