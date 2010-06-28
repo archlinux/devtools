@@ -91,7 +91,6 @@ if [ ! -f PKGBUILD ]; then
 	echo 'This must be run in a directory containing a PKGBUILD.'
 	exit 1
 fi
-source PKGBUILD
 
 if [ ! -d "$chrootdir" ]; then
 	echo "No chroot dir defined, or invalid path '$chrootdir'"
