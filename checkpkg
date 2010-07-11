@@ -27,6 +27,9 @@ if [ "$arch" == 'any' ]; then
 	CARCH='any'
 fi
 
+TEMPDIR=$(mktemp -d /tmp/checkpkg-script.XXXX)
+cd $TEMPDIR
+
 for _pkgname in ${pkgname[@]}; do
 	pkgfile=${_pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
 	oldstylepkgfile=${_pkgname}-${pkgver}-${pkgrel}${PKGEXT}
@@ -90,3 +93,5 @@ for _pkgname in ${pkgname[@]}; do
 		echo "No filename differences for $_pkgname."
 	fi
 done
+
+echo "Files saved to $TEMPDIR"
