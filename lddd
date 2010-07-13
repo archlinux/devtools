@@ -9,9 +9,7 @@ IFS=':'
 libdirs='/lib:/usr/lib:/opt/qt/lib:/opt/kde/lib:/usr/lib/libfakeroot:/opt/NX/lib'
 extras=
 
-TEMPDIR=$(mktemp /tmp/lddd-script.XXXX)
-rm $TEMPDIR
-mkdir -p $TEMPDIR
+TEMPDIR=$(mktemp -d /tmp/lddd-script.XXXX)
 
 echo 'Go out and drink some tea, this will take a while :) ...'
 #  Check ELF binaries in the PATH and specified dir trees.
