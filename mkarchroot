@@ -84,6 +84,12 @@ chroot_mount() {
 	[ -e "${working_dir}/dev" ] || mkdir "${working_dir}/dev"
 	mount -o bind /dev "${working_dir}/dev"
 
+	[ -e "${working_dir}/dev/shm" ] || mkdir "${working_dir}/dev/shm"
+	mount -t tmpfs shm /dev/shm "${working_dir}/dev/shm"
+
+	[ -e "${working_dir}/dev/pts" ] || mkdir "${working_dir}/dev/pts"
+	mount -t devpts devpts /dev/pts "${working_dir}/dev/pts"
+
 	[ -e "${cache_dir}" ] || mkdir -p "${cache_dir}"
 	[ -e "${working_dir}/${cache_dir}" ] || mkdir -p "${working_dir}/${cache_dir}"
 	mount -o bind "${cache_dir}" "${working_dir}/${cache_dir}"
@@ -99,6 +105,8 @@ copy_hostconf () {
 chroot_umount () {
 	umount "${working_dir}/proc"
 	umount "${working_dir}/sys"
+	umount "${working_dir}/dev/pts"
+	umount "${working_dir}/dev/shm"
 	umount "${working_dir}/dev"
 	umount "${working_dir}/${cache_dir}"
 }
