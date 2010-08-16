@@ -85,10 +85,10 @@ chroot_mount() {
 	mount -o bind /dev "${working_dir}/dev"
 
 	[ -e "${working_dir}/dev/shm" ] || mkdir "${working_dir}/dev/shm"
-	mount -t tmpfs shm /dev/shm "${working_dir}/dev/shm"
+	mount -t tmpfs shm "${working_dir}/dev/shm"
 
 	[ -e "${working_dir}/dev/pts" ] || mkdir "${working_dir}/dev/pts"
-	mount -t devpts devpts /dev/pts "${working_dir}/dev/pts"
+	mount -t devpts devpts "${working_dir}/dev/pts"
 
 	[ -e "${cache_dir}" ] || mkdir -p "${cache_dir}"
 	[ -e "${working_dir}/${cache_dir}" ] || mkdir -p "${working_dir}/${cache_dir}"
