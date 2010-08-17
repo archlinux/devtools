@@ -27,6 +27,7 @@ if [ "$arch" == 'any' ]; then
 	CARCH='any'
 fi
 
+STARTDIR=$(pwd)
 TEMPDIR=$(mktemp -d /tmp/checkpkg-script.XXXX)
 cd $TEMPDIR
 
@@ -34,14 +35,14 @@ for _pkgname in ${pkgname[@]}; do
 	pkgfile=${_pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
 	oldstylepkgfile=${_pkgname}-${pkgver}-${pkgrel}${PKGEXT}
 
-	if [ -f "$(pwd)/$pkgfile" ]; then
-		pkgfile=$(pwd)/$pkgfile
+	if [ -f "$STARTDIR/$pkgfile" ]; then
+		cp "$STARTDIR/$pkgfile" .
 	elif [ -f "$PKGDEST/$pkgfile" ]; then
-		pkgfile=$PKGDEST/$pkgfile
-	elif [ -f "$(pwd)/$oldstylepkgfile" ]; then
-		pkgfile=$(pwd)/$oldstylepkgfile
+		cp "$PKGDEST/$pkgfile" .
+	elif [ -f "$STARTDIR/$oldstylepkgfile" ]; then
+		cp "$STARTDIR/$oldstylepkgfile" .
 	elif [ -f "$PKGDEST/$oldstylepkgfile" ]; then
-		pkgfile=$PKGDEST/$oldstylepkgfile
+		cp "$PKGDEST/$oldstylepkgfile" .
 	else
 		echo "File \"$pkgfile\" doesn't exist"
 		exit 1
