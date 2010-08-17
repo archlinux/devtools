@@ -172,7 +172,7 @@ if [ "$RUN" != "" ]; then
 	fi
 
 	if [ -e "${working_dir}/etc/locale.gen" ]; then
-		cp /etc/locale.gen "${working_dir}/etc/locale.gen"
+		echo -e 'en_US.UTF-8 UTF-8\nde_DE.UTF-8 UTF-8' > "${working_dir}/etc/locale.gen"
 		chroot "${working_dir}" locale-gen
 	fi
 
