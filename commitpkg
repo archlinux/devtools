@@ -46,6 +46,8 @@ elif [ "$cmd" == 'corepkg' ]; then
 	repo='core'
 elif [ "$cmd" == 'testingpkg' ]; then
 	repo='testing'
+elif [ "$cmd" == 'stagingpkg' ]; then
+	repo='staging'
 elif [ "$cmd" == 'communitypkg' ]; then
 	repo='community'
 	server='aur.archlinux.org'

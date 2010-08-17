@@ -10,6 +10,7 @@ install:
 	ln -sf commitpkg $(DESTDIR)/usr/bin/extrapkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/corepkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/testingpkg
+	ln -sf commitpkg $(DESTDIR)/usr/bin/stagingpkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/communitypkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/community-testingpkg
 	# arch{co,release,rm}
@@ -33,6 +34,7 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/extrapkg
 	rm $(DESTDIR)/usr/bin/corepkg
 	rm $(DESTDIR)/usr/bin/testingpkg
+	rm $(DESTDIR)/usr/bin/stagingpkg
 	rm $(DESTDIR)/usr/bin/communitypkg
 	rm $(DESTDIR)/usr/bin/community-testingpkg
 	rm $(DESTDIR)/usr/sbin/mkarchroot
