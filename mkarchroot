@@ -34,7 +34,7 @@ usage() {
 while getopts 'r:ufnhC:M:c:' arg; do
 	case "${arg}" in
 		r) RUN="$OPTARG" ;;
-		u) RUN='pacman -Syu' ;;
+		u) RUN='pacman -Syu --noconfirm' ;;
 		f) FORCE='y' ;;
 		C) pac_conf="$OPTARG" ;;
 		M) makepkg_conf="$OPTARG" ;;
@@ -158,10 +158,7 @@ if [ "$RUN" != "" ]; then
 
 	chroot_mount
 
-	pacargs='--noconfirm -v ' #--noprogressbar -v
-	pacargs="$pacargs --root=${working_dir}"
-	# pacman takes these as relative to the given root
-	pacargs="$pacargs --cachedir=${cache_dir}"
+	pacargs="--noconfirm --root=${working_dir} --cachedir=${cache_dir}"
 	if [ "$pac_conf" != "" ]; then
 		pacargs="$pacargs --config=${pac_conf}"
 	fi
