@@ -1,10 +1,10 @@
-V=0.9.8
+V=0.9.7
 
 all:
 
 install:
 	# commitpkg/checkpkg and friends
-	mkdir -p $(DESTDIR)/usr/bin
+	install -d -m755 $(DESTDIR)/usr/bin
 	install -m 755 checkpkg $(DESTDIR)/usr/bin
 	install -m 755 commitpkg $(DESTDIR)/usr/bin
 	ln -sf commitpkg $(DESTDIR)/usr/bin/extrapkg
@@ -19,13 +19,20 @@ install:
 	install -m 755 archrelease $(DESTDIR)/usr/bin
 	install -m 755 archrm $(DESTDIR)/usr/bin
 	# new chroot tools, only usable by root
-	mkdir -p $(DESTDIR)/usr/sbin
+	install -d -m 755 $(DESTDIR)/usr/sbin
 	install -m 755 mkarchroot $(DESTDIR)/usr/sbin
 	install -m 755 makechrootpkg $(DESTDIR)/usr/sbin
 	#Additional packaging helper scripts
 	install -m 755 lddd $(DESTDIR)/usr/bin
 	install -m 755 finddeps $(DESTDIR)/usr/bin
 	install -m 755 rebuildpkgs $(DESTDIR)/usr/bin
+	# install default config
+	install -d -m755 $(DESTDIR)/usr/share/devtools
+	install -m 644 makepkg-i686.conf $(DESTDIR)/usr/share/devtools
+	install -m 644 makepkg-x86_64.conf $(DESTDIR)/usr/share/devtools
+	install -m 644 pacman-extra.conf $(DESTDIR)/usr/share/devtools
+	install -m 644 pacman-testing.conf $(DESTDIR)/usr/share/devtools
+	install -m 644 pacman-staging.conf $(DESTDIR)/usr/share/devtools
 
 uninstall:
 	# remove all files we installed
@@ -46,6 +53,11 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/archrm
 	rm $(DESTDIR)/usr/bin/communityco
 	rm $(DESTDIR)/usr/bin/rebuildpkgs
+	rm $(DESTDIR)/usr/share/devtools/makepkg-i686.conf
+	rm $(DESTDIR)/usr/share/devtools/makepkg-x86_64.conf
+	rm $(DESTDIR)/usr/share/devtools/pacman-extra.conf
+	rm $(DESTDIR)/usr/share/devtools/pacman-testing.conf
+	rm $(DESTDIR)/usr/share/devtools/pacman-staging.conf
 
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip -9 > devtools-$(V).tar.gz
