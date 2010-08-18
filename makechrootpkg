@@ -10,7 +10,7 @@
 
 FORCE='n'
 RUN=''
-MAKEPKG_ARGS='-sr'
+MAKEPKG_ARGS='-s --noconfirm'
 REPACK=''
 COPY='copy'
 WORKDIR=$PWD
@@ -122,7 +122,7 @@ if [ -n "$install_pkg" ]; then
 fi
 
 if [ $update_first -eq 1 ]; then
-	mkarchroot -r 'pacman -Syu --noconfirm' "$copydir"
+	mkarchroot -u "$copydir"
 fi
 
 [ -d "$copydir/build" ] || mkdir "$copydir/build"
@@ -132,28 +132,43 @@ if [ "$REPACK" != "1" ]; then
 	rm -rf "$copydir/build/"*
 fi
 
-# Get SRC/PKGDEST from makepkg.conf
-if [ -f ~/.makepkg.conf ]; then
-	SRCDEST=$(grep '^SRCDEST=' ~/.makepkg.conf | cut -d= -f2)
-	PKGDEST=$(grep '^PKGDEST=' ~/.makepkg.conf | cut -d= -f2)
+# read .makpekg.conf even if called via sudo
+if [ -n "${SUDO_USER}" ]; then
+	makepkg_conf="/$(eval echo ~${SUDO_USER})/.makepkg.conf"
+else
+	makepkg_conf="~/.makepkg.conf"
 fi
-[ -z ${SRCDEST} ] && SRCDEST=$(grep '^SRCDEST=' /etc/makepkg.conf | cut -d= -f2)
-[ -z ${PKGDEST} ] && PKGDEST=$(grep '^PKGDEST=' /etc/makepkg.conf | cut -d= -f2)
+
+# Get SRC/PKGDEST from makepkg.conf
+if [ -f "${makepkg_conf}" ]; then
+	eval $(grep '^SRCDEST=' "${makepkg_conf}")
+	eval $(grep '^PKGDEST=' "${makepkg_conf}")
+
+	eval $(grep '^MAKEFLAGS=' "${makepkg_conf}")
+	eval $(grep '^PACKAGER=' "${makepkg_conf}")
+fi
+[ -z "${SRCDEST}" ] && eval $(grep '^SRCDEST=' /etc/makepkg.conf)
+[ -z "${PKGDEST}" ] && eval $(grep '^PKGDEST=' /etc/makepkg.conf)
 
 [ -d "$copydir/pkgdest" ] || mkdir "$copydir/pkgdest"
-if ! grep 'PKGDEST=/pkgdest' "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
-	echo 'PKGDEST=/pkgdest' >> "$copydir/etc/makepkg.conf"
+if ! grep 'PKGDEST="/pkgdest"' "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
+	echo 'PKGDEST="/pkgdest"' >> "$copydir/etc/makepkg.conf"
 fi
 
 [ -d "$copydir/srcdest" ] || mkdir "$copydir/srcdest"
-if ! grep 'SRCDEST=/srcdest' "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
-	echo 'SRCDEST=/srcdest' >> "$copydir/etc/makepkg.conf"
+if ! grep 'SRCDEST="/srcdest"' "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
+	echo 'SRCDEST="/srcdest"' >> "$copydir/etc/makepkg.conf"
 fi
+[ -z "${MAKEFLAGS}" ] && eval $(grep '^MAKEFLAGS=' /etc/makepkg.conf)
+[ -n "${MAKEFLAGS}" ] && echo "MAKEFLAGS='${MAKEFLAGS}'" >> "$copydir/etc/makepkg.conf"
+[ -z "${PACKAGER}" ] && eval $(grep '^PACKAGER=' /etc/makepkg.conf)
+[ -n "${PACKAGER}" ] && echo "PACKAGER='${PACKAGER}'" >> "$copydir/etc/makepkg.conf"
 
 # Set target CARCH as it might be used within the PKGBUILD to select correct sources
-CARCH=$(eval $(grep '^CARCH=' "$copydir/etc/makepkg.conf"))
+eval $(grep '^CARCH=' "$copydir/etc/makepkg.conf")
+export CARCH
 # Copy PKGBUILD and sources
-source PKGBUILD
+source=($(. PKGBUILD; echo ${source[@]}))
 cp PKGBUILD "$copydir/build/"
 for f in ${source[@]}; do
 	basef=$(echo $f | sed 's|::.*||' | sed 's|^.*://.*/||g')
@@ -189,7 +204,7 @@ fi
 #working copy
 (cat <<EOF
 #!/bin/bash
-export LANG=$LOCALE
+export LANG=C
 cd /build
 export HOME=/build
 sudo -u nobody makepkg $MAKEPKG_ARGS || touch BUILD_FAILED
