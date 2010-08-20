@@ -1,4 +1,4 @@
-V=0.9.7
+V=0.9.8
 
 all:
 
@@ -22,7 +22,14 @@ install:
 	install -d -m 755 $(DESTDIR)/usr/sbin
 	install -m 755 mkarchroot $(DESTDIR)/usr/sbin
 	install -m 755 makechrootpkg $(DESTDIR)/usr/sbin
-	#Additional packaging helper scripts
+	install -m 755 archbuild $(DESTDIR)/usr/bin
+	ln -sf archbuild $(DESTDIR)/usr/bin/extra-i686-build
+	ln -sf archbuild $(DESTDIR)/usr/bin/extra-x86_64-build
+	ln -sf archbuild $(DESTDIR)/usr/bin/testing-i686-build
+	ln -sf archbuild $(DESTDIR)/usr/bin/testing-x86_64-build
+	ln -sf archbuild $(DESTDIR)/usr/bin/staging-i686-build
+	ln -sf archbuild $(DESTDIR)/usr/bin/staging-x86_64-build
+	# Additional packaging helper scripts
 	install -m 755 lddd $(DESTDIR)/usr/bin
 	install -m 755 finddeps $(DESTDIR)/usr/bin
 	install -m 755 rebuildpkgs $(DESTDIR)/usr/bin
@@ -46,6 +53,12 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/community-testingpkg
 	rm $(DESTDIR)/usr/sbin/mkarchroot
 	rm $(DESTDIR)/usr/sbin/makechrootpkg
+	rm $(DESTDIR)/usr/bin/extra-i686-build
+	rm $(DESTDIR)/usr/bin/extra-x86_64-build
+	rm $(DESTDIR)/usr/bin/testing-i686-build
+	rm $(DESTDIR)/usr/bin/testing-x86_64-build
+	rm $(DESTDIR)/usr/bin/staging-i686-build
+	rm $(DESTDIR)/usr/bin/staging-x86_64-build
 	rm $(DESTDIR)/usr/bin/lddd
 	rm $(DESTDIR)/usr/bin/finddeps
 	rm $(DESTDIR)/usr/bin/archco

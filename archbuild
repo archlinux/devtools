@@ -1,0 +1,41 @@
+#!/bin/bash
+
+cmd="$(basename "${0%-build}")"
+repo=${cmd%-*}
+arch=${cmd#*-}
+chroots='/var/tmp/archbuild'
+clean_first=false
+
+usage() {
+	echo "usage $(basename "$0")"
+	echo '    -c         Recreate the chroot before building'
+	echo '    -r <dir>   Create chroots in this directory'
+	exit 1
+}
+
+while getopts 'cr:' arg; do
+	case "${arg}" in
+		c) clean_first=true ;;
+		r) chroots="$OPTARG" ;;
+		*) usage ;;
+	esac
+done
+
+if [ "$(uname -m)" == 'i686' -a "${arch}" != 'i686' ]; then
+	echo 'You can only build i686 packages on this system'
+	exit 1
+fi
+
+if ${clean_first} || [ ! -d "${chroots}/${repo}-${arch}" ]; then
+	echo "Creating chroot for [${repo}] (${arch})..."
+	sudo rm -rf ${chroots}/${repo}-${arch}
+	sudo mkdir -p ${chroots}/${repo}-${arch}
+	setarch ${arch} sudo mkarchroot \
+		-C /usr/share/devtools/pacman-${repo}.conf \
+		-M /usr/share/devtools/makepkg-${arch}.conf \
+		${chroots}/${repo}-${arch}/root \
+		base base-devel sudo
+fi
+
+echo "Building in chroot for [${repo}] (${arch})..."
+setarch ${arch} sudo makechrootpkg -c -u -r ${chroots}/${repo}-${arch}
