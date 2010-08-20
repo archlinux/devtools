@@ -179,6 +179,7 @@ for f in ${source[@]}; do
 	fi
 done
 
+( . PKGBUILD
 for i in 'changelog' 'install'; do
 	filelist=$(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
 	for file in $filelist; do
@@ -189,6 +190,7 @@ for i in 'changelog' 'install'; do
 		fi
 	done
 done
+)
 
 chown -R nobody "$copydir/build"
 chown -R nobody "$copydir/srcdest"
