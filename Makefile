@@ -42,6 +42,7 @@ install:
 	install -m 644 pacman-extra.conf $(DESTDIR)/usr/share/devtools
 	install -m 644 pacman-testing.conf $(DESTDIR)/usr/share/devtools
 	install -m 644 pacman-staging.conf $(DESTDIR)/usr/share/devtools
+	install -m 644 pacman-multilib.conf $(DESTDIR)/usr/share/devtools
 
 uninstall:
 	# remove all files we installed
@@ -75,6 +76,7 @@ uninstall:
 	rm $(DESTDIR)/usr/share/devtools/pacman-extra.conf
 	rm $(DESTDIR)/usr/share/devtools/pacman-testing.conf
 	rm $(DESTDIR)/usr/share/devtools/pacman-staging.conf
+	rm $(DESTDIR)/usr/share/devtools/pacman-multilib.conf
 
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip -9 > devtools-$(V).tar.gz
