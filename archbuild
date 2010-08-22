@@ -1,8 +1,13 @@
 #!/bin/bash
 
 cmd="$(basename "${0%-build}")"
-repo=${cmd%-*}
-arch=${cmd#*-}
+if [ "${cmd}" == 'multilib' ]; then
+	repo='multilib'
+	arch='x86_64'
+else
+	repo=${cmd%-*}
+	arch=${cmd#*-}
+fi
 chroots='/var/tmp/archbuild'
 clean_first=false
 
@@ -23,6 +28,11 @@ done
 
 if [ "$(uname -m)" == 'i686' -a "${arch}" != 'i686' ]; then
 	echo 'You can only build i686 packages on this system'
+	exit 1
+fi
+
+if [ "$(uname -m)" != 'x86_64' -a "${repo}" == 'multilib' ]; then
+	echo 'You can only build multilib packages on a x86_64 system'
 	exit 1
 fi
 

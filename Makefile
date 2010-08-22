@@ -13,6 +13,7 @@ install:
 	ln -sf commitpkg $(DESTDIR)/usr/bin/stagingpkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/communitypkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/community-testingpkg
+	ln -sf commitpkg $(DESTDIR)/usr/bin/multilibpkg
 	# arch{co,release,rm}
 	install -m 755 archco $(DESTDIR)/usr/bin
 	install -m 755 communityco $(DESTDIR)/usr/bin
@@ -29,6 +30,7 @@ install:
 	ln -sf archbuild $(DESTDIR)/usr/bin/testing-x86_64-build
 	ln -sf archbuild $(DESTDIR)/usr/bin/staging-i686-build
 	ln -sf archbuild $(DESTDIR)/usr/bin/staging-x86_64-build
+	ln -sf archbuild $(DESTDIR)/usr/bin/multilib-build
 	# Additional packaging helper scripts
 	install -m 755 lddd $(DESTDIR)/usr/bin
 	install -m 755 finddeps $(DESTDIR)/usr/bin
@@ -51,6 +53,7 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/stagingpkg
 	rm $(DESTDIR)/usr/bin/communitypkg
 	rm $(DESTDIR)/usr/bin/community-testingpkg
+	rm $(DESTDIR)/usr/bin/multilibpkg
 	rm $(DESTDIR)/usr/sbin/mkarchroot
 	rm $(DESTDIR)/usr/sbin/makechrootpkg
 	rm $(DESTDIR)/usr/bin/extra-i686-build
@@ -59,6 +62,7 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/testing-x86_64-build
 	rm $(DESTDIR)/usr/bin/staging-i686-build
 	rm $(DESTDIR)/usr/bin/staging-x86_64-build
+	rm $(DESTDIR)/usr/bin/multilib-build
 	rm $(DESTDIR)/usr/bin/lddd
 	rm $(DESTDIR)/usr/bin/finddeps
 	rm $(DESTDIR)/usr/bin/archco
