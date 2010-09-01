@@ -54,6 +54,9 @@ elif [ "$cmd" == 'communitypkg' ]; then
 elif [ "$cmd" == 'community-testingpkg' ]; then
 	repo='community-testing'
 	server='aur.archlinux.org'
+elif [ "$cmd" == 'community-stagingpkg' ]; then
+	repo='community-staging'
+	server='aur.archlinux.org'
 elif [ "$cmd" == 'multilibpkg' ]; then
 	repo='multilib'
 	server='aur.archlinux.org'

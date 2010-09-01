@@ -13,6 +13,7 @@ install:
 	ln -sf commitpkg $(DESTDIR)/usr/bin/stagingpkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/communitypkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/community-testingpkg
+	ln -sf commitpkg $(DESTDIR)/usr/bin/community-stagingpkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/multilibpkg
 	# arch{co,release,rm}
 	install -m 755 archco $(DESTDIR)/usr/bin
@@ -54,6 +55,7 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/stagingpkg
 	rm $(DESTDIR)/usr/bin/communitypkg
 	rm $(DESTDIR)/usr/bin/community-testingpkg
+	rm $(DESTDIR)/usr/bin/community-stagingpkg
 	rm $(DESTDIR)/usr/bin/multilibpkg
 	rm $(DESTDIR)/usr/sbin/mkarchroot
 	rm $(DESTDIR)/usr/sbin/makechrootpkg
