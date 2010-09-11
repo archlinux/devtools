@@ -60,6 +60,9 @@ elif [ "$cmd" == 'community-stagingpkg' ]; then
 elif [ "$cmd" == 'multilibpkg' ]; then
 	repo='multilib'
 	server='aur.archlinux.org'
+elif [ "$cmd" == 'multilib-testingpkg' ]; then
+	repo='multilib-testing'
+	server='aur.archlinux.org'
 else
 	if [ $# -eq 0 ]; then
 		abort 'usage: commitpkg <reponame> [-l limit] [commit message]'

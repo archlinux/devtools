@@ -15,6 +15,7 @@ install:
 	ln -sf commitpkg $(DESTDIR)/usr/bin/community-testingpkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/community-stagingpkg
 	ln -sf commitpkg $(DESTDIR)/usr/bin/multilibpkg
+	ln -sf commitpkg $(DESTDIR)/usr/bin/multilib-testingpkg
 	# arch{co,release,rm}
 	install -m 755 archco $(DESTDIR)/usr/bin
 	install -m 755 communityco $(DESTDIR)/usr/bin
@@ -32,6 +33,7 @@ install:
 	ln -sf archbuild $(DESTDIR)/usr/bin/staging-i686-build
 	ln -sf archbuild $(DESTDIR)/usr/bin/staging-x86_64-build
 	ln -sf archbuild $(DESTDIR)/usr/bin/multilib-build
+	ln -sf archbuild $(DESTDIR)/usr/bin/multilib-testing-build
 	# Additional packaging helper scripts
 	install -m 755 lddd $(DESTDIR)/usr/bin
 	install -m 755 finddeps $(DESTDIR)/usr/bin
@@ -44,6 +46,7 @@ install:
 	install -m 644 pacman-testing.conf $(DESTDIR)/usr/share/devtools
 	install -m 644 pacman-staging.conf $(DESTDIR)/usr/share/devtools
 	install -m 644 pacman-multilib.conf $(DESTDIR)/usr/share/devtools
+	install -m 644 pacman-multilib-testing.conf $(DESTDIR)/usr/share/devtools
 
 uninstall:
 	# remove all files we installed
@@ -57,6 +60,7 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/community-testingpkg
 	rm $(DESTDIR)/usr/bin/community-stagingpkg
 	rm $(DESTDIR)/usr/bin/multilibpkg
+	rm $(DESTDIR)/usr/bin/multilib-testingpkg
 	rm $(DESTDIR)/usr/sbin/mkarchroot
 	rm $(DESTDIR)/usr/sbin/makechrootpkg
 	rm $(DESTDIR)/usr/bin/extra-i686-build
@@ -66,6 +70,7 @@ uninstall:
 	rm $(DESTDIR)/usr/bin/staging-i686-build
 	rm $(DESTDIR)/usr/bin/staging-x86_64-build
 	rm $(DESTDIR)/usr/bin/multilib-build
+	rm $(DESTDIR)/usr/bin/multilib-testing-build
 	rm $(DESTDIR)/usr/bin/lddd
 	rm $(DESTDIR)/usr/bin/finddeps
 	rm $(DESTDIR)/usr/bin/archco
@@ -79,6 +84,7 @@ uninstall:
 	rm $(DESTDIR)/usr/share/devtools/pacman-testing.conf
 	rm $(DESTDIR)/usr/share/devtools/pacman-staging.conf
 	rm $(DESTDIR)/usr/share/devtools/pacman-multilib.conf
+	rm $(DESTDIR)/usr/share/devtools/pacman-multilib-testing.conf
 
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip -9 > devtools-$(V).tar.gz
