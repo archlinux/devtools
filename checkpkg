@@ -80,7 +80,7 @@ for _pkgname in ${pkgname[@]}; do
 	sort -o filelist-$_pkgname filelist-$_pkgname
 	sort -o filelist-$_pkgname-old filelist-$_pkgname-old
 
-	diff filelist-$_pkgname-old filelist-$_pkgname
+	diff -u filelist-$_pkgname-old filelist-$_pkgname
 
 	if diff filelist-$_pkgname-old filelist-$_pkgname | grep '\.so\.' > /dev/null 2>&1; then
 		mkdir -p pkg
