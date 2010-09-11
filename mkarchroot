@@ -73,13 +73,13 @@ if [ -z "$cache_dir" ]; then
 fi
 
 if [ -f /etc/pacman.d/mirrorlist ]; then
-	host_mirror=$(grep -v '^#' -m1 /etc/pacman.d/mirrorlist | sed -E 's#/os/(i686|x86_64)#/os/\$arch#g')
+	host_mirror=$(pacman -Sdp extra/devtools 2>/dev/null | sed -E 's#(.*/)extra/os/.*#\1$repo/os/$arch#')
 fi
 if [ -z "${host_mirror}" ]; then
-	host_mirror='Server = http://mirrors.kernel.org/archlinux/$repo/os/$arch'
+	host_mirror='http://mirrors.kernel.org/archlinux/$repo/os/$arch'
 fi
 if echo "${host_mirror}" | grep -q 'file://'; then
-	host_mirror_path=$(echo "${host_mirror}" | sed -E 's#Server\s=\sfile://(/.*)/\$repo/os/(\$arch|i686|x86_64)#\1#g')
+	host_mirror_path=$(echo "${host_mirror}" | sed -E 's#file://(/.*)/\$repo/os/\$arch#\1#g')
 fi
 
 # {{{ functions 
@@ -116,7 +116,7 @@ chroot_mount() {
 copy_hostconf () {
 	chroot "${working_dir}" /bin/findmnt -rnu -o SOURCE,TARGET,FSTYPE,OPTIONS > "${working_dir}/etc/mtab"
 	cp /etc/resolv.conf "${working_dir}/etc/resolv.conf"
-	echo "${host_mirror}" > ${working_dir}/etc/pacman.d/mirrorlist
+	echo "Server = ${host_mirror}" > ${working_dir}/etc/pacman.d/mirrorlist
 }
 
 chroot_umount () {
