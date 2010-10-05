@@ -34,6 +34,13 @@ for d in $(find . -type d); do
 				echo "$d (makedepends)"
 			fi
 		done
+		for dep in "${optdepends[@]/:*}"; do
+			# lose the version comaparator, if any
+			depname=${dep%%[<>=]*}
+			if [ "$depname" = "$match" ]; then
+				echo "$d (optdepends)"
+			fi
+		done
 	fi
 	cd $tld
 done
