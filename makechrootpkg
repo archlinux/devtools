@@ -87,7 +87,7 @@ if [ "$EUID" != '0' ]; then
 	exit 1
 fi
 
-if [ ! -f PKGBUILD ]; then
+if [ ! -f PKGBUILD -a -z "$install_pkg" ]; then
 	echo 'This must be run in a directory containing a PKGBUILD.'
 	exit 1
 fi
