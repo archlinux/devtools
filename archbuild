@@ -1,12 +1,16 @@
 #!/bin/bash
 
+base_packages='base base-devel sudo'
+
 cmd="$(basename "${0%-build}")"
 if [ "${cmd}" == 'multilib' ]; then
 	repo='multilib'
 	arch='x86_64'
+	base_packages+=' gcc-multilib'
 elif [ "${cmd}" == 'multilib-testing' ]; then
         repo='multilib-testing'
         arch='x86_64'
+	base_packages+=' gcc-multilib'
 else
 	repo=${cmd%-*}
 	arch=${cmd#*-}
@@ -42,7 +46,7 @@ if ${clean_first} || [ ! -d "${chroots}/${repo}-${arch}" ]; then
 		-C /usr/share/devtools/pacman-${repo}.conf \
 		-M /usr/share/devtools/makepkg-${arch}.conf \
 		${chroots}/${repo}-${arch}/root \
-		base base-devel sudo
+		${base_packages}
 fi
 
 echo "Building in chroot for [${repo}] (${arch})..."
