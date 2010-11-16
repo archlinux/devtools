@@ -33,11 +33,6 @@ while getopts 'cr:' arg; do
 	esac
 done
 
-if [ "$(uname -m)" == 'i686' -a "${arch}" != 'i686' ]; then
-	echo 'You can only build i686 packages on this system'
-	exit 1
-fi
-
 if ${clean_first} || [ ! -d "${chroots}/${repo}-${arch}" ]; then
 	echo "Creating chroot for [${repo}] (${arch})..."
 	sudo rm -rf ${chroots}/${repo}-${arch}
