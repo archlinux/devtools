@@ -3,12 +3,8 @@
 base_packages='base base-devel sudo'
 
 cmd="$(basename "${0%-build}")"
-if [ "${cmd}" == 'multilib' ]; then
-	repo='multilib'
-	arch='x86_64'
-	base_packages+=' gcc-multilib libtool-multilib'
-elif [ "${cmd}" == 'multilib-testing' ]; then
-        repo='multilib-testing'
+if [ "${cmd%-*}" == 'multilib' ]; then
+        repo="${cmd}"
         arch='x86_64'
 	base_packages+=' gcc-multilib libtool-multilib'
 else
