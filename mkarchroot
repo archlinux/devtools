@@ -92,13 +92,24 @@ chroot_mount() {
 	mount -t proc proc "${working_dir}/proc"
 
 	[ -e "${working_dir}/dev" ] || mkdir "${working_dir}/dev"
-	mount -o bind /dev "${working_dir}/dev"
+	mount -t tmpfs dev "${working_dir}/dev" -o mode=0755,size=10M,nosuid
+	mknod -m 666 "${working_dir}/dev/null" c 1 3
+	mknod -m 666 "${working_dir}/dev/zero" c 1 5
+	mknod -m 600 "${working_dir}/dev/console" c 5 1
+	mknod -m 644 "${working_dir}/dev/random" c 1 8
+	mknod -m 644 "${working_dir}/dev/urandom" c 1 9
+	ln -s /proc/kcore "${working_dir}/dev/core"
+	ln -s /proc/self/fd "${working_dir}/dev/fd"
+	ln -s /proc/self/fd/0 "${working_dir}/dev/stdin"
+	ln -s /proc/self/fd/1 "${working_dir}/dev/stdout"
+	ln -s /proc/self/fd/2 "${working_dir}/dev/stderr"
 
 	[ -e "${working_dir}/dev/shm" ] || mkdir "${working_dir}/dev/shm"
-	mount -t tmpfs shm "${working_dir}/dev/shm"
+	mount -t tmpfs shm "${working_dir}/dev/shm" -o nodev,nosuid,size=128M
 
 	[ -e "${working_dir}/dev/pts" ] || mkdir "${working_dir}/dev/pts"
-	mount -t devpts devpts "${working_dir}/dev/pts"
+	mount -t devpts devpts "${working_dir}/dev/pts" -o newinstance,ptmxmode=666
+	ln -s pts/ptmx "${working_dir}/dev/ptmx"
 
 	[ -e "${cache_dir}" ] || mkdir -p "${cache_dir}"
 	[ -e "${working_dir}/${cache_dir}" ] || mkdir -p "${working_dir}/${cache_dir}"
@@ -110,7 +121,7 @@ chroot_mount() {
 		mount -o remount,ro,bind "${host_mirror_path}" "${working_dir}/${host_mirror_path}"
 	fi
 
-	trap 'chroot_umount' 0 1 2 15
+	trap 'chroot_umount' EXIT INT QUIT TERM HUP
 }
 
 copy_hostconf () {
