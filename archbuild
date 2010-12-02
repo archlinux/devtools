@@ -38,7 +38,11 @@ if ${clean_first} || [ ! -d "${chroots}/${repo}-${arch}" ]; then
 		-M /usr/share/devtools/makepkg-${arch}.conf \
 		${chroots}/${repo}-${arch}/root \
 		${base_packages}
+else
+	setarch ${arch} sudo mkarchroot \
+		-u \
+		${chroots}/${repo}-${arch}/root
 fi
 
 echo "Building in chroot for [${repo}] (${arch})..."
-setarch ${arch} sudo makechrootpkg -c -u -r ${chroots}/${repo}-${arch}
+setarch ${arch} sudo makechrootpkg -c -r ${chroots}/${repo}-${arch}
