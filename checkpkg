@@ -82,11 +82,11 @@ for _pkgname in ${pkgname[@]}; do
 
 	diff -u filelist-$_pkgname-old filelist-$_pkgname
 
-	if diff filelist-$_pkgname-old filelist-$_pkgname | grep '\.so\.' > /dev/null 2>&1; then
+	if diff filelist-$_pkgname-old filelist-$_pkgname | grep '\.so' > /dev/null 2>&1; then
 		mkdir -p pkg
 		cd pkg
 		bsdtar xf ../"$pkgfile" > /dev/null
-		for i in `diff ../filelist-$_pkgname-old ../filelist-$_pkgname | grep \> | grep \.so\. | awk '{print $2}'`; do
+		for i in `diff ../filelist-$_pkgname-old ../filelist-$_pkgname | grep \> | grep \.so | awk '{print $2}'`; do
 			echo -n "${i}: "
 			objdump -p $i | grep SONAME
 		done
