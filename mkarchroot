@@ -98,6 +98,9 @@ chroot_mount() {
 	mknod -m 600 "${working_dir}/dev/console" c 5 1
 	mknod -m 644 "${working_dir}/dev/random" c 1 8
 	mknod -m 644 "${working_dir}/dev/urandom" c 1 9
+	mknod -m 666 "${working_dir}/dev/tty" c 5 0
+	mknod -m 666 "${working_dir}/dev/tty0" c 4 0
+	mknod -m 666 "${working_dir}/dev/full" c 1 7
 	ln -s /proc/kcore "${working_dir}/dev/core"
 	ln -s /proc/self/fd "${working_dir}/dev/fd"
 	ln -s /proc/self/fd/0 "${working_dir}/dev/stdin"
