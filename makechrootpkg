@@ -196,11 +196,8 @@ chown -R nobody "$copydir/build"
 chown -R nobody "$copydir/srcdest"
 chown -R nobody "$copydir/pkgdest"
 
-if ! grep "^nobody" "$copydir/etc/sudoers" >/dev/null 2>&1; then
-	touch "$copydir/etc/sudoers"
-	echo 'nobody	ALL=(ALL) NOPASSWD: ALL' >> "$copydir/etc/sudoers"
-	chmod 440 "$copydir/etc/sudoers"
-fi
+echo 'nobody ALL = NOPASSWD: /usr/bin/pacman' > "$copydir/etc/sudoers.d/nobody-pacman"
+chmod 440 "$copydir/etc/sudoers.d/nobody-pacman"
 
 #This is a little gross, but this way the script is recreated every time in the
 #working copy
