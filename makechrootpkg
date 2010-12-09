@@ -256,6 +256,4 @@ if [ -e "${copydir}/build/BUILD_FAILED" ]; then
 	echo "Build failed, check $copydir/build"
 	rm "${copydir}/build/BUILD_FAILED"
 	exit 1
-else
-	rm -rf "${copydir}"/build/*
 fi
