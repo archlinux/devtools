@@ -13,7 +13,9 @@ if [ ! -f PKGBUILD ]; then
 	abort 'archrelease: PKGBUILD not found'
 fi
 
-if [ "$(basename $(readlink -f .))" != 'trunk' ]; then
+trunk=$(basename $(pwd))
+
+if [ "$(basename $(dirname $(pwd)))" == "repos" ]; then
 	abort 'archrelease: Not in a package trunk dir'
 fi
 
@@ -27,7 +29,7 @@ if [ -d "repos/${1}" ]; then
 	svn rm --force -q "repos/${1}"
 	svn commit -q -m "archrelease: remove ${1}" || abort
 fi
-svn copy -q -r HEAD trunk "repos/${1}"
-svn commit -q -m "archrelease: copy trunk to ${1}" || abort
+svn copy -q -r HEAD "${trunk}" "repos/${1}"
+svn commit -q -m "archrelease: copy ${trunk} to ${1}" || abort
 popd >/dev/null
 echo 'done'
