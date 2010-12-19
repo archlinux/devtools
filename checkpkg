@@ -69,6 +69,8 @@ for _pkgname in ${pkgname[@]}; do
 			cp `echo $pkgurl | sed 's#^file://##'` .
 		elif [ -f $PKGDEST/$oldpkg ]; then
 			cp $PKGDEST/$oldpkg .
+		elif [ -f $STARTDIR/$oldpkg ]; then
+			cp $STARTDIR/$oldpkg .
 		else
 			wget --quiet $pkgurl
 		fi
