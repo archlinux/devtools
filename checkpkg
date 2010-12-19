@@ -92,6 +92,7 @@ for _pkgname in ${pkgname[@]}; do
 			echo -n "${i}: "
 			objdump -p $i | grep SONAME
 		done
+		cd ..
 	else
 		echo "No soname differences for $_pkgname."
 	fi
