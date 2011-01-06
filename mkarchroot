@@ -34,7 +34,7 @@ usage() {
 while getopts 'r:ufnhC:M:c:' arg; do
 	case "${arg}" in
 		r) RUN="$OPTARG" ;;
-		u) RUN='pacman -Syu --noconfirm; pacman -Qqu >/dev/null && pacman -Su --noconfirm' ;;
+		u) RUN='/bin/sh -c "pacman -Syu --noconfirm; pacman -Qqu >/dev/null && pacman -Su --noconfirm"' ;;
 		f) FORCE='y' ;;
 		C) pac_conf="$OPTARG" ;;
 		M) makepkg_conf="$OPTARG" ;;
@@ -157,7 +157,7 @@ if [ "$RUN" != "" ]; then
 	chroot_mount
 	copy_hostconf
 
-	chroot "${working_dir}" ${RUN}
+	eval chroot "${working_dir}" ${RUN}
 
 	# }}}
 	else
