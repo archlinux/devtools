@@ -57,6 +57,7 @@ install:
 	install -m0644 ${CONFIGFILES} $(DESTDIR)/usr/share/devtools
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)/usr/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)/usr/bin/$$l; done
+	install -Dm0644 bash_completion $(DESTDIR)/etc/bash_completion.d/devtools
 
 uninstall:
 	for f in ${BINPROGS}; do rm -f $(DESTDIR)/usr/bin/$$f; done
@@ -64,6 +65,7 @@ uninstall:
 	for f in ${CONFIGFILES}; do rm -f $(DESTDIR)/usr/share/devtools/$$f; done
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)/usr/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)/usr/bin/$$l; done
+	rm $(DESTDIR)/etc/bash_completion.d/devtools
 
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip -9 > devtools-$(V).tar.gz

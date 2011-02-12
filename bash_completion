@@ -1,0 +1,69 @@
+_devtools_compgen() {
+  local i r
+  COMPREPLY=($(compgen -W '$*' -- "$cur"))
+  for ((i=1; i < ${#COMP_WORDS[@]}-1; i++)); do
+    for r in ${!COMPREPLY[@]}; do
+      if [[ ${COMP_WORDS[i]} = ${COMPREPLY[r]} ]]; then
+        unset 'COMPREPLY[r]'; break
+      fi
+    done
+  done
+}
+
+_archco_pkg() {
+  _devtools_compgen "$(
+      \pacman -$1
+  )"
+}
+
+_archco() {
+  local cur prev 
+  COMPREPLY=()
+  cur=$(_get_cword)
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+
+  _archco_pkg Slq
+  true
+} &&
+complete -F _archco archco communityco
+
+_makechrootpkg() {
+  local cur
+  COMPREPLY=()
+  _get_comp_words_by_ref cur
+
+  case $cur in
+    -*)
+       COMPREPLY=( $( compgen -W '-I -c -d -h -l -r -u' -- "$cur" ) )
+       ;;
+    *)
+      _filedir
+      return 0
+      ;;
+  esac
+
+  true
+} &&
+complete -F _makechrootpkg makechrootpkg
+
+_mkarchroot() {
+  local cur
+  COMPREPLY=()
+  _get_comp_words_by_ref cur
+
+  case $cur in
+    -*)
+       COMPREPLY=( $( compgen -W '-C -M -c -f -h -n -r -u' -- "$cur" ) )
+       ;;
+    *)
+      _filedir
+      return 0
+      ;;
+  esac
+
+  true
+} &&
+complete -F _mkarchroot mkarchroot
+
+
+# ex:et ts=2 sw=2 ft=sh
