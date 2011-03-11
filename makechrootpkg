@@ -233,7 +233,7 @@ if mkarchroot -r "/chrootbuild" "$copydir"; then
 		fi
 	done
 
-	for l in "${copydir}"/build/{namcap,*-{build,package}}.log; do
+	for l in "${copydir}"/build/{namcap,*-{build,package,package_*}}.log; do
 		[ -f "$l" ] && mv "$l" "${WORKDIR}"
 	done
 else
