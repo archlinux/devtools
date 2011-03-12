@@ -26,7 +26,7 @@ usage() {
 	echo '    -C <file>     Location of a pacman config file'
 	echo '    -M <file>     Location of a makepkg config file'
 	echo '    -n            Do not copy config files into the chroot'
-	echo "    -c <dir>      Set pacman cache. Default: /var/cache/pacman/pkg"
+	echo '    -c <dir>      Set pacman cache. Default: /var/cache/pacman/pkg'
 	echo '    -h            This message'
 	exit $1
 }
@@ -68,7 +68,7 @@ shift 1
 if [ -z "$cache_dir" ]; then
 	cache_conf=${working_dir}/etc/pacman.conf
 	[ ! -f $cache_conf ] && cache_conf=${pac_conf:-/etc/pacman.conf}
-	cache_dir=$((grep -m 1 '^CacheDir' $cache_conf || echo 'CacheDir = /var/cache/pacman/pkg') | sed 's/CacheDir\s*=\s*//')
+	cache_dir=$( (grep -m 1 '^CacheDir' $cache_conf || echo 'CacheDir = /var/cache/pacman/pkg') | sed 's/CacheDir\s*=\s*//')
 	unset cache_conf
 fi
 
@@ -82,8 +82,7 @@ if echo "${host_mirror}" | grep -q 'file://'; then
 	host_mirror_path=$(echo "${host_mirror}" | sed -E 's#file://(/.*)/\$repo/os/\$arch#\1#g')
 fi
 
-# {{{ functions 
-
+# {{{ functions
 chroot_mount() {
 	[ -e "${working_dir}/sys" ] || mkdir "${working_dir}/sys"
 	mount -t sysfs sysfs "${working_dir}/sys"
@@ -160,7 +159,7 @@ if [ "$RUN" != "" ]; then
 	eval chroot "${working_dir}" ${RUN}
 
 	# }}}
-	else
+else
 	# {{{ build chroot
 	if [ -e "${working_dir}" -a "${FORCE}" = "n" ]; then
 		echo "error: working dir '${working_dir}' already exists - try using -f"
