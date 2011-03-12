@@ -88,3 +88,5 @@ uninstall:
 
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip -9 > devtools-$(V).tar.gz
+
+.PHONY: all install uninstall dist
