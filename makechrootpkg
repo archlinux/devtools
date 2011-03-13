@@ -127,8 +127,18 @@ if [ ! -d "$copydir" -o "$clean_first" -eq "1" ]; then
 	fi
 
 	echo -n 'creating clean working copy...'
-	mkdir -p "$copydir"
-	rsync -a --delete -q -W -x "$chrootdir/root/" "$copydir"
+	use_rsync=false
+	if type -P btrfs >/dev/null; then
+		[ -d $copydir ] && btrfs subvolume delete "$copydir" &>/dev/null
+		btrfs subvolume snapshot "$chrootdir/root" "$copydir" &>/dev/null || use_rsync=true
+	else
+		use_rsync=true
+	fi
+
+	if $use_rsync; then
+		mkdir -p "$copydir"
+		rsync -a --delete -q -W -x "$chrootdir/root/" "$copydir"
+	fi
 	echo 'done'
 
 	# Drop the read lock again

@@ -45,6 +45,7 @@ if ${clean_first} || [ ! -d "${chroots}/${repo}-${arch}" ]; then
 		exec 9>${copy}.lock
 		flock 9
 
+		{ type -P btrfs && btrfs subvolume delete ${copy}; } &>/dev/null
 		rm -rf ${copy}
 	done
 	exec 9>&-

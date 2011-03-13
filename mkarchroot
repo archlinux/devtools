@@ -181,6 +181,10 @@ else
 		exit 1
 	fi
 
+	if { type -P btrfs && btrfs subvolume create "${working_dir}"; } &>/dev/null; then
+		chmod 0755 "${working_dir}"
+	fi
+
 	mkdir -p "${working_dir}/var/lib/pacman/sync"
 	mkdir -p "${working_dir}/etc/"
 
