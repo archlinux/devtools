@@ -67,8 +67,9 @@ while getopts 'hcudr:I:l:' arg; do
 	esac
 done
 
-#Get rid of trailing / in chrootdir
-[ "$chrootdir" != "/" ] && chrootdir=$(echo $chrootdir | sed 's#/$##')
+# Canonicalize chrootdir, getting rid of trailing /
+chrootdir=$(readlink -e "$chrootdir")
+
 copydir="$chrootdir/$COPY"
 
 # Pass all arguments after -- right to makepkg
