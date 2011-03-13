@@ -21,14 +21,14 @@ for d in $(find . -type d); do
 		unset pkgname depends makedepends
 		. PKGBUILD
 		for dep in "${depends[@]}"; do
-			# lose the version comaparator, if any
+			# lose the version comparator, if any
 			depname=${dep%%[<>=]*}
 			if [ "$depname" = "$match" ]; then
 				echo "$d (depends)"
 			fi
 		done
 		for dep in "${makedepends[@]}"; do
-			# lose the version comaparator, if any
+			# lose the version comparator, if any
 			depname=${dep%%[<>=]*}
 			if [ "$depname" = "$match" ]; then
 				echo "$d (makedepends)"
