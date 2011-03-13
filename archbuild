@@ -6,7 +6,7 @@ cmd="$(basename "${0%-build}")"
 if [ "${cmd%-*}" == 'multilib' ]; then
 	repo="${cmd}"
 	arch='x86_64'
-	base_packages+=' gcc-multilib libtool-multilib'
+	base_packages+=' multilib-devel'
 else
 	repo=${cmd%-*}
 	arch=${cmd##*-}
