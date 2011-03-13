@@ -29,20 +29,25 @@ while getopts 'cr:' arg; do
 	esac
 done
 
+if [ "$EUID" != '0' ]; then
+	echo 'This script must be run as root.'
+	exit 1
+fi
+
 if ${clean_first} || [ ! -d "${chroots}/${repo}-${arch}" ]; then
 	echo "Creating chroot for [${repo}] (${arch})..."
-	sudo rm -rf ${chroots}/${repo}-${arch}
-	sudo mkdir -p ${chroots}/${repo}-${arch}
-	setarch ${arch} sudo mkarchroot \
+	rm -rf ${chroots}/${repo}-${arch}
+	mkdir -p ${chroots}/${repo}-${arch}
+	setarch ${arch} mkarchroot \
 		-C /usr/share/devtools/pacman-${repo}.conf \
 		-M /usr/share/devtools/makepkg-${arch}.conf \
 		${chroots}/${repo}-${arch}/root \
 		${base_packages}
 else
-	setarch ${arch} sudo mkarchroot \
+	setarch ${arch} mkarchroot \
 		-u \
 		${chroots}/${repo}-${arch}/root
 fi
 
 echo "Building in chroot for [${repo}] (${arch})..."
-setarch ${arch} sudo makechrootpkg -c -r ${chroots}/${repo}-${arch}
+setarch ${arch} makechrootpkg -c -r ${chroots}/${repo}-${arch}
