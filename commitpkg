@@ -122,8 +122,8 @@ echo 'done'
 for _arch in ${arch[@]}; do
 	for _pkgname in ${pkgname[@]}; do
 		fullver=$(get_full_version ${epoch:-0} $pkgver $pkgrel)
-		pkgfile=$(getpkgfile "$_pkgname-$fullver-${_arch}".pkg.tar.* 2>/dev/null)
-		pkgdestfile=$(getpkgfile "$PKGDEST/$_pkgname-$fullver-${_arch}".pkg.tar.* 2>/dev/null)
+		pkgfile=$(getpkgfile "$_pkgname-$fullver-${_arch}".pkg.tar.?z 2>/dev/null)
+		pkgdestfile=$(getpkgfile "$PKGDEST/$_pkgname-$fullver-${_arch}".pkg.tar.?z 2>/dev/null)
 
 		if [ ! -f "$pkgfile" -a -f "$pkgdestfile" ]; then
 			pkgfile="$pkgdestfile"
