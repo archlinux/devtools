@@ -141,6 +141,20 @@ chroot_umount () {
 	umount "${working_dir}/${cache_dir}"
 	[ -n "${host_mirror_path}" ] && umount "${working_dir}/${host_mirror_path}"
 }
+
+chroot_lock () {
+	# Only reopen the FD if it wasn't handed to us
+	if [ "$(readlink -f /dev/fd/9)" != "${working_dir}.lock" ]; then
+	  exec 9>"${working_dir}.lock"
+	fi
+
+	# Lock the chroot. Take note of the FD number.
+	if ! flock -n 9; then
+		echo -n "locking chroot..."
+		flock 9
+		echo "done"
+	fi
+}
 # }}}
 
 umask 0022
@@ -153,6 +167,7 @@ if [ "$RUN" != "" ]; then
 		exit 1
 	fi
 
+	chroot_lock
 	chroot_mount
 	copy_hostconf
 
@@ -169,6 +184,7 @@ else
 	mkdir -p "${working_dir}/var/lib/pacman/sync"
 	mkdir -p "${working_dir}/etc/"
 
+	chroot_lock
 	chroot_mount
 
 	pacargs="--noconfirm --root=${working_dir} --cachedir=${cache_dir}"
