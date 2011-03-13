@@ -12,7 +12,6 @@ FORCE='n'
 RUN=''
 MAKEPKG_ARGS='-s --noconfirm'
 REPACK=''
-COPY='copy'
 WORKDIR=$PWD
 
 update_first='0'
@@ -23,6 +22,10 @@ add_to_db=0
 chrootdir=''
 
 APPNAME=$(basename "${0}")
+
+default_copy=$USER
+[[ -n $SUDO_USER ]] && default_copy=$SUDO_USER
+[[ -z $default_copy || $default_copy = root ]] && default_copy=copy
 
 usage() {
 	echo "usage ${APPNAME} [options] -r <chrootdir> [--] [makepkg args]"
@@ -50,7 +53,8 @@ usage() {
 	echo '-r <dir>   The chroot dir to use'
 	echo '-I <pkg>   Install a package into the working copy of the chroot'
 	echo '-l <copy>  The directory to use as the working copy of the chroot'
-	echo '           Useful for maintain multiple copies Default: copy'
+	echo '           Useful for maintaining multiple copies.'
+	echo "           Default: $default_copy"
 	exit 1
 }
 
@@ -62,7 +66,7 @@ while getopts 'hcudr:I:l:' arg; do
 		d) add_to_db=1 ;;
 		r) chrootdir="$OPTARG" ;;
 		I) install_pkg="$OPTARG" ;;
-		l) COPY="$OPTARG" ;;
+		l) copy="$OPTARG" ;;
 		*) MAKEPKG_ARGS="$MAKEPKG_ARGS -$arg $OPTARG" ;;
 	esac
 done
@@ -70,7 +74,8 @@ done
 # Canonicalize chrootdir, getting rid of trailing /
 chrootdir=$(readlink -e "$chrootdir")
 
-copydir="$chrootdir/$COPY"
+[[ -z $copy ]] && copy=$default_copy
+copydir="$chrootdir/$copy"
 
 # Pass all arguments after -- right to makepkg
 MAKEPKG_ARGS="$MAKEPKG_ARGS ${*:$OPTIND}"
