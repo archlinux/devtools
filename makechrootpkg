@@ -161,9 +161,15 @@ if ! grep 'SRCDEST="/srcdest"' "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
 	echo 'SRCDEST="/srcdest"' >> "$copydir/etc/makepkg.conf"
 fi
 [ -z "${MAKEFLAGS}" ] && eval $(grep '^MAKEFLAGS=' /etc/makepkg.conf)
-[ -n "${MAKEFLAGS}" ] && echo "MAKEFLAGS='${MAKEFLAGS}'" >> "$copydir/etc/makepkg.conf"
+if [ -n "${MAKEFLAGS}" ]; then 
+  sed -i '/^MAKEFLAGS=/d' "$copydir/etc/makepkg.conf"
+  echo "MAKEFLAGS='${MAKEFLAGS}'" >> "$copydir/etc/makepkg.conf"
+fi
 [ -z "${PACKAGER}" ] && eval $(grep '^PACKAGER=' /etc/makepkg.conf)
-[ -n "${PACKAGER}" ] && echo "PACKAGER='${PACKAGER}'" >> "$copydir/etc/makepkg.conf"
+if [ -n "${PACKAGER}" ]; then 
+  sed -i '/^PACKAGER=/d' "$copydir/etc/makepkg.conf"
+  echo "PACKAGER='${PACKAGER}'" >> "$copydir/etc/makepkg.conf"
+fi
 
 # Set target CARCH as it might be used within the PKGBUILD to select correct sources
 eval $(grep '^CARCH=' "$copydir/etc/makepkg.conf")
