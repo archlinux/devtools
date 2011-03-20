@@ -17,6 +17,19 @@ getpkgfile() {
 	echo ${1}
 }
 
+##
+#  usage : get_full_version( $epoch, $pkgver, $pkgrel )
+# return : full version spec, including epoch (if necessary), pkgver, pkgrel
+##
+get_full_version() {
+	if [[ $1 -eq 0 ]]; then
+		# zero epoch case, don't include it in version
+		echo $2-$3
+	else
+		echo $1:$2-$3
+	fi
+}
+
 # Source makepkg.conf; fail if it is not found
 if [ -r '/etc/makepkg.conf' ]; then
 	source '/etc/makepkg.conf'
@@ -108,8 +121,9 @@ echo 'done'
 
 for _arch in ${arch[@]}; do
 	for _pkgname in ${pkgname[@]}; do
-		pkgfile=$(getpkgfile "$_pkgname-$pkgver-$pkgrel-${_arch}".pkg.tar.* 2>/dev/null)
-		pkgdestfile=$(getpkgfile "$PKGDEST/$_pkgname-$pkgver-$pkgrel-${_arch}".pkg.tar.* 2>/dev/null)
+		fullver=$(get_full_version ${epoch:-0} $pkgver $pkgrel)
+		pkgfile=$(getpkgfile "$_pkgname-$fullver-${_arch}".pkg.tar.* 2>/dev/null)
+		pkgdestfile=$(getpkgfile "$PKGDEST/$_pkgname-$fullver-${_arch}".pkg.tar.* 2>/dev/null)
 
 		if [ ! -f "$pkgfile" -a -f "$pkgdestfile" ]; then
 			pkgfile="$pkgdestfile"
