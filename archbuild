@@ -4,9 +4,9 @@ base_packages='base base-devel sudo'
 
 cmd="$(basename "${0%-build}")"
 if [ "${cmd%-*}" == 'multilib' ]; then
-        repo="${cmd}"
-        arch='x86_64'
-	base_packages+=' gcc-multilib libtool-multilib'
+	repo="${cmd}"
+	arch='x86_64'
+	base_packages+=' multilib-devel'
 else
 	repo=${cmd%-*}
 	arch=${cmd##*-}
@@ -29,20 +29,39 @@ while getopts 'cr:' arg; do
 	esac
 done
 
+if [ "$EUID" != '0' ]; then
+	echo 'This script must be run as root.'
+	exit 1
+fi
+
 if ${clean_first} || [ ! -d "${chroots}/${repo}-${arch}" ]; then
 	echo "Creating chroot for [${repo}] (${arch})..."
-	sudo rm -rf ${chroots}/${repo}-${arch}
-	sudo mkdir -p ${chroots}/${repo}-${arch}
-	setarch ${arch} sudo mkarchroot \
+
+	for copy in ${chroots}/${repo}-${arch}/*; do
+		[[ -d $copy ]] || continue
+		echo "Deleting chroot copy '$(basename "${copy}")'..."
+
+		# Lock the copy
+		exec 9>${copy}.lock
+		flock 9
+
+		{ type -P btrfs && btrfs subvolume delete ${copy}; } &>/dev/null
+		rm -rf ${copy}
+	done
+	exec 9>&-
+
+	rm -rf ${chroots}/${repo}-${arch}
+	mkdir -p ${chroots}/${repo}-${arch}
+	setarch ${arch} mkarchroot \
 		-C /usr/share/devtools/pacman-${repo}.conf \
 		-M /usr/share/devtools/makepkg-${arch}.conf \
 		${chroots}/${repo}-${arch}/root \
 		${base_packages}
 else
-	setarch ${arch} sudo mkarchroot \
+	setarch ${arch} mkarchroot \
 		-u \
 		${chroots}/${repo}-${arch}/root
 fi
 
 echo "Building in chroot for [${repo}] (${arch})..."
-setarch ${arch} sudo makechrootpkg -c -r ${chroots}/${repo}-${arch}
+setarch ${arch} makechrootpkg -c -r ${chroots}/${repo}-${arch}

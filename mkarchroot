@@ -26,7 +26,7 @@ usage() {
 	echo '    -C <file>     Location of a pacman config file'
 	echo '    -M <file>     Location of a makepkg config file'
 	echo '    -n            Do not copy config files into the chroot'
-	echo "    -c <dir>      Set pacman cache. Default: /var/cache/pacman/pkg"
+	echo '    -c <dir>      Set pacman cache. Default: /var/cache/pacman/pkg'
 	echo '    -h            This message'
 	exit $1
 }
@@ -68,7 +68,7 @@ shift 1
 if [ -z "$cache_dir" ]; then
 	cache_conf=${working_dir}/etc/pacman.conf
 	[ ! -f $cache_conf ] && cache_conf=${pac_conf:-/etc/pacman.conf}
-	cache_dir=$((grep -m 1 '^CacheDir' $cache_conf || echo 'CacheDir = /var/cache/pacman/pkg') | sed 's/CacheDir\s*=\s*//')
+	cache_dir=$( (grep -m 1 '^CacheDir' $cache_conf || echo 'CacheDir = /var/cache/pacman/pkg') | sed 's/CacheDir\s*=\s*//')
 	unset cache_conf
 fi
 
@@ -82,8 +82,7 @@ if echo "${host_mirror}" | grep -q 'file://'; then
 	host_mirror_path=$(echo "${host_mirror}" | sed -E 's#file://(/.*)/\$repo/os/\$arch#\1#g')
 fi
 
-# {{{ functions 
-
+# {{{ functions
 chroot_mount() {
 	[ -e "${working_dir}/sys" ] || mkdir "${working_dir}/sys"
 	mount -t sysfs sysfs "${working_dir}/sys"
@@ -142,6 +141,20 @@ chroot_umount () {
 	umount "${working_dir}/${cache_dir}"
 	[ -n "${host_mirror_path}" ] && umount "${working_dir}/${host_mirror_path}"
 }
+
+chroot_lock () {
+	# Only reopen the FD if it wasn't handed to us
+	if [ "$(readlink -f /dev/fd/9)" != "${working_dir}.lock" ]; then
+	  exec 9>"${working_dir}.lock"
+	fi
+
+	# Lock the chroot. Take note of the FD number.
+	if ! flock -n 9; then
+		echo -n "locking chroot..."
+		flock 9
+		echo "done"
+	fi
+}
 # }}}
 
 umask 0022
@@ -154,22 +167,28 @@ if [ "$RUN" != "" ]; then
 		exit 1
 	fi
 
+	chroot_lock
 	chroot_mount
 	copy_hostconf
 
 	eval chroot "${working_dir}" ${RUN}
 
 	# }}}
-	else
+else
 	# {{{ build chroot
 	if [ -e "${working_dir}" -a "${FORCE}" = "n" ]; then
 		echo "error: working dir '${working_dir}' already exists - try using -f"
 		exit 1
 	fi
 
+	if { type -P btrfs && btrfs subvolume create "${working_dir}"; } &>/dev/null; then
+		chmod 0755 "${working_dir}"
+	fi
+
 	mkdir -p "${working_dir}/var/lib/pacman/sync"
 	mkdir -p "${working_dir}/etc/"
 
+	chroot_lock
 	chroot_mount
 
 	pacargs="--noconfirm --root=${working_dir} --cachedir=${cache_dir}"

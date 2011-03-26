@@ -1,90 +1,71 @@
 V=0.9.17
 
+BINPROGS = \
+	checkpkg \
+	commitpkg \
+	archco \
+	communityco \
+	archrelease \
+	archrm \
+	archbuild \
+	lddd \
+	finddeps \
+	rebuildpkgs
+
+SBINPROGS = \
+	mkarchroot \
+	makechrootpkg
+
+CONFIGFILES = \
+	makepkg-i686.conf \
+	makepkg-x86_64.conf \
+	pacman-extra.conf \
+	pacman-testing.conf \
+	pacman-staging.conf \
+	pacman-multilib.conf \
+	pacman-multilib-testing.conf
+
+COMMITPKG_LINKS = \
+	extrapkg \
+	corepkg \
+	testingpkg \
+	stagingpkg \
+	communitypkg \
+	community-testingpkg \
+	community-stagingpkg \
+	multilibpkg \
+	multilib-testingpkg
+
+ARCHBUILD_LINKS = \
+	extra-i686-build \
+	extra-x86_64-build \
+	testing-i686-build \
+	testing-x86_64-build \
+	staging-i686-build \
+	staging-x86_64-build \
+	multilib-build \
+	multilib-testing-build
+
 all:
 
 install:
-	# commitpkg/checkpkg and friends
-	install -d -m755 $(DESTDIR)/usr/bin
-	install -m 755 checkpkg $(DESTDIR)/usr/bin
-	install -m 755 commitpkg $(DESTDIR)/usr/bin
-	ln -sf commitpkg $(DESTDIR)/usr/bin/extrapkg
-	ln -sf commitpkg $(DESTDIR)/usr/bin/corepkg
-	ln -sf commitpkg $(DESTDIR)/usr/bin/testingpkg
-	ln -sf commitpkg $(DESTDIR)/usr/bin/stagingpkg
-	ln -sf commitpkg $(DESTDIR)/usr/bin/communitypkg
-	ln -sf commitpkg $(DESTDIR)/usr/bin/community-testingpkg
-	ln -sf commitpkg $(DESTDIR)/usr/bin/community-stagingpkg
-	ln -sf commitpkg $(DESTDIR)/usr/bin/multilibpkg
-	ln -sf commitpkg $(DESTDIR)/usr/bin/multilib-testingpkg
-	# arch{co,release,rm}
-	install -m 755 archco $(DESTDIR)/usr/bin
-	install -m 755 communityco $(DESTDIR)/usr/bin
-	install -m 755 archrelease $(DESTDIR)/usr/bin
-	install -m 755 archrm $(DESTDIR)/usr/bin
-	# new chroot tools, only usable by root
-	install -d -m 755 $(DESTDIR)/usr/sbin
-	install -m 755 mkarchroot $(DESTDIR)/usr/sbin
-	install -m 755 makechrootpkg $(DESTDIR)/usr/sbin
-	install -m 755 archbuild $(DESTDIR)/usr/bin
-	ln -sf archbuild $(DESTDIR)/usr/bin/extra-i686-build
-	ln -sf archbuild $(DESTDIR)/usr/bin/extra-x86_64-build
-	ln -sf archbuild $(DESTDIR)/usr/bin/testing-i686-build
-	ln -sf archbuild $(DESTDIR)/usr/bin/testing-x86_64-build
-	ln -sf archbuild $(DESTDIR)/usr/bin/staging-i686-build
-	ln -sf archbuild $(DESTDIR)/usr/bin/staging-x86_64-build
-	ln -sf archbuild $(DESTDIR)/usr/bin/multilib-build
-	ln -sf archbuild $(DESTDIR)/usr/bin/multilib-testing-build
-	# Additional packaging helper scripts
-	install -m 755 lddd $(DESTDIR)/usr/bin
-	install -m 755 finddeps $(DESTDIR)/usr/bin
-	install -m 755 rebuildpkgs $(DESTDIR)/usr/bin
-	# install default config
-	install -d -m755 $(DESTDIR)/usr/share/devtools
-	install -m 644 makepkg-i686.conf $(DESTDIR)/usr/share/devtools
-	install -m 644 makepkg-x86_64.conf $(DESTDIR)/usr/share/devtools
-	install -m 644 pacman-extra.conf $(DESTDIR)/usr/share/devtools
-	install -m 644 pacman-testing.conf $(DESTDIR)/usr/share/devtools
-	install -m 644 pacman-staging.conf $(DESTDIR)/usr/share/devtools
-	install -m 644 pacman-multilib.conf $(DESTDIR)/usr/share/devtools
-	install -m 644 pacman-multilib-testing.conf $(DESTDIR)/usr/share/devtools
+	install -dm0755 $(DESTDIR)/usr/bin
+	install -dm0755 $(DESTDIR)/usr/sbin
+	install -dm0755 $(DESTDIR)/usr/share/devtools
+	install -m0755 ${BINPROGS} $(DESTDIR)/usr/bin
+	install -m0755 ${SBINPROGS} $(DESTDIR)/usr/sbin
+	install -m0644 ${CONFIGFILES} $(DESTDIR)/usr/share/devtools
+	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)/usr/bin/$$l; done
+	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)/usr/bin/$$l; done
 
 uninstall:
-	# remove all files we installed
-	rm $(DESTDIR)/usr/bin/checkpkg
-	rm $(DESTDIR)/usr/bin/commitpkg
-	rm $(DESTDIR)/usr/bin/extrapkg
-	rm $(DESTDIR)/usr/bin/corepkg
-	rm $(DESTDIR)/usr/bin/testingpkg
-	rm $(DESTDIR)/usr/bin/stagingpkg
-	rm $(DESTDIR)/usr/bin/communitypkg
-	rm $(DESTDIR)/usr/bin/community-testingpkg
-	rm $(DESTDIR)/usr/bin/community-stagingpkg
-	rm $(DESTDIR)/usr/bin/multilibpkg
-	rm $(DESTDIR)/usr/bin/multilib-testingpkg
-	rm $(DESTDIR)/usr/sbin/mkarchroot
-	rm $(DESTDIR)/usr/sbin/makechrootpkg
-	rm $(DESTDIR)/usr/bin/extra-i686-build
-	rm $(DESTDIR)/usr/bin/extra-x86_64-build
-	rm $(DESTDIR)/usr/bin/testing-i686-build
-	rm $(DESTDIR)/usr/bin/testing-x86_64-build
-	rm $(DESTDIR)/usr/bin/staging-i686-build
-	rm $(DESTDIR)/usr/bin/staging-x86_64-build
-	rm $(DESTDIR)/usr/bin/multilib-build
-	rm $(DESTDIR)/usr/bin/multilib-testing-build
-	rm $(DESTDIR)/usr/bin/lddd
-	rm $(DESTDIR)/usr/bin/finddeps
-	rm $(DESTDIR)/usr/bin/archco
-	rm $(DESTDIR)/usr/bin/archrelease
-	rm $(DESTDIR)/usr/bin/archrm
-	rm $(DESTDIR)/usr/bin/communityco
-	rm $(DESTDIR)/usr/bin/rebuildpkgs
-	rm $(DESTDIR)/usr/share/devtools/makepkg-i686.conf
-	rm $(DESTDIR)/usr/share/devtools/makepkg-x86_64.conf
-	rm $(DESTDIR)/usr/share/devtools/pacman-extra.conf
-	rm $(DESTDIR)/usr/share/devtools/pacman-testing.conf
-	rm $(DESTDIR)/usr/share/devtools/pacman-staging.conf
-	rm $(DESTDIR)/usr/share/devtools/pacman-multilib.conf
-	rm $(DESTDIR)/usr/share/devtools/pacman-multilib-testing.conf
+	for f in ${BINPROGS}; do rm -f $(DESTDIR)/usr/bin/$$f; done
+	for f in ${SBINPROGS}; do rm -f $(DESTDIR)/usr/sbin/$$f; done
+	for f in ${CONFIGFILES}; do rm -f $(DESTDIR)/usr/share/devtools/$$f; done
+	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)/usr/bin/$$l; done
+	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)/usr/bin/$$l; done
 
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip -9 > devtools-$(V).tar.gz
+
+.PHONY: all install uninstall dist
