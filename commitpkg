@@ -112,6 +112,8 @@ else
 fi
 echo 'done'
 
+declare -a uploads
+
 for _arch in ${arch[@]}; do
 	for _pkgname in ${pkgname[@]}; do
 		fullver=$(get_full_version ${epoch:-0} $pkgver $pkgrel)
@@ -126,12 +128,15 @@ for _arch in ${arch[@]}; do
 			echo "skipping ${_arch}"
 			continue 2
 		fi
-
-		echo -n 'uploading '
-		rsync $rsyncopts "${pkgfile}" "$server:staging/$repo/${pkgfile##*/}" || abort
+		uploads+=("$pkgfile")
 	done
 	archrelease $repo-${_arch} || abort
 done
+
+if [[ ${#uploads[*]} -gt 0 ]]; then
+	echo 'uploading all package files'
+	rsync $rsyncopts "${uploads[@]}" "$server:staging/$repo/" || abort
+fi
 
 if [ "${arch[*]}" == 'any' ]; then
 	if [ -d ../repos/$repo-i686 -a -d ../repos/$repo-x86_64 ]; then
