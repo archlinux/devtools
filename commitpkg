@@ -129,12 +129,17 @@ for _arch in ${arch[@]}; do
 			continue 2
 		fi
 		uploads+=("$pkgfile")
+
+		sigfile="${pkgfile}.sig"
+		if [ -f "${sigfile}" ]; then
+			uploads+=("$sigfile")
+		fi
 	done
 	archrelease $repo-${_arch} || abort
 done
 
 if [[ ${#uploads[*]} -gt 0 ]]; then
-	echo 'uploading all package files'
+	echo 'uploading all package and signature files'
 	rsync $rsyncopts "${uploads[@]}" "$server:staging/$repo/" || abort
 fi
 
