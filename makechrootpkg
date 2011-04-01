@@ -156,7 +156,7 @@ if [ -n "$install_pkg" ]; then
 	mkarchroot -r "pacman -U /$pkgname" "$copydir"
 	ret=$?
 	rm "$copydir/$pkgname"
-	#exit early, we've done all we need to
+	# Exit early, we've done all we need to
 	exit $ret
 fi
 
@@ -167,11 +167,11 @@ fi
 [ -d "$copydir/build" ] || mkdir "$copydir/build"
 
 if [ "$REPACK" != "1" ]; then
-	#Remove anything in there UNLESS -R (repack) was passed to makepkg
+	# Remove anything in there UNLESS -R (repack) was passed to makepkg
 	rm -rf "$copydir/build/"*
 fi
 
-# read .makpekg.conf even if called via sudo
+# Read .makepkg.conf even if called via sudo
 if [ -n "${SUDO_USER}" ]; then
 	makepkg_conf="/$(eval echo ~${SUDO_USER})/.makepkg.conf"
 else
