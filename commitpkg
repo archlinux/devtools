@@ -51,38 +51,31 @@ fi
 . PKGBUILD
 pkgbase=${pkgbase:-$pkgname}
 
-# set up repo-specific opts depending on how we were called
-server='gerolde.archlinux.org'
-if [ "$cmd" == 'extrapkg' ]; then
-	repo='extra'
-elif [ "$cmd" == 'corepkg' ]; then
-	repo='core'
-elif [ "$cmd" == 'testingpkg' ]; then
-	repo='testing'
-elif [ "$cmd" == 'stagingpkg' ]; then
-	repo='staging'
-elif [ "$cmd" == 'communitypkg' ]; then
-	repo='community'
-	server='aur.archlinux.org'
-elif [ "$cmd" == 'community-testingpkg' ]; then
-	repo='community-testing'
-	server='aur.archlinux.org'
-elif [ "$cmd" == 'community-stagingpkg' ]; then
-	repo='community-staging'
-	server='aur.archlinux.org'
-elif [ "$cmd" == 'multilibpkg' ]; then
-	repo='multilib'
-	server='aur.archlinux.org'
-elif [ "$cmd" == 'multilib-testingpkg' ]; then
-	repo='multilib-testing'
-	server='aur.archlinux.org'
-else
-	if [ $# -eq 0 ]; then
+case "$cmd" in
+	commitpkg)
+		if [ $# -eq 0 ]; then
+			abort 'usage: commitpkg <reponame> [-l limit] [commit message]'
+		fi
+		repo="$1"
+		shift
+		;;
+	*pkg)
+		repo="${cmd%pkg}"
+		;;
+	*)
 		abort 'usage: commitpkg <reponame> [-l limit] [commit message]'
-	fi
-	repo="$1"
-	shift
-fi
+		;;
+esac
+
+case "$repo" in
+	core|extra|testing|staging)
+		server='gerolde.archlinux.org' ;;
+	community*|multilib*)
+		server='aur.archlinux.org' ;;
+	*)
+		server='gerolde.archlinux.org'
+		echo "Non-standard repository $repo in use, defaulting to server $server" ;;
+esac
 
 # check if all local source files are under version control
 for s in ${source[@]}; do
