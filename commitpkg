@@ -97,9 +97,9 @@ for i in 'changelog' 'install'; do
 done
 
 # see if any limit options were passed, we'll send them to rsync
-unset rsyncopts
+rsyncopts="-e ssh -p --chmod 'ug=rw,o=r' -c -h -L --progress --partial"
 if [ "$1" = '-l' ]; then
-	rsyncopts="--bwlimit=$2"
+	rsyncopts="$rsyncopts --bwlimit=$2"
 	shift 2
 fi
 
@@ -128,7 +128,7 @@ for _arch in ${arch[@]}; do
 		fi
 
 		echo -n 'uploading '
-		rsync -p --chmod 'ug=rw,o=r' -c -h -L --progress $rsyncopts --partial "${pkgfile}" -e ssh "$server:staging/$repo/${pkgfile##*/}" || abort
+		rsync $rsyncopts "${pkgfile}" "$server:staging/$repo/${pkgfile##*/}" || abort
 	done
 	archrelease $repo-${_arch} || abort
 done
