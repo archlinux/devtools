@@ -23,7 +23,7 @@ if [ ! -z "$(svn status -q)" ]; then
 	abort 'archrelease: You have not committed your changes yet!'
 fi
 
-echo -n 'releasing package...'
+echo -n "releasing package to ${1}..."
 pushd .. >/dev/null
 if [ -d "repos/${1}" ]; then
 	svn rm --force -q "repos/${1}"
