@@ -1,4 +1,4 @@
-V=0.9.19
+V=0.9.20
 
 BINPROGS = \
 	checkpkg \
@@ -68,4 +68,7 @@ uninstall:
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip -9 > devtools-$(V).tar.gz
 
-.PHONY: all install uninstall dist
+upload:
+	scp devtools-$(V).tar.gz gerolde.archlinux.org:/srv/ftp/other/devtools/
+
+.PHONY: all install uninstall dist upload
