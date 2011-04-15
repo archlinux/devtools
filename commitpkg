@@ -160,4 +160,13 @@ if [ "${arch[*]}" == 'any' ]; then
 		echo 'done'
 		popd >/dev/null
 	fi
+else
+	if [ -d ../repos/$repo-any ]; then
+		pushd ../repos/ >/dev/null
+		echo "removing $repo-any..."
+		svn rm $repo-any
+		svn commit -q -m "removed $repo-any for $pkgname"
+		echo 'done'
+		popd >/dev/null
+	fi
 fi
