@@ -37,16 +37,11 @@ for _pkgname in ${pkgname[@]}; do
 	else
 		pkgfile=${_pkgname}-${epoch}:${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
 	fi
-	oldstylepkgfile=${_pkgname}-${pkgver}-${pkgrel}${PKGEXT}
 
 	if [ -f "$STARTDIR/$pkgfile" ]; then
 		cp "$STARTDIR/$pkgfile" .
 	elif [ -f "$PKGDEST/$pkgfile" ]; then
 		cp "$PKGDEST/$pkgfile" .
-	elif [ -f "$STARTDIR/$oldstylepkgfile" ]; then
-		cp "$STARTDIR/$oldstylepkgfile" .
-	elif [ -f "$PKGDEST/$oldstylepkgfile" ]; then
-		cp "$PKGDEST/$oldstylepkgfile" .
 	else
 		echo "File \"$pkgfile\" doesn't exist"
 		exit 1
