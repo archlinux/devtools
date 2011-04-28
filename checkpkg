@@ -32,7 +32,11 @@ TEMPDIR=$(mktemp -d /tmp/checkpkg-script.XXXX)
 cd $TEMPDIR
 
 for _pkgname in ${pkgname[@]}; do
-	pkgfile=${_pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
+	if [ -z ${epoch} ] ; then
+		pkgfile=${_pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
+	else
+		pkgfile=${_pkgname}-${epoch}:${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
+	fi
 	oldstylepkgfile=${_pkgname}-${pkgver}-${pkgrel}${PKGEXT}
 
 	if [ -f "$STARTDIR/$pkgfile" ]; then
