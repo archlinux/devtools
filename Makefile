@@ -1,4 +1,4 @@
-V=0.9.21
+V=0.9.22
 
 BINPROGS = \
 	checkpkg \
