@@ -248,7 +248,7 @@ chmod 440 "$copydir/etc/sudoers.d/nobody-pacman"
 #working copy
 (cat <<EOF
 #!/bin/bash
-export LANG=C
+export LANG=en_US.UTF-8
 cd /build
 export HOME=/build
 sudo -u nobody makepkg $MAKEPKG_ARGS || touch BUILD_FAILED
