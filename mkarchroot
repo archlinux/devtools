@@ -73,7 +73,7 @@ if [ -z "$cache_dir" ]; then
 fi
 
 if [ -f /etc/pacman.d/mirrorlist ]; then
-	host_mirror=$(pacman -Sdp extra/devtools 2>/dev/null | sed -E 's#(.*/)extra/os/.*#\1$repo/os/$arch#')
+	host_mirror=$(pacman -Sddp extra/devtools 2>/dev/null | sed -E 's#(.*/)extra/os/.*#\1$repo/os/$arch#')
 fi
 if [ -z "${host_mirror}" ]; then
 	host_mirror='http://mirrors.kernel.org/archlinux/$repo/os/$arch'

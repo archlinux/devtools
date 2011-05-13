@@ -47,7 +47,7 @@ for _pkgname in ${pkgname[@]}; do
 		exit 1
 	fi
 
-	tmp=`pacman -Spd --noconfirm $_pkgname`
+	tmp=`pacman -Spdd --noconfirm $_pkgname`
 
 	if [ $? -ne 0 ]; then
 		echo "Couldn't download previous package for $_pkgname."
