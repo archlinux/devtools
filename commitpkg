@@ -54,7 +54,7 @@ pkgbase=${pkgbase:-$pkgname}
 case "$cmd" in
 	commitpkg)
 		if [ $# -eq 0 ]; then
-			abort 'usage: commitpkg <reponame> [-l limit] [commit message]'
+			abort 'usage: commitpkg <reponame> [-l limit] [-a arch] [commit message]'
 		fi
 		repo="$1"
 		shift
@@ -63,7 +63,7 @@ case "$cmd" in
 		repo="${cmd%pkg}"
 		;;
 	*)
-		abort 'usage: commitpkg <reponame> [-l limit] [commit message]'
+		abort 'usage: commitpkg <reponame> [-l limit] [-a arch] [commit message]'
 		;;
 esac
 
@@ -103,6 +103,11 @@ if [ "$1" = '-l' ]; then
 	shift 2
 fi
 
+if [ "$1" = "-a" ]; then
+	commit_arch=$2
+	shift 2
+fi
+
 echo -n 'committing changes to trunk...'
 if [ -n "$1" ]; then
 	svn commit -q -m "upgpkg: $pkgbase $pkgver-$pkgrel
@@ -115,6 +120,11 @@ echo 'done'
 declare -a uploads
 
 for _arch in ${arch[@]}; do
+	if [ -n "$commit_arch" ] && [ "${_arch}" != "$commit_arch" ]; then
+		echo "skipping ${_arch}"
+		continue
+	fi
+
 	for _pkgname in ${pkgname[@]}; do
 		fullver=$(get_full_version ${epoch:-0} $pkgver $pkgrel)
 		pkgfile=$(getpkgfile "$_pkgname-$fullver-${_arch}".pkg.tar.?z 2>/dev/null)
