@@ -110,7 +110,7 @@ fi
 
 echo -n 'committing changes to trunk...'
 if [ -n "$1" ]; then
-	svn commit -q -m "upgpkg: $pkgbase $pkgver-$pkgrel
+	svn commit -q -m "upgpkg: $pkgbase $(get_full_version ${epoch:-0} $pkgver $pkgrel)
 $1" || abort
 else
 	svn commit -q || abort
