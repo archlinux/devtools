@@ -220,7 +220,7 @@ else
 	fi
 
 	if [ -e "${working_dir}/etc/locale.gen" ]; then
-		echo -e 'en_US.UTF-8 UTF-8\nde_DE.UTF-8 UTF-8' > "${working_dir}/etc/locale.gen"
+		sed -i 's@^#\(en_US\|de_DE\)\(\.UTF-8\)@\1\2@' "${working_dir}/etc/locale.gen"
 		chroot "${working_dir}" locale-gen
 	fi
 
