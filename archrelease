@@ -29,6 +29,10 @@ if [ -d "repos/${1}" ]; then
 	svn rm --force -q "repos/${1}"
 	svn commit -q -m "archrelease: remove ${1}" || abort
 fi
+if [ ! -d repos ]; then
+	mkdir repos
+	svn add repos
+fi
 svn copy -q -r HEAD "${trunk}" "repos/${1}"
 svn commit -q -m "archrelease: copy ${trunk} to ${1}" || abort
 popd >/dev/null
