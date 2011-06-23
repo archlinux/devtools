@@ -87,9 +87,8 @@ for _pkgname in ${pkgname[@]}; do
 		mkdir -p pkg
 		cd pkg
 		bsdtar xf ../"$pkgfile" > /dev/null
-		for i in $(diff ../filelist-$_pkgname-old ../filelist-$_pkgname | grep \> | grep \.so | awk '{print $2}'); do
-			echo -n "${i}: "
-			objdump -p $i | grep SONAME
+		for i in $(diff ../filelist-$_pkgname-old ../filelist-$_pkgname | grep \> | grep '\.so' | awk '{print $2}'); do
+			echo "${i}: " "$(objdump -p $i | grep SONAME)"
 		done
 		cd ..
 	else
