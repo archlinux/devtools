@@ -47,16 +47,16 @@ for _pkgname in ${pkgname[@]}; do
 		exit 1
 	fi
 
-	tmp=`pacman -Spdd --noconfirm $_pkgname`
+	tmp=$(pacman -Spdd --noconfirm $_pkgname)
 
 	if [ $? -ne 0 ]; then
 		echo "Couldn't download previous package for $_pkgname."
 		exit 1
 	fi
 
-	pkgurl=`echo $tmp | rev | cut -d ' ' -f 1 | rev`
+	pkgurl=$(echo $tmp | rev | cut -d ' ' -f 1 | rev)
 
-	oldpkg=`strip_url $pkgurl`
+	oldpkg=$(strip_url $pkgurl)
 
 	if [ "$(basename $oldpkg)" = "$(basename $pkgfile)" ]; then
 		echo "The built package ($_pkgname) is the one in the repo right now!"
@@ -65,11 +65,11 @@ for _pkgname in ${pkgname[@]}; do
 
 	if [ ! -f $oldpkg ]; then
 		if echo $pkgurl | grep '^file:///' > /dev/null 2>&1; then
-			cp `echo $pkgurl | sed 's#^file://##'` .
-		elif [ -f $PKGDEST/$oldpkg ]; then
-			cp $PKGDEST/$oldpkg .
-		elif [ -f $STARTDIR/$oldpkg ]; then
-			cp $STARTDIR/$oldpkg .
+			cp $(echo $pkgurl | sed 's#^file://##') .
+		elif [ -f "$PKGDEST/$oldpkg" ]; then
+			cp "$PKGDEST/$oldpkg" .
+		elif [ -f "$STARTDIR/$oldpkg" ]; then
+			cp "$STARTDIR/$oldpkg" .
 		else
 			wget --quiet $pkgurl
 		fi
@@ -87,7 +87,7 @@ for _pkgname in ${pkgname[@]}; do
 		mkdir -p pkg
 		cd pkg
 		bsdtar xf ../"$pkgfile" > /dev/null
-		for i in `diff ../filelist-$_pkgname-old ../filelist-$_pkgname | grep \> | grep \.so | awk '{print $2}'`; do
+		for i in $(diff ../filelist-$_pkgname-old ../filelist-$_pkgname | grep \> | grep \.so | awk '{print $2}'); do
 			echo -n "${i}: "
 			objdump -p $i | grep SONAME
 		done
