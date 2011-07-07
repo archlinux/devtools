@@ -4,9 +4,9 @@
 #
 
 ifs=$IFS
-IFS=':'
+IFS="${IFS}:"
 
-libdirs='/lib:/usr/lib:/opt/qt/lib:/opt/kde/lib:/usr/lib/libfakeroot:/opt/NX/lib'
+libdirs="/lib /usr/lib $(cat /etc/ld.so.conf.d/*)"
 extras=
 
 TEMPDIR=$(mktemp -d /tmp/lddd-script.XXXX)
