@@ -6,7 +6,7 @@
 ifs=$IFS
 IFS="${IFS}:"
 
-libdirs="/lib /usr/lib $(cat /etc/ld.so.conf.d/*)"
+libdirs="/lib /usr/lib /usr/local/lib $(cat /etc/ld.so.conf.d/*)"
 extras=
 
 TEMPDIR=$(mktemp -d /tmp/lddd-script.XXXX)
