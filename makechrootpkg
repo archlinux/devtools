@@ -153,7 +153,7 @@ fi
 if [ -n "$install_pkg" ]; then
 	pkgname="$(basename "$install_pkg")"
 	cp "$install_pkg" "$copydir/$pkgname"
-	mkarchroot -r "pacman -U /$pkgname" "$copydir"
+	mkarchroot -r "pacman -U /$pkgname --noconfirm" "$copydir"
 	ret=$?
 	rm "$copydir/$pkgname"
 	# Exit early, we've done all we need to
