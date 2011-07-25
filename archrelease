@@ -9,14 +9,18 @@ if [ "$1" = '' ]; then
 	abort 'Usage: archrelease <repo>'
 fi
 
+# TODO: validate repo is really repo-arch
+
 if [ ! -f PKGBUILD ]; then
 	abort 'archrelease: PKGBUILD not found'
 fi
 
 trunk=$(basename $(pwd))
 
+# Normally this should be trunk, but it may be something
+# such as 'gnome-unstable'
 if [ "$(basename $(dirname $(pwd)))" == "repos" ]; then
-	abort 'archrelease: Not in a package trunk dir'
+	abort 'archrelease: Should not be in repos dir (try from trunk/)'
 fi
 
 if [ ! -z "$(svn status -q)" ]; then
@@ -26,14 +30,27 @@ fi
 echo -n "releasing package to ${1}..."
 pushd .. >/dev/null
 if [ -d "repos/${1}" ]; then
-	svn rm --force -q "repos/${1}"
-	svn commit -q -m "archrelease: remove ${1}" || abort
+	for file in $(svn ls "repos/${1}"); do
+		svn rm -q "$file"
+	done
 fi
 if [ ! -d repos ]; then
 	mkdir repos
 	svn add repos
 fi
-svn copy -q -r HEAD "${trunk}" "repos/${1}"
-svn commit -q -m "archrelease: copy ${trunk} to ${1}" || abort
+if [ ! -d "repos/${1}" ]; then
+	mkdir "repos/${1}"
+	svn add "repos/${1}"
+fi
+known_files=$(svn ls "trunk")
+for file in $known_files; do
+	if [ "$file" != "${file%/}" ]; then
+		abort "archrelease: subdirectories are not supported in package directories!"
+	fi
+done
+for file in $known_files; do
+	svn copy -q -r HEAD "trunk/$file" "repos/${1}/"
+done
+svn commit -q -m "archrelease: copy trunk to ${1}" || abort
 popd >/dev/null
 echo 'done'
