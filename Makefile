@@ -4,7 +4,6 @@ BINPROGS = \
 	checkpkg \
 	commitpkg \
 	archco \
-	communityco \
 	archrelease \
 	archrm \
 	archbuild \
@@ -57,6 +56,7 @@ install:
 	install -m0644 ${CONFIGFILES} $(DESTDIR)/usr/share/devtools
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)/usr/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)/usr/bin/$$l; done
+	ln -sf archco $(DESTDIR)/usr/bin/communityco
 	install -Dm0644 bash_completion $(DESTDIR)/etc/bash_completion.d/devtools
 
 uninstall:

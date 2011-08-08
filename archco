@@ -1,10 +1,23 @@
 #!/bin/bash
 
+scriptname=${0##*/}
+
 if [ "$1" = '' ]; then
-	echo 'Usage: archco <package name> [<package name>]'
+	echo 'Usage: '$scriptname' <package name> [<package name>]'
 	exit 1
 fi
 
+case $scriptname in
+	archco)
+		SVNURL="svn+ssh://gerolde.archlinux.org/srv/svn-packages";;
+	communityco)
+		SVNURL="svn+ssh://aur.archlinux.org/srv/svn-packages";;
+	*)
+		echo "error: couldn't find svn url for $scriptname"
+		exit 1
+		;;
+esac
+
 for i in "$@"; do
-	svn co svn+ssh://gerolde.archlinux.org/srv/svn-packages/$i
+	svn co "$SVNURL/$i"
 done
