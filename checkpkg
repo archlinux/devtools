@@ -39,9 +39,9 @@ for _pkgname in ${pkgname[@]}; do
 	fi
 
 	if [ -f "$STARTDIR/$pkgfile" ]; then
-		cp "$STARTDIR/$pkgfile" .
+		ln -s "$STARTDIR/$pkgfile" "$pkgfile"
 	elif [ -f "$PKGDEST/$pkgfile" ]; then
-		cp "$PKGDEST/$pkgfile" .
+		ln -s "$PKGDEST/$pkgfile" "$pkgfile"
 	else
 		echo "File \"$pkgfile\" doesn't exist"
 		exit 1
@@ -65,11 +65,11 @@ for _pkgname in ${pkgname[@]}; do
 
 	if [ ! -f $oldpkg ]; then
 		if echo $pkgurl | grep '^file:///' > /dev/null 2>&1; then
-			cp $(echo $pkgurl | sed 's#^file://##') .
+			ln -s "${pkgurl#file://}" $(basename "${pkgurl#file://}")
 		elif [ -f "$PKGDEST/$oldpkg" ]; then
-			cp "$PKGDEST/$oldpkg" .
+			ln -s "$PKGDEST/$oldpkg" "$oldpkg"
 		elif [ -f "$STARTDIR/$oldpkg" ]; then
-			cp "$STARTDIR/$oldpkg" .
+			ln -s "$STARTDIR/$oldpkg" "$oldpkg"
 		else
 			wget --quiet $pkgurl
 		fi
