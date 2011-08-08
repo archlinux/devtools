@@ -1,0 +1,100 @@
+#!/bin/bash
+
+set -e
+
+IGNORE_INTERNAL=0
+
+if [[ $1 = "--ignore-internal" ]]; then
+	IGNORE_INTERNAL=1
+	shift
+fi
+
+script_mode=${0##*/find-lib}
+
+case $script_mode in
+	deps|provides) true;;
+	*) echo "error: unknown mode $script_mode"; exit 1;;
+esac
+
+if [[ -z $1 ]]; then
+	echo "${0##*/} [options] <package file|extracted package dir>"
+	echo "Options:"
+	echo "    --ignore-internal      ignore internal libraries"
+	exit 1
+fi
+
+cleanup() {
+	if [[ $tmpdir ]]; then
+		rm -rf $tmpdir;
+	fi
+}
+
+if [[ -d $1 ]]; then
+	cd $1
+else
+	tmpdir=$(mktemp -d /tmp/find-sodeps.XXXXXXX)
+	trap "cleanup" EXIT INT TERM
+
+	case ${script_mode} in
+		deps) bsdtar -C $tmpdir -xf "$1";;
+		provides)bsdtar -C $tmpdir -xf "$1" --include="*.so*";;
+	esac
+
+	cd $tmpdir
+fi
+
+in_array() {
+	local needle=$1; shift
+	[[ -z $1 ]] && return 1 # Not Found
+	local item
+	for item in "$@"; do
+	[[ $item = $needle ]] && return 0 # Found
+	done
+	return 1 # Not Found
+}
+
+process_sofile() {
+	# extract the library name: libfoo.so
+	soname="${sofile%%\.so\.*}.so"
+	# extract the major version: 1
+	soversion="${sofile##*\.so\.}"
+	if [[ "$soversion" = "$sofile" ]] && (($IGNORE_INTERNAL)); then
+		continue
+	fi
+	if ! in_array "${soname}=${soversion}-${soarch}" ${soobjects[@]}; then
+		# libfoo.so=1-64
+		echo "${soname}=${soversion}-${soarch}"
+		soobjects=(${soobjects[@]} "${soname}=${soversion}-${soarch}")
+	fi
+}
+
+case $script_mode in 
+	deps) find_args="-perm -u+x";;
+	provides) find_args="-name *.so*";;
+esac
+
+find . -type f $find_args | while read filename; do
+	if [[ $script_mode = "provides" ]]; then
+		# ignore if we don't have a shared object
+		if ! LC_ALL=C readelf -h "$filename" 2>/dev/null | grep -q '.*Type:.*DYN (Shared object file).*'; then
+			continue
+		fi
+	fi
+
+	# get architecture of the file; if soarch is empty it's not an ELF binary
+	soarch=$(LC_ALL=C readelf -h "$filename" 2>/dev/null | sed -n 's/.*Class.*ELF\(32\|64\)/\1/p')
+	[ -n "$soarch" ] || continue
+
+	if [[ $script_mode = "provides" ]]; then
+		# get the string binaries link to: libfoo.so.1.2 -> libfoo.so.1
+		sofile=$(LC_ALL=C readelf -d "$filename" 2>/dev/null | sed -n 's/.*Library soname: \[\(.*\)\].*/\1/p')
+		[ -z "$sofile" ] && sofile="${filename##*/}"
+		process_sofile
+	elif [[ $script_mode = "deps" ]]; then
+		# process all libraries needed by the binary
+		for sofile in $(LC_ALL=C readelf -d "$filename" 2>/dev/null | sed -nr 's/.*Shared library: \[(.*)\].*/\1/p'); do
+			process_sofile
+		done
+	fi
+done
+

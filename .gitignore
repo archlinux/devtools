@@ -13,3 +13,4 @@ makechrootpkg
 mkarchroot
 rebuildpkgs
 zsh_completion
+find-libdeps

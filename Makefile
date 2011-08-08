@@ -11,7 +11,8 @@ BINPROGS = \
 	archbuild \
 	lddd \
 	finddeps \
-	rebuildpkgs
+	rebuildpkgs \
+	find-libdeps
 
 SBINPROGS = \
 	mkarchroot \
@@ -67,6 +68,7 @@ install:
 	install -m0644 ${CONFIGFILES} $(DESTDIR)$(PREFIX)/share/devtools
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
+	ln -sf find-libdeps $(DESTDIR)$(PREFIX)/bin/find-libprovides
 	install -Dm0644 bash_completion $(DESTDIR)/etc/bash_completion.d/devtools
 	install -Dm0644 zsh_completion $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	ln -sf archco $(DESTDIR)$(PREFIX)/bin/communityco
@@ -80,6 +82,7 @@ uninstall:
 	rm $(DESTDIR)/etc/bash_completion.d/devtools
 	rm $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	rm -f $(DESTDIR)$(PREFIX)/bin/communityco
+	rm -f $(DESTDIR)$(PREFIX)/bin/find-libprovides
 
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip -9 > devtools-$(V).tar.gz
