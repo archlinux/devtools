@@ -78,9 +78,9 @@ case "$repo" in
 esac
 
 # check if all local source files are under version control
-for s in ${source[@]}; do
-	echo $s | grep -Fvq '://' && \
-	svn status $s | grep -q '^\?' && \
+for s in "${source[@]}"; do
+	echo "$s" | grep -Fvq '://' && \
+	svn status "$s" | grep -q '^\?' && \
 	abort "$s is not under version control"
 done
 
@@ -90,7 +90,7 @@ for i in 'changelog' 'install'; do
 	for file in $filelist; do
 		# evaluate any bash variables used
 		eval file=${file}
-		if svn status ${file} | grep -q '^\?'; then
+		if svn status "${file}" | grep -q '^\?'; then
 			abort "${file} is not under version control"
 		fi
 	done
