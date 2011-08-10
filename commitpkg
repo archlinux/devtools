@@ -79,7 +79,7 @@ esac
 
 # check if all local source files are under version control
 for s in "${source[@]}"; do
-	if [[ $s != *://* ]] && svn status "$s" | grep -q '^\?'; then
+	if [[ $s != *://* ]] && ! svn status -v "$s" | grep -q '^[ AMRX~]'; then
 		abort "$s is not under version control"
 	fi
 done
@@ -90,7 +90,7 @@ for i in 'changelog' 'install'; do
 	for file in $filelist; do
 		# evaluate any bash variables used
 		eval file=${file}
-		if svn status "${file}" | grep -q '^\?'; then
+		if ! svn status -v "${file}" | grep -q '^[ AMRX~]'; then
 			abort "${file} is not under version control"
 		fi
 	done
