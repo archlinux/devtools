@@ -79,9 +79,9 @@ esac
 
 # check if all local source files are under version control
 for s in "${source[@]}"; do
-	echo "$s" | grep -Fvq '://' && \
-	svn status "$s" | grep -q '^\?' && \
-	abort "$s is not under version control"
+	if [[ $s != *://* ]] && svn status "$s" | grep -q '^\?'; then
+		abort "$s is not under version control"
+	fi
 done
 
 # check if changelog and install files are under version control
