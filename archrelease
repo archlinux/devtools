@@ -31,7 +31,7 @@ echo -n "releasing package to ${1}..."
 pushd .. >/dev/null
 if [ -d "repos/${1}" ]; then
 	for file in $(svn ls "repos/${1}"); do
-		svn rm -q "$file"
+		svn rm -q "repos/${1}/$file"
 	done
 fi
 if [ ! -d repos ]; then
