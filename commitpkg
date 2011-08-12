@@ -109,11 +109,26 @@ if [ "$1" = "-a" ]; then
 fi
 
 echo -n 'committing changes to trunk...'
+msgtemplate="upgpkg: $pkgbase $(get_full_version ${epoch:-0} $pkgver $pkgrel)
+
+"
 if [ -n "$1" ]; then
-	svn commit -q -m "upgpkg: $pkgbase $(get_full_version ${epoch:-0} $pkgver $pkgrel)
-$1" || abort
+	svn commit -q -m "${msgtemplate}${1}" || abort
 else
-	svn commit -q || abort
+	msgfile="$(mktemp)"
+	echo "$msgtemplate" > "$msgfile"
+	if [ -n "$SVN_EDITOR" ]; then
+		$SVN_EDITOR "$msgfile"
+	elif [ -n "$VISUAL" ]; then
+		$VISUAL "$msgfile"
+	elif [ -n "$EDITOR" ]; then
+		$EDITOR "$msgfile"
+	else
+		vi "$msgfile"
+	fi
+	[ -s "$msgfile" ] || abort
+	svn commit -q -F "$msgfile" || abort
+	unlink "$msgfile"
 fi
 echo 'done'
 
