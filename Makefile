@@ -66,6 +66,7 @@ uninstall:
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)/usr/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)/usr/bin/$$l; done
 	rm $(DESTDIR)/etc/bash_completion.d/devtools
+	rm -f $(DESTDIR)/usr/bin/communityco
 
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip -9 > devtools-$(V).tar.gz
