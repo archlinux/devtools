@@ -36,11 +36,11 @@ if [ -d "repos/${1}" ]; then
 fi
 if [ ! -d repos ]; then
 	mkdir repos
-	svn add repos
+	svn add -q repos
 fi
 if [ ! -d "repos/${1}" ]; then
 	mkdir "repos/${1}"
-	svn add "repos/${1}"
+	svn add -q "repos/${1}"
 fi
 known_files=$(svn ls "trunk")
 for file in $known_files; do
