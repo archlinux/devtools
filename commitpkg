@@ -108,29 +108,31 @@ if [ "$1" = "-a" ]; then
 	shift 2
 fi
 
-echo -n 'committing changes to trunk...'
-msgtemplate="upgpkg: $pkgbase $(get_full_version ${epoch:-0} $pkgver $pkgrel)
+if [ -n "$(svn status -q)" ]; then
+	echo -n 'committing changes to trunk...'
+	msgtemplate="upgpkg: $pkgbase $(get_full_version ${epoch:-0} $pkgver $pkgrel)
 
-"
-if [ -n "$1" ]; then
-	svn commit -q -m "${msgtemplate}${1}" || abort
-else
-	msgfile="$(mktemp)"
-	echo "$msgtemplate" > "$msgfile"
-	if [ -n "$SVN_EDITOR" ]; then
-		$SVN_EDITOR "$msgfile"
-	elif [ -n "$VISUAL" ]; then
-		$VISUAL "$msgfile"
-	elif [ -n "$EDITOR" ]; then
-		$EDITOR "$msgfile"
+	"
+	if [ -n "$1" ]; then
+		svn commit -q -m "${msgtemplate}${1}" || abort
 	else
-		vi "$msgfile"
+		msgfile="$(mktemp)"
+		echo "$msgtemplate" > "$msgfile"
+		if [ -n "$SVN_EDITOR" ]; then
+			$SVN_EDITOR "$msgfile"
+		elif [ -n "$VISUAL" ]; then
+			$VISUAL "$msgfile"
+		elif [ -n "$EDITOR" ]; then
+			$EDITOR "$msgfile"
+		else
+			vi "$msgfile"
+		fi
+		[ -s "$msgfile" ] || abort
+		svn commit -q -F "$msgfile" || abort
+		unlink "$msgfile"
 	fi
-	[ -s "$msgfile" ] || abort
-	svn commit -q -F "$msgfile" || abort
-	unlink "$msgfile"
+	echo 'done'
 fi
-echo 'done'
 
 declare -a uploads
 
