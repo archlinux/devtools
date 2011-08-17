@@ -30,9 +30,11 @@ fi
 echo -n "releasing package to ${1}..."
 pushd .. >/dev/null
 if [ -d "repos/${1}" ]; then
-	for file in $(svn ls "repos/${1}"); do
-		svn rm -q "repos/${1}/$file"
-	done
+	declare -a trash
+	while read -r file; do
+		trash+=("repos/$1/$file")
+	done < <(svn ls "repos/$1")
+	svn rm -q "${trash[@]}"
 fi
 if [ ! -d repos ]; then
 	mkdir repos
