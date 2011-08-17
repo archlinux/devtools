@@ -46,13 +46,13 @@ if [[ ! -d "repos/$1" ]]; then
 	mkdir "repos/${1}"
 	svn add -q "repos/${1}"
 fi
-known_files=$(svn ls "trunk")
-for file in $known_files; do
+IFS=$'\n' read -r -d '' -a known_files < <(svn ls "trunk")
+for file in "${known_files[@]}"; do
 	if [[ ${file:(-1)} = '/' ]]; then
 		abort "archrelease: subdirectories are not supported in package directories!"
 	fi
 done
-for file in $known_files; do
+for file in "${known_files[@]}"; do
 	svn copy -q -r HEAD "trunk/$file" "repos/${1}/"
 done
 svn commit -q -m "archrelease: copy trunk to ${1}" || abort
