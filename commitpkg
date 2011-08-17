@@ -98,15 +98,17 @@ done
 
 # see if any limit options were passed, we'll send them to rsync
 rsyncopts=(-e ssh -p --chmod=ug=rw,o=r -c -h -L --progress --partial -y)
-if [ "$1" = '-l' ]; then
-	rsyncopts+=("--bwlimit=$2")
-	shift 2
-fi
-
-if [ "$1" = "-a" ]; then
-	commit_arch=$2
-	shift 2
-fi
+while getopts ':l:a:' flag; do
+	case $flag in
+		l) rsyncopts+=("--bwlimit=$2") ;;
+		a) commit_arch=$2 ;;
+		:) echo "option requires an argument -- '$OPTARG'" >&2
+			exit 1 ;;
+		\?) echo "invalid option -- '$OPTARG'" >&2
+			exit 1 ;;
+	esac
+done
+shift $(( OPTIND - 1 ))
 
 if [ -n "$(svn status -q)" ]; then
 	echo -n 'committing changes to trunk...'
