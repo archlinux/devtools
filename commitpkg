@@ -97,9 +97,9 @@ for i in 'changelog' 'install'; do
 done
 
 # see if any limit options were passed, we'll send them to rsync
-rsyncopts='-e ssh -p --chmod=ug=rw,o=r -c -h -L --progress --partial -y'
+rsyncopts=(-e ssh -p --chmod=ug=rw,o=r -c -h -L --progress --partial -y)
 if [ "$1" = '-l' ]; then
-	rsyncopts="$rsyncopts --bwlimit=$2"
+	rsyncopts+=("--bwlimit=$2")
 	shift 2
 fi
 
@@ -175,7 +175,7 @@ done
 
 if [[ ${#uploads[*]} -gt 0 ]]; then
 	echo 'uploading all package and signature files'
-	rsync $rsyncopts "${uploads[@]}" "$server:staging/$repo/" || abort
+	rsync "${rsyncopts[@]}" "${uploads[@]}" "$server:staging/$repo/" || abort
 fi
 
 if [ "${arch[*]}" == 'any' ]; then
