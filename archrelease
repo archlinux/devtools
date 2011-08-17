@@ -5,48 +5,50 @@ abort() {
 	exit 1
 }
 
-if [ "$1" = '' ]; then
+if [[ -z $1 ]]; then
 	abort 'Usage: archrelease <repo>'
 fi
 
 # TODO: validate repo is really repo-arch
 
-if [ ! -f PKGBUILD ]; then
+if [[ ! -f PKGBUILD ]]; then
 	abort 'archrelease: PKGBUILD not found'
 fi
 
-trunk=$(basename $(pwd))
+trunk=${PWD##*/}
 
 # Normally this should be trunk, but it may be something
 # such as 'gnome-unstable'
-if [ "$(basename $(dirname $(pwd)))" == "repos" ]; then
+IFS='/' read -r -d '' -a parts <<< "$PWD"
+if [[ "${parts[@]:(-2):1}" == "repos" ]]; then
 	abort 'archrelease: Should not be in repos dir (try from trunk/)'
 fi
+unset parts
 
-if [ ! -z "$(svn status -q)" ]; then
+if [[ $(svn status -q) ]]; then
 	abort 'archrelease: You have not committed your changes yet!'
 fi
 
 echo -n "releasing package to ${1}..."
 pushd .. >/dev/null
-if [ -d "repos/${1}" ]; then
+if [[ -d repos/$1 ]]; then
 	declare -a trash
 	while read -r file; do
 		trash+=("repos/$1/$file")
 	done < <(svn ls "repos/$1")
 	svn rm -q "${trash[@]}"
 fi
-if [ ! -d repos ]; then
+if [[ ! -d repos ]]; then
 	mkdir repos
 	svn add -q repos
 fi
-if [ ! -d "repos/${1}" ]; then
+if [[ ! -d "repos/$1" ]]; then
 	mkdir "repos/${1}"
 	svn add -q "repos/${1}"
 fi
 known_files=$(svn ls "trunk")
 for file in $known_files; do
-	if [ "$file" != "${file%/}" ]; then
+	if [[ ${file:(-1)} = '/' ]]; then
 		abort "archrelease: subdirectories are not supported in package directories!"
 	fi
 done
