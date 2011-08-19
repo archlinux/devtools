@@ -3,7 +3,7 @@
 scriptname=${0##*/}
 
 if [ "$1" = '' ]; then
-	echo 'Usage: '$scriptname' <package name> [<package name>]'
+	echo 'Usage: '$scriptname' <package name>...'
 	exit 1
 fi
 
