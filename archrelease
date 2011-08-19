@@ -31,6 +31,12 @@ fi
 
 echo -n "releasing package to ${1}..."
 pushd .. >/dev/null
+IFS=$'\n' read -r -d '' -a known_files < <(svn ls "trunk")
+for file in "${known_files[@]}"; do
+	if [[ ${file:(-1)} = '/' ]]; then
+		abort "archrelease: subdirectories are not supported in package directories!"
+	fi
+done
 if [[ -d repos/$1 ]]; then
 	declare -a trash
 	while read -r file; do
@@ -41,12 +47,6 @@ else
 	mkdir -p "repos/${1}"
 	svn add --parents -q "repos/${1}"
 fi
-IFS=$'\n' read -r -d '' -a known_files < <(svn ls "trunk")
-for file in "${known_files[@]}"; do
-	if [[ ${file:(-1)} = '/' ]]; then
-		abort "archrelease: subdirectories are not supported in package directories!"
-	fi
-done
 for file in "${known_files[@]}"; do
 	svn copy -q -r HEAD "trunk/$file" "repos/${1}/"
 done
