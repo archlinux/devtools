@@ -172,8 +172,13 @@ for _arch in ${arch[@]}; do
 			abort "Signature ${pkgfile}.sig was not found"
 		fi
 	done
-	archrelease $repo-${_arch} || abort
 done
+
+if [[ -n $commit_arch ]]; then
+	archrelease "$repo-$commit_arch" || abort
+else
+	archrelease "${arch[@]/#/$repo-}" || abort
+fi
 
 if [[ ${#uploads[*]} -gt 0 ]]; then
 	echo 'uploading all package and signature files'
