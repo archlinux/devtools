@@ -30,7 +30,7 @@ if [[ $(svn status -q) ]]; then
 fi
 
 pushd .. >/dev/null
-IFS=$'\n' read -r -d '' -a known_files < <(svn ls "trunk")
+IFS=$'\n' read -r -d '' -a known_files < <(svn ls -r HEAD "trunk")
 for file in "${known_files[@]}"; do
 	if [[ ${file:(-1)} = '/' ]]; then
 		abort "archrelease: subdirectories are not supported in package directories!"
