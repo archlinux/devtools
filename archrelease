@@ -6,7 +6,7 @@ abort() {
 }
 
 if [[ -z $1 ]]; then
-	abort 'Usage: archrelease <repo>'
+	abort 'Usage: archrelease <repo>...'
 fi
 
 # TODO: validate repo is really repo-arch
@@ -29,7 +29,6 @@ if [[ $(svn status -q) ]]; then
 	abort 'archrelease: You have not committed your changes yet!'
 fi
 
-echo -n "releasing package to ${1}..."
 pushd .. >/dev/null
 IFS=$'\n' read -r -d '' -a known_files < <(svn ls "trunk")
 for file in "${known_files[@]}"; do
@@ -37,19 +36,32 @@ for file in "${known_files[@]}"; do
 		abort "archrelease: subdirectories are not supported in package directories!"
 	fi
 done
-if [[ -d repos/$1 ]]; then
-	declare -a trash
-	while read -r file; do
-		trash+=("repos/$1/$file")
-	done < <(svn ls "repos/$1")
-	svn rm -q "${trash[@]}"
-else
-	mkdir -p "repos/${1}"
-	svn add --parents -q "repos/${1}"
-fi
-for file in "${known_files[@]}"; do
-	svn copy -q -r HEAD "trunk/$file" "repos/${1}/"
+
+for tag in "$@"; do
+	echo -n "copying trunk to ${tag}..."
+
+	if [[ -d repos/$tag ]]; then
+		declare -a trash
+		trash=()
+		while read -r file; do
+			trash+=("repos/$tag/$file")
+		done < <(svn ls "repos/$tag")
+		svn rm -q "${trash[@]}"
+	else
+		mkdir -p "repos/$tag"
+		svn add --parents -q "repos/$tag"
+	fi
+
+	for file in "${known_files[@]}"; do
+		svn copy -q -r HEAD "trunk/$file" "repos/$tag/"
+	done
+
+	echo 'done'
 done
-svn commit -q -m "archrelease: copy trunk to ${1}" || abort
-popd >/dev/null
+
+echo -n "releasing package..."
+printf -v tag_list ", %s" "$@"; tag_list="${tag_list#, }"
+svn commit -q -m "archrelease: copy trunk to $tag_list" || abort
 echo 'done'
+
+popd >/dev/null
