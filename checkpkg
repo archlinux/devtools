@@ -13,10 +13,6 @@ if [[ -r ~/.makepkg.conf ]]; then
 	source ~/.makepkg.conf
 fi
 
-strip_url() {
-	echo "$1" | sed 's|^.*://.*/||g'
-}
-
 if [[ ! -f PKGBUILD ]]; then
 	echo 'This must be run in the directory of a built package.'
 	exit 1
@@ -47,16 +43,14 @@ for _pkgname in "${pkgname[@]}"; do
 		exit 1
 	fi
 
-	tmp=$(pacman -Spdd --noconfirm "$_pkgname")
+	pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm "$_pkgname")
 
 	if [[ $? -ne 0 ]]; then
 		echo "Couldn't download previous package for $_pkgname."
 		exit 1
 	fi
 
-	pkgurl=$(echo $tmp | rev | cut -d ' ' -f 1 | rev)
-
-	oldpkg=$(strip_url "$pkgurl")
+	oldpkg=${pkgurl##*://*/}
 
 	if [[ "$(basename $oldpkg)" = "$(basename $pkgfile)" ]]; then
 		echo "The built package ($_pkgname) is the one in the repo right now!"
