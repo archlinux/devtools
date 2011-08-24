@@ -52,14 +52,14 @@ for _pkgname in "${pkgname[@]}"; do
 
 	oldpkg=${pkgurl##*://*/}
 
-	if [[ "$(basename $oldpkg)" = "$(basename $pkgfile)" ]]; then
+	if [[ ${oldpkg##*/} = ${pkgfile##*/} ]]; then
 		echo "The built package ($_pkgname) is the one in the repo right now!"
 		exit 1
 	fi
 
 	if [[ ! -f $oldpkg ]]; then
-		if echo $pkgurl | grep '^file:///' > /dev/null 2>&1; then
-			ln -s "${pkgurl#file://}" $(basename "${pkgurl#file://}")
+		if [[ $pkgurl = file://* ]]; then
+			ln -s "${pkgurl#file://}" "${pkgurl##file://*/}"
 		elif [[ -f "$PKGDEST/$oldpkg" ]]; then
 			ln -s "$PKGDEST/$oldpkg" "$oldpkg"
 		elif [[ -f "$STARTDIR/$oldpkg" ]]; then
