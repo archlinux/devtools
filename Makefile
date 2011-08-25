@@ -59,6 +59,7 @@ install:
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
 	install -Dm0644 bash_completion $(DESTDIR)/etc/bash_completion.d/devtools
+	install -Dm0644 zsh_completion $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	ln -sf archco $(DESTDIR)$(PREFIX)/bin/communityco
 
 uninstall:
@@ -68,6 +69,7 @@ uninstall:
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	rm $(DESTDIR)/etc/bash_completion.d/devtools
+	rm $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	rm -f $(DESTDIR)$(PREFIX)/bin/communityco
 
 dist:
