@@ -42,7 +42,7 @@ if [ -r ~/.makepkg.conf ]; then
 	. ~/.makepkg.conf
 fi
 
-cmd=$(basename "$0")
+cmd=${0##*/}
 
 if [ ! -f PKGBUILD ]; then
 	abort 'No PKGBUILD file'
