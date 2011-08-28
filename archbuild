@@ -2,20 +2,21 @@
 
 base_packages=(base base-devel sudo)
 
-cmd="$(basename "${0%-build}")"
-if [[ "${cmd%-*}" == 'multilib' ]]; then
-	repo="${cmd}"
+cmd="${0##*/}"
+if [[ "${cmd%%-*}" == 'multilib' ]]; then
+	repo="${cmd%-build}"
 	arch='x86_64'
 	base_packages+=(multilib-devel)
 else
-	repo=${cmd%-*}
-	arch=${cmd##*-}
+	tag="${cmd%-build}"
+	repo=${tag%-*}
+	arch=${tag##*-}
 fi
 chroots='/var/tmp/archbuild'
 clean_first=false
 
 usage() {
-	echo "usage $(basename "$0")"
+	echo "usage $cmd"
 	echo '    -c         Recreate the chroot before building'
 	echo '    -r <dir>   Create chroots in this directory'
 	exit 1
