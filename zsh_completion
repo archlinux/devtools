@@ -38,7 +38,7 @@ _commitpkg_args=(
 )
 
 _finddeps_args=(
-	'1:packages:_devtools_completions_installed_packages'
+	'1:packages:_devtools_completions_all_packages'
 )
 
 _makechrootpkg_args=(
@@ -64,7 +64,7 @@ _mkarchroot_args=(
 
 _rebuildpkgs_args=(
 	'1:chroot_dir:_files -/'
-	'*:packages:_devtools_completions_installed_packages'
+	'*:packages:_devtools_completions_all_packages'
 )
 
 _devtools_completions_all_packages() {
