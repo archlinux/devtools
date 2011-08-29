@@ -47,7 +47,13 @@ ARCHBUILD_LINKS = \
 	multilib-build \
 	multilib-testing-build
 
-all:
+all: $(BINPROGS) $(SBINPROGS) bash_completion zsh_completion
+
+%: %.in
+	@echo "GEN $@"
+	@sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g" "$<" >"$@"
+	@chmod a-w "$@"
+	@chmod +x "$@"
 
 install:
 	install -dm0755 $(DESTDIR)$(PREFIX)/bin

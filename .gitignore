@@ -1,2 +1,15 @@
 *~
 devtools-*.tar.gz
+archbuild
+archco
+archrelease
+archrm
+bash_completion
+checkpkg
+commitpkg
+finddeps
+lddd
+makechrootpkg
+mkarchroot
+rebuildpkgs
+zsh_completion
