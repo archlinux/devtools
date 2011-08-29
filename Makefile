@@ -55,6 +55,9 @@ all: $(BINPROGS) $(SBINPROGS) bash_completion zsh_completion
 	@chmod a-w "$@"
 	@chmod +x "$@"
 
+clean:
+	rm -f $(BINPROGS) $(SBINPROGS) bash_completion zsh_completion
+
 install:
 	install -dm0755 $(DESTDIR)$(PREFIX)/bin
 	install -dm0755 $(DESTDIR)$(PREFIX)/sbin
@@ -84,4 +87,4 @@ dist:
 upload:
 	scp devtools-$(V).tar.gz gerolde.archlinux.org:/srv/ftp/other/devtools/
 
-.PHONY: all install uninstall dist upload
+.PHONY: all clean install uninstall dist upload
