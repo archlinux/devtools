@@ -52,9 +52,8 @@ for tag in "$@"; do
 		svn add --parents -q "repos/$tag"
 	fi
 
-	for file in "${known_files[@]}"; do
-		svn copy -q -r HEAD "$trunk/$file" "repos/$tag/"
-	done
+	# copy all files at once from trunk to the subdirectory in repos/
+	svn copy -q -r HEAD ${known_files[@]/#/$trunk/} "repos/$tag/"
 
 	echo 'done'
 done
