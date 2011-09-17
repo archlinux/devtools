@@ -16,14 +16,13 @@ clean_first=false
 install_pkg=
 add_to_db=false
 chrootdir=
-appname=${0##*/}
 
 default_copy=$USER
 [[ -n $SUDO_USER ]] && default_copy=$SUDO_USER
 [[ -z $default_copy || $default_copy = root ]] && default_copy=copy
 
 usage() {
-	echo "usage $appname [options] -r <chrootdir> [--] [makepkg args]"
+	echo "usage ${0##*/} [options] -r <chrootdir> [--] [makepkg args]"
 	echo ' Run this script in a PKGBUILD dir to build a package inside a'
 	echo ' clean chroot. All unrecognized arguments passed to this script'
 	echo ' will be passed to makepkg.'
