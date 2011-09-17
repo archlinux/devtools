@@ -8,27 +8,22 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-FORCE='n'
-RUN=''
-MAKEPKG_ARGS='-s --noconfirm'
-REPACK=''
-WORKDIR=$PWD
-
-update_first='0'
-clean_first='0'
-install_pkg=''
-add_to_db=0
-
-chrootdir=''
-
-APPNAME=$(basename "${0}")
+workdir="$PWD"
+makepkg_args='-s --noconfirm'
+repack=false
+update_first=false
+clean_first=false
+install_pkg=
+add_to_db=false
+chrootdir=
+appname=${0##*/}
 
 default_copy=$USER
 [[ -n $SUDO_USER ]] && default_copy=$SUDO_USER
 [[ -z $default_copy || $default_copy = root ]] && default_copy=copy
 
 usage() {
-	echo "usage ${APPNAME} [options] -r <chrootdir> [--] [makepkg args]"
+	echo "usage $appname [options] -r <chrootdir> [--] [makepkg args]"
 	echo ' Run this script in a PKGBUILD dir to build a package inside a'
 	echo ' clean chroot. All unrecognized arguments passed to this script'
 	echo ' will be passed to makepkg.'
@@ -41,7 +36,7 @@ usage() {
 	echo 'command:'
 	echo '    mkarchroot <chrootdir>/root base base-devel sudo'
 	echo ''
-	echo "Default makepkg args: $MAKEPKG_ARGS"
+	echo "Default makepkg args: $makepkg_args"
 	echo ''
 	echo 'Flags:'
 	echo '-h         This help'
@@ -59,22 +54,22 @@ usage() {
 }
 
 while getopts 'hcudr:I:l:' arg; do
-	case "${arg}" in
+	case "$arg" in
 		h) usage ;;
-		c) clean_first=1 ;;
-		u) update_first=1 ;;
-		d) add_to_db=1 ;;
+		c) clean_first=true ;;
+		u) update_first=true ;;
+		d) add_to_db=true ;;
 		r) chrootdir="$OPTARG" ;;
 		I) install_pkg="$OPTARG" ;;
 		l) copy="$OPTARG" ;;
-		*) MAKEPKG_ARGS="$MAKEPKG_ARGS -$arg $OPTARG" ;;
+		*) makepkg_args="$makepkg_args -$arg $OPTARG" ;;
 	esac
 done
 
 # Canonicalize chrootdir, getting rid of trailing /
 chrootdir=$(readlink -e "$chrootdir")
 
-if [[ ${copy:0:1} = "/" ]]; then
+if [[ ${copy:0:1} = / ]]; then
 	copydir=$copy
 else
 	[[ -z $copy ]] && copy=$default_copy
@@ -82,32 +77,32 @@ else
 fi
 
 # Pass all arguments after -- right to makepkg
-MAKEPKG_ARGS="$MAKEPKG_ARGS ${*:$OPTIND}"
+makepkg_args="$makepkg_args ${*:$OPTIND}"
 
 # See if -R was passed to makepkg
 for arg in ${*:$OPTIND}; do
-	if [ "$arg" = '-R' ]; then
-		REPACK=1
-		break;
+	if [[ $arg = -R ]]; then
+		repack=1
+		break
 	fi
 done
 
-if [ "$EUID" != '0' ]; then
+if (( EUID )); then
 	echo 'This script must be run as root.'
 	exit 1
 fi
 
-if [ ! -f PKGBUILD -a -z "$install_pkg" ]; then
+if [[ ! -f PKGBUILD && -z $install_pkg ]]; then
 	echo 'This must be run in a directory containing a PKGBUILD.'
 	exit 1
 fi
 
-if [ ! -d "$chrootdir" ]; then
+if [[ ! -d $chrootdir ]]; then
 	echo "No chroot dir defined, or invalid path '$chrootdir'"
 	exit 1
 fi
 
-if [ ! -d "$chrootdir/root" ]; then
+if [[ ! -d $chrootdir/root ]]; then
 	echo 'Missing chroot dir root directory.'
 	echo "Try using: mkarchroot $chrootdir/root base base-devel sudo"
 	usage
@@ -124,7 +119,7 @@ if ! flock -n 9; then
 	echo "done"
 fi
 
-if [ ! -d "$copydir" -o "$clean_first" -eq "1" ]; then
+if [[ ! -d $copydir ]] || $clean_first; then
 	# Get a read lock on the root chroot to make
 	# sure we don't clone a half-updated chroot
 	exec 8>"$chrootdir/root.lock"
@@ -138,8 +133,9 @@ if [ ! -d "$copydir" -o "$clean_first" -eq "1" ]; then
 	echo -n 'creating clean working copy...'
 	use_rsync=false
 	if type -P btrfs >/dev/null; then
-		[ -d $copydir ] && btrfs subvolume delete "$copydir" &>/dev/null
-		btrfs subvolume snapshot "$chrootdir/root" "$copydir" &>/dev/null || use_rsync=true
+		[[ -d $copydir ]] && btrfs subvolume delete "$copydir" &>/dev/null
+		btrfs subvolume snapshot "$chrootdir/root" "$copydir" &>/dev/null ||
+			use_rsync=true
 	else
 		use_rsync=true
 	fi
@@ -154,152 +150,154 @@ if [ ! -d "$copydir" -o "$clean_first" -eq "1" ]; then
 	exec 8>&-
 fi
 
-if [ -n "$install_pkg" ]; then
-	pkgname="$(basename "$install_pkg")"
+if [[ -n $install_pkg ]]; then
+	pkgname="${install_pkg##*/}"
 	cp "$install_pkg" "$copydir/$pkgname"
+
 	mkarchroot -r "pacman -U /$pkgname --noconfirm" "$copydir"
 	ret=$?
+
 	rm "$copydir/$pkgname"
+
 	# Exit early, we've done all we need to
 	exit $ret
 fi
 
-if [ $update_first -eq 1 ]; then
-	mkarchroot -u "$copydir"
-fi
+$update_first && mkarchroot -u "$copydir"
 
-[ -d "$copydir/build" ] || mkdir "$copydir/build"
+mkdir -p "$copydir/build"
 
-if [ "$REPACK" != "1" ]; then
-	# Remove anything in there UNLESS -R (repack) was passed to makepkg
-	rm -rf "$copydir/build/"*
-fi
+# Remove anything in there UNLESS -R (repack) was passed to makepkg
+$repack || rm -rf "$copydir"/build/*
 
 # Read .makepkg.conf even if called via sudo
-if [ -n "${SUDO_USER}" ]; then
-	makepkg_conf="/$(eval echo ~${SUDO_USER})/.makepkg.conf"
+if [[ -n $SUDO_USER ]]; then
+	makepkg_conf="$(eval echo ~$SUDO_USER)/.makepkg.conf"
 else
-	makepkg_conf="~/.makepkg.conf"
+	makepkg_conf="$HOME/.makepkg.conf"
 fi
 
 # Get SRC/PKGDEST from makepkg.conf
-if [ -f "${makepkg_conf}" ]; then
-	eval $(grep '^SRCDEST=' "${makepkg_conf}")
-	eval $(grep '^PKGDEST=' "${makepkg_conf}")
-
-	eval $(grep '^MAKEFLAGS=' "${makepkg_conf}")
-	eval $(grep '^PACKAGER=' "${makepkg_conf}")
+if [[ -f $makepkg_conf ]]; then
+	eval $(grep '^SRCDEST=' "$makepkg_conf")
+	eval $(grep '^PKGDEST=' "$makepkg_conf")
+	eval $(grep '^MAKEFLAGS=' "$makepkg_conf")
+	eval $(grep '^PACKAGER=' "$makepkg_conf")
 fi
-[ -z "${SRCDEST}" ] && eval $(grep '^SRCDEST=' /etc/makepkg.conf)
-[ -z "${PKGDEST}" ] && eval $(grep '^PKGDEST=' /etc/makepkg.conf)
 
-[ -d "$copydir/pkgdest" ] || mkdir "$copydir/pkgdest"
-if ! grep 'PKGDEST="/pkgdest"' "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
+[[ -z $SRCDEST ]] && eval $(grep '^SRCDEST=' /etc/makepkg.conf)
+[[ -z $PKGDEST ]] && eval $(grep '^PKGDEST=' /etc/makepkg.conf)
+[[ -z $MAKEFLAGS ]] && eval $(grep '^MAKEFLAGS=' /etc/makepkg.conf)
+[[ -z $PACKAGER ]] && eval $(grep '^PACKAGER=' /etc/makepkg.conf)
+
+mkdir -p "$copydir/pkgdest"
+if ! grep -q 'PKGDEST="/pkgdest"' "$copydir/etc/makepkg.conf"; then
 	echo 'PKGDEST="/pkgdest"' >> "$copydir/etc/makepkg.conf"
 fi
 
-[ -d "$copydir/srcdest" ] || mkdir "$copydir/srcdest"
-if ! grep 'SRCDEST="/srcdest"' "$copydir/etc/makepkg.conf" >/dev/null 2>&1; then
+mkdir -p "$copydir/srcdest"
+if ! grep -q 'SRCDEST="/srcdest"' "$copydir/etc/makepkg.conf"; then
 	echo 'SRCDEST="/srcdest"' >> "$copydir/etc/makepkg.conf"
 fi
-[ -z "${MAKEFLAGS}" ] && eval $(grep '^MAKEFLAGS=' /etc/makepkg.conf)
-if [ -n "${MAKEFLAGS}" ]; then 
-  sed -i '/^MAKEFLAGS=/d' "$copydir/etc/makepkg.conf"
-  echo "MAKEFLAGS='${MAKEFLAGS}'" >> "$copydir/etc/makepkg.conf"
+
+if [[ -n $MAKEFLAGS ]]; then 
+	sed -i '/^MAKEFLAGS=/d' "$copydir/etc/makepkg.conf"
+	echo "MAKEFLAGS='${MAKEFLAGS}'" >> "$copydir/etc/makepkg.conf"
 fi
-[ -z "${PACKAGER}" ] && eval $(grep '^PACKAGER=' /etc/makepkg.conf)
-if [ -n "${PACKAGER}" ]; then 
-  sed -i '/^PACKAGER=/d' "$copydir/etc/makepkg.conf"
-  echo "PACKAGER='${PACKAGER}'" >> "$copydir/etc/makepkg.conf"
+
+if [[ -n $PACKAGER ]]; then 
+	sed -i '/^PACKAGER=/d' "$copydir/etc/makepkg.conf"
+	echo "PACKAGER='${PACKAGER}'" >> "$copydir/etc/makepkg.conf"
 fi
 
 # Set target CARCH as it might be used within the PKGBUILD to select correct sources
 eval $(grep '^CARCH=' "$copydir/etc/makepkg.conf")
 export CARCH
+
 # Copy PKGBUILD and sources
-source=($(. PKGBUILD; echo ${source[@]}))
+source=( $(source PKGBUILD; echo ${source[@]}) )
 cp PKGBUILD "$copydir/build/"
-for f in ${source[@]}; do
-	basef=$(echo $f | sed 's|::.*||' | sed 's|^.*://.*/||g')
-	if [ -f "$basef" ]; then
-		cp "$basef" "$copydir/srcdest/"
-	elif [ -f "$SRCDEST/$basef" ]; then
-		cp "$SRCDEST/$basef" "$copydir/srcdest/"
+for file in "${source[@]}"; do
+	file="${file%%::*}"
+	file="${file##*://*/}"
+	if [[ -f $file ]]; then
+		cp "$file" "$copydir/srcdest/"
+	elif [[ -f $SRCDEST/$file ]]; then
+		cp "$SRCDEST/$file" "$copydir/srcdest/"
 	fi
 done
 
-( . PKGBUILD
-for i in 'changelog' 'install'; do
-	filelist=$(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
-	for file in $filelist; do
-		# evaluate any bash variables used
-		eval file=${file}
-		if [[ -f "$file" ]]; then
-			cp "$file" "$copydir/build/"
-		fi
+(
+	source PKGBUILD
+	for i in changelog install; do
+		sed -n "s/^[[:space:]]*$i=//p" PKGBUILD | while IFS= read -r file; do
+			# evaluate any bash variables used
+			eval file="$file"
+			[[ -f $file ]] && cp "$file" "$copydir/build/"
+		done
 	done
-done
 )
 
-chown -R nobody "$copydir/build"
-chown -R nobody "$copydir/srcdest"
-chown -R nobody "$copydir/pkgdest"
+chown -R nobody "$copydir"/{build,pkgdest,srcdest}
 
 echo 'nobody ALL = NOPASSWD: /usr/bin/pacman' > "$copydir/etc/sudoers.d/nobody-pacman"
 chmod 440 "$copydir/etc/sudoers.d/nobody-pacman"
 
-#This is a little gross, but this way the script is recreated every time in the
-#working copy
-(cat <<EOF
+# This is a little gross, but this way the script is recreated every time in the
+# working copy
+cat >"$copydir/chrootbuild" <<EOF
 #!/bin/bash
 export LANG=C
-cd /build
 export HOME=/build
-sudo -u nobody makepkg $MAKEPKG_ARGS || touch BUILD_FAILED
-[ -f BUILD_FAILED ] && exit 1
+
+cd /build
+sudo -u nobody makepkg $makepkg_args || touch BUILD_FAILED
+
+[[ -f BUILD_FAILED ]] && exit 1
+
 which namcap &>/dev/null && namcap /build/PKGBUILD /pkgdest/*.pkg.tar.* > /build/namcap.log
+
 exit 0
 EOF
-) > "$copydir/chrootbuild"
 chmod +x "$copydir/chrootbuild"
 
 if mkarchroot -r "/chrootbuild" "$copydir"; then
-	for pkgfile in "${copydir}"/pkgdest/*.pkg.tar.*; do
-		[ -e "$pkgfile" ] || continue
-		if [ "$add_to_db" -eq "1" ]; then
-			mkdir -p "${copydir}/repo"
-			pushd "${copydir}/repo" >/dev/null
+	for pkgfile in "$copydir"/pkgdest/*.pkg.tar.*; do
+		[[ -e $pkgfile ]] || continue
+		if $add_to_db; then
+			mkdir -p "$copydir/repo"
+			pushd "$copydir/repo" >/dev/null
 			cp "$pkgfile" .
-			repo-add repo.db.tar.gz "$(basename "$pkgfile")"
+			repo-add repo.db.tar.gz "${pkgfile##*/}"
 			popd >/dev/null
 		fi
 
-		if [ -d "$PKGDEST" ]; then
-			mv "$pkgfile" "${PKGDEST}"
+		if [[ -d $PKGDEST ]]; then
+			mv "$pkgfile" "$PKGDEST"
 		else
-			mv "$pkgfile" "${WORKDIR}"
+			mv "$pkgfile" "$workdir"
 		fi
 	done
 
-	for l in "${copydir}"/build/{namcap,*-{build,check,package,package_*}}.log; do
-		[ -f "$l" ] && mv "$l" "${WORKDIR}"
+	for l in "$copydir"/build/{namcap,*-{build,check,package,package_*}}.log; do
+		[[ -f $l ]] && mv "$l" "$workdir"
 	done
 else
-	#just in case. We returned 1, make sure we fail
-	touch "${copydir}/build/BUILD_FAILED"
+	# Just in case. We returned 1, make sure we fail
+	touch "$copydir/build/BUILD_FAILED"
 fi
 
-for f in "${copydir}"/srcdest/*; do
-	[ -e "$f" ] || continue
-	if [ -d "$SRCDEST" ]; then
-		mv "$f" "${SRCDEST}"
+for f in "$copydir"/srcdest/*; do
+	[[ -e $f ]] || continue
+	if [[ -d $SRCDEST ]]; then
+		mv "$f" "$SRCDEST"
 	else
-		mv "$f" "${WORKDIR}"
+		mv "$f" "$workdir"
 	fi
 done
 
-if [ -e "${copydir}/build/BUILD_FAILED" ]; then
+if [[ -e $copydir/build/BUILD_FAILED ]]; then
 	echo "Build failed, check $copydir/build"
-	rm "${copydir}/build/BUILD_FAILED"
+	rm "$copydir/build/BUILD_FAILED"
 	exit 1
 fi
