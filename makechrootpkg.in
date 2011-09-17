@@ -108,7 +108,7 @@ fi
 if [[ ! -d $chrootdir/root ]]; then
 	echo 'Missing chroot dir root directory.'
 	echo "Try using: mkarchroot $chrootdir/root base base-devel sudo"
-	usage
+	exit 1
 fi
 
 umask 0022
