@@ -188,6 +188,10 @@ fi
 [[ -z $MAKEFLAGS ]] && eval $(grep '^MAKEFLAGS=' /etc/makepkg.conf)
 [[ -z $PACKAGER ]] && eval $(grep '^PACKAGER=' /etc/makepkg.conf)
 
+# Use PKGBUILD directory if PKGDEST or SRCDEST don't exist
+[[ -d $PKGDEST ]] || PKGDEST=.
+[[ -d $SRCDEST ]] || SRCDEST=.
+
 mkdir -p "$copydir/pkgdest"
 if ! grep -q 'PKGDEST="/pkgdest"' "$copydir/etc/makepkg.conf"; then
 	echo 'PKGDEST="/pkgdest"' >> "$copydir/etc/makepkg.conf"
@@ -270,11 +274,7 @@ if mkarchroot -r "/chrootbuild" "$copydir"; then
 			popd >/dev/null
 		fi
 
-		if [[ -d $PKGDEST ]]; then
-			mv "$pkgfile" "$PKGDEST"
-		else
-			mv "$pkgfile" .
-		fi
+		mv "$pkgfile" "$PKGDEST"
 	done
 
 	for l in "$copydir"/build/{namcap,*-{build,check,package,package_*}}.log; do
@@ -287,11 +287,7 @@ fi
 
 for f in "$copydir"/srcdest/*; do
 	[[ -e $f ]] || continue
-	if [[ -d $SRCDEST ]]; then
-		mv "$f" "$SRCDEST"
-	else
-		mv "$f" .
-	fi
+	mv "$f" "$SRCDEST"
 done
 
 if [[ -e $copydir/build/BUILD_FAILED ]]; then
