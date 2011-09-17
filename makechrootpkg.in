@@ -16,6 +16,7 @@ update_first=false
 clean_first=false
 install_pkg=
 add_to_db=false
+run_namcap=false
 chrootdir=
 
 default_copy=$USER
@@ -49,11 +50,12 @@ usage() {
 	echo '-I <pkg>   Install a package into the working copy of the chroot'
 	echo '-l <copy>  The directory to use as the working copy of the chroot'
 	echo '           Useful for maintaining multiple copies.'
+	echo '-n         Run namcap on the package'
 	echo "           Default: $default_copy"
 	exit 1
 }
 
-while getopts 'hcudr:I:l:' arg; do
+while getopts 'hcudr:I:l:n' arg; do
 	case "$arg" in
 		h) usage ;;
 		c) clean_first=true ;;
@@ -62,6 +64,7 @@ while getopts 'hcudr:I:l:' arg; do
 		r) chrootdir="$OPTARG" ;;
 		I) install_pkg="$OPTARG" ;;
 		l) copy="$OPTARG" ;;
+		n) run_namcap=true ;;
 		*) makepkg_args="$makepkg_args -$arg $OPTARG" ;;
 	esac
 done
@@ -259,7 +262,10 @@ sudo -u nobody makepkg $makepkg_args || touch BUILD_FAILED
 
 [[ -f BUILD_FAILED ]] && exit 1
 
-which namcap &>/dev/null && namcap /build/PKGBUILD /pkgdest/*.pkg.tar.* > /build/namcap.log
+if $run_namcap; then
+	pacman -S --needed --noconfirm namcap
+	namcap /build/PKGBUILD /pkgdest/*.pkg.tar.* > /build/namcap.log
+fi
 
 exit 0
 EOF
