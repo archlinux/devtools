@@ -219,20 +219,20 @@ eval $(grep '^CARCH=' "$copydir/etc/makepkg.conf")
 export CARCH
 
 # Copy PKGBUILD and sources
-source=( $(source PKGBUILD; echo ${source[@]}) )
 cp PKGBUILD "$copydir/build/"
-for file in "${source[@]}"; do
-	file="${file%%::*}"
-	file="${file##*://*/}"
-	if [[ -f $file ]]; then
-		cp "$file" "$copydir/srcdest/"
-	elif [[ -f $SRCDEST/$file ]]; then
-		cp "$SRCDEST/$file" "$copydir/srcdest/"
-	fi
-done
-
 (
 	source PKGBUILD
+	for file in "${source[@]}"; do
+		file="${file%%::*}"
+		file="${file##*://*/}"
+		if [[ -f $file ]]; then
+			cp "$file" "$copydir/srcdest/"
+		elif [[ -f $SRCDEST/$file ]]; then
+			cp "$SRCDEST/$file" "$copydir/srcdest/"
+		fi
+	done
+
+	# Find all changelog and install files, even inside functions
 	for i in changelog install; do
 		sed -n "s/^[[:space:]]*$i=//p" PKGBUILD | while IFS= read -r file; do
 			# evaluate any bash variables used
