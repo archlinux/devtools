@@ -8,6 +8,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+shopt -s nullglob
+
 makepkg_args='-s --noconfirm'
 repack=false
 update_first=false
@@ -265,7 +267,6 @@ chmod +x "$copydir/chrootbuild"
 
 if mkarchroot -r "/chrootbuild" "$copydir"; then
 	for pkgfile in "$copydir"/pkgdest/*.pkg.tar.*; do
-		[[ -e $pkgfile ]] || continue
 		if $add_to_db; then
 			mkdir -p "$copydir/repo"
 			pushd "$copydir/repo" >/dev/null
@@ -286,7 +287,6 @@ else
 fi
 
 for f in "$copydir"/srcdest/*; do
-	[[ -e $f ]] || continue
 	mv "$f" "$SRCDEST"
 done
 
