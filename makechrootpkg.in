@@ -8,7 +8,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-workdir="$PWD"
 makepkg_args='-s --noconfirm'
 repack=false
 update_first=false
@@ -274,12 +273,12 @@ if mkarchroot -r "/chrootbuild" "$copydir"; then
 		if [[ -d $PKGDEST ]]; then
 			mv "$pkgfile" "$PKGDEST"
 		else
-			mv "$pkgfile" "$workdir"
+			mv "$pkgfile" .
 		fi
 	done
 
 	for l in "$copydir"/build/{namcap,*-{build,check,package,package_*}}.log; do
-		[[ -f $l ]] && mv "$l" "$workdir"
+		[[ -f $l ]] && mv "$l" .
 	done
 else
 	# Just in case. We returned 1, make sure we fail
@@ -291,7 +290,7 @@ for f in "$copydir"/srcdest/*; do
 	if [[ -d $SRCDEST ]]; then
 		mv "$f" "$SRCDEST"
 	else
-		mv "$f" "$workdir"
+		mv "$f" .
 	fi
 done
 
