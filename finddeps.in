@@ -4,7 +4,6 @@
 #
 
 match=$1
-tld=$(pwd)
 
 if [[ -z $match ]]; then
 	echo 'usage: finddeps <depname>'
@@ -16,10 +15,9 @@ if [[ -z $match ]]; then
 fi
 
 for d in "$(find . -type d)"; do
-	cd "$d"
-	if [[ -f PKGBUILD ]]; then
+	if [[ -f "$d/PKGBUILD" ]]; then
 		unset pkgname depends makedepends
-		. PKGBUILD
+		. "$d/PKGBUILD"
 		for dep in "${depends[@]}"; do
 			# lose the version comparator, if any
 			depname=${dep%%[<>=]*}
@@ -36,5 +34,4 @@ for d in "$(find . -type d)"; do
 			[[ $depname = $match ]] && echo "$d (optdepends)"
 		done
 	fi
-	cd "$tld"
 done
