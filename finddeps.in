@@ -14,7 +14,7 @@ if [[ -z $match ]]; then
 	exit 0
 fi
 
-for d in "$(find . -type d)"; do
+find . -type d | while read d; do
 	if [[ -f "$d/PKGBUILD" ]]; then
 		unset pkgname depends makedepends
 		. "$d/PKGBUILD"
