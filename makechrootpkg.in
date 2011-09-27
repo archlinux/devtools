@@ -10,7 +10,7 @@
 
 shopt -s nullglob
 
-makepkg_args='-s --noconfirm'
+makepkg_args='-s --noconfirm -L'
 repack=false
 update_first=false
 clean_first=false
