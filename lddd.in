@@ -9,7 +9,7 @@ IFS="${IFS}:"
 libdirs="/lib /usr/lib /usr/local/lib $(cat /etc/ld.so.conf.d/*)"
 extras=
 
-TEMPDIR=$(mktemp -d /tmp/lddd-script.XXXX)
+TEMPDIR=$(mktemp -d --tmpdir lddd-script.XXXX)
 
 echo 'Go out and drink some tea, this will take a while :) ...'
 #  Check ELF binaries in the PATH and specified dir trees.
