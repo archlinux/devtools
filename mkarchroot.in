@@ -221,7 +221,7 @@ else
 
 	if [ -e "${working_dir}/etc/locale.gen" ]; then
 		sed -i 's@^#\(en_US\|de_DE\)\(\.UTF-8\)@\1\2@' "${working_dir}/etc/locale.gen"
-		chroot "${working_dir}" locale-gen
+		chroot "${working_dir}" /usr/sbin/locale-gen
 	fi
 
 	if [ ! -e "${working_dir}/.arch-chroot" ]; then
