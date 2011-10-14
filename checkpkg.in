@@ -24,7 +24,7 @@ if [[ $arch == 'any' ]]; then
 fi
 
 STARTDIR=$(pwd)
-TEMPDIR=$(mktemp -d /tmp/checkpkg-script.XXXX)
+TEMPDIR=$(mktemp -d --tmpdir checkpkg-script.XXXX)
 cd "$TEMPDIR"
 
 for _pkgname in "${pkgname[@]}"; do

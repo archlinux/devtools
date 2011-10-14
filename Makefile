@@ -47,7 +47,16 @@ ARCHBUILD_LINKS = \
 	multilib-build \
 	multilib-testing-build
 
-all:
+all: $(BINPROGS) $(SBINPROGS) bash_completion zsh_completion
+
+%: %.in
+	@echo "GEN $@"
+	@sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g" "$<" >"$@"
+	@chmod a-w "$@"
+	@chmod +x "$@"
+
+clean:
+	rm -f $(BINPROGS) $(SBINPROGS) bash_completion zsh_completion
 
 install:
 	install -dm0755 $(DESTDIR)$(PREFIX)/bin
@@ -78,4 +87,4 @@ dist:
 upload:
 	scp devtools-$(V).tar.gz gerolde.archlinux.org:/srv/ftp/other/devtools/
 
-.PHONY: all install uninstall dist upload
+.PHONY: all clean install uninstall dist upload
