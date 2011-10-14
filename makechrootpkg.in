@@ -264,7 +264,7 @@ sudo -u nobody makepkg $makepkg_args || touch BUILD_FAILED
 
 if $run_namcap; then
 	pacman -S --needed --noconfirm namcap
-	namcap /build/PKGBUILD /pkgdest/*.pkg.tar.* > /build/namcap.log
+	namcap /build/PKGBUILD /pkgdest/*.pkg.tar.?z > /build/namcap.log
 fi
 
 exit 0
