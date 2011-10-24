@@ -86,14 +86,13 @@ done
 
 # check if changelog and install files are under version control
 for i in 'changelog' 'install'; do
-	filelist=$(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
-	for file in $filelist; do
+	while read -r file; do
 		# evaluate any bash variables used
-		eval file=${file}
+		eval file=\"$(sed 's/^\(['\''"]\)\(.*\)\1$/\2/' <<< "$file")\"
 		if ! svn status -v "${file}" | grep -q '^[ AMRX~]'; then
 			abort "${file} is not under version control"
 		fi
-	done
+	done < <(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
 done
 
 # see if any limit options were passed, we'll send them to rsync
