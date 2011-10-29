@@ -173,11 +173,18 @@ mkdir -p "$copydir/build"
 # Remove anything in there UNLESS -R (repack) was passed to makepkg
 $repack || rm -rf "$copydir"/build/*
 
-# Read .makepkg.conf even if called via sudo
+# Read .makepkg.conf and .gnupg/pubring.gpg even if called via sudo
 if [[ -n $SUDO_USER ]]; then
-	makepkg_conf="$(eval echo ~$SUDO_USER)/.makepkg.conf"
+	SUDO_HOME="$(eval echo ~$SUDO_USER)"
+	makepkg_conf="$SUDO_HOME/.makepkg.conf"
+	if [[ -r "$SUDO_HOME/.gnupg/pubring.gpg" ]]; then
+		install -D "$SUDO_HOME/.gnupg/pubring.gpg" "$copydir/build/.gnupg/pubring.gpg"
+	fi
 else
 	makepkg_conf="$HOME/.makepkg.conf"
+	if [[ -r "$HOME/.gnupg/pubring.gpg" ]]; then
+		install -D "$HOME/.gnupg/pubring.gpg" "$copydir/build/.gnupg/pubring.gpg"
+	fi
 fi
 
 # Get SRC/PKGDEST from makepkg.conf
@@ -247,7 +254,10 @@ cp PKGBUILD "$copydir/build/"
 
 chown -R nobody "$copydir"/{build,pkgdest,srcdest}
 
-echo 'nobody ALL = NOPASSWD: /usr/bin/pacman' > "$copydir/etc/sudoers.d/nobody-pacman"
+cat > "$copydir/etc/sudoers.d/nobody-pacman" <<EOF
+Defaults env_keep += "HOME"
+nobody ALL = NOPASSWD: /usr/bin/pacman
+EOF
 chmod 440 "$copydir/etc/sudoers.d/nobody-pacman"
 
 # Set this system wide as makepkg will source /etc/profile before calling build()
