@@ -250,6 +250,9 @@ chown -R nobody "$copydir"/{build,pkgdest,srcdest}
 echo 'nobody ALL = NOPASSWD: /usr/bin/pacman' > "$copydir/etc/sudoers.d/nobody-pacman"
 chmod 440 "$copydir/etc/sudoers.d/nobody-pacman"
 
+# Set this system wide as makepkg will source /etc/profile before calling build()
+echo 'export LANG=C' > "$copydir/etc/locale.conf"
+
 # This is a little gross, but this way the script is recreated every time in the
 # working copy
 cat >"$copydir/chrootbuild" <<EOF
