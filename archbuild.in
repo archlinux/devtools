@@ -58,6 +58,13 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 		-M "@pkgdatadir@/makepkg-${arch}.conf" \
 		"${chroots}/${repo}-${arch}/root" \
 		"${base_packages[@]}"
+
+	# FIXME: temporary workaround until pacman 4.0 moves to [core]
+	case $repo in
+		core|extra|community|multilib)
+			sed -r '/^SigLevel.*/d' -i "${chroots}/${repo}-${arch}/root/etc/pacman.conf"
+		;;
+	esac
 else
 	setarch ${arch} mkarchroot \
 		-u \
