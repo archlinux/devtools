@@ -169,7 +169,7 @@ for _arch in ${arch[@]}; do
 				abort "Signature ${pkgfile}.sig is incorrect!"
 			fi
 			uploads+=("$sigfile")
-		elif [[ $SIGNPKG == 'y' ]]; then
+		else
 			abort "Signature ${pkgfile}.sig was not found"
 		fi
 	done
