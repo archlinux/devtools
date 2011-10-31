@@ -243,12 +243,12 @@ cp PKGBUILD "$copydir/build/"
 	done
 
 	# Find all changelog and install files, even inside functions
-	for i in changelog install; do
-		sed -n "s/^[[:space:]]*$i=//p" PKGBUILD | while IFS= read -r file; do
+	for i in 'changelog' 'install'; do
+		while read -r file; do
 			# evaluate any bash variables used
-			eval file="$file"
+			eval file=\"$(sed 's/^\(['\''"]\)\(.*\)\1$/\2/' <<< "$file")\"
 			[[ -f $file ]] && cp "$file" "$copydir/build/"
-		done
+		done < <(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
 	done
 )
 
