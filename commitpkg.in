@@ -165,6 +165,9 @@ for _arch in ${arch[@]}; do
 			gpg --detach-sign --use-agent ${SIGNWITHKEY} "${pkgfile}" || abort
 		fi
 		if [ -f "${sigfile}" ]; then
+			if ! gpg --verify "$sigfile" >/dev/null 2>&1; then
+				abort "Signature ${pkgfile}.sig is incorrect!"
+			fi
 			uploads+=("$sigfile")
 		elif [[ $SIGNPKG == 'y' ]]; then
 			abort "Signature ${pkgfile}.sig was not found"
