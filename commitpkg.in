@@ -156,15 +156,14 @@ for _arch in ${arch[@]}; do
 		fi
 		uploads+=("$pkgfile")
 
-		if [[ $SIGNPKG == 'y' ]]; then
+		sigfile="${pkgfile}.sig"
+		if [[ $SIGNPKG == 'y' ]] && [ ! -f "${sigfile}" ]; then
 			echo "Signing package ${pkgfile}..."
 			if [[ -n $GPGKEY ]]; then
 				SIGNWITHKEY="-u ${GPGKEY}"
 			fi
 			gpg --detach-sign --use-agent ${SIGNWITHKEY} "${pkgfile}" || abort
 		fi
-
-		sigfile="${pkgfile}.sig"
 		if [ -f "${sigfile}" ]; then
 			uploads+=("$sigfile")
 		elif [[ $SIGNPKG == 'y' ]]; then
