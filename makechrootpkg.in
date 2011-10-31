@@ -261,7 +261,7 @@ EOF
 chmod 440 "$copydir/etc/sudoers.d/nobody-pacman"
 
 # Set this system wide as makepkg will source /etc/profile before calling build()
-echo 'export LANG=C' > "$copydir/etc/locale.conf"
+echo 'LANG=C' > "$copydir/etc/locale.conf"
 
 # This is a little gross, but this way the script is recreated every time in the
 # working copy
