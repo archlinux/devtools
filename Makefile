@@ -83,8 +83,9 @@ uninstall:
 
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip -9 > devtools-$(V).tar.gz
+	gpg --detach-sign --use-agent devtools-$(V).tar.gz
 
 upload:
-	scp devtools-$(V).tar.gz gerolde.archlinux.org:/srv/ftp/other/devtools/
+	scp devtools-$(V).tar.gz devtools-$(V).tar.gz.sig gerolde.archlinux.org:/srv/ftp/other/devtools/
 
 .PHONY: all clean install uninstall dist upload
