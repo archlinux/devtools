@@ -1,6 +1,9 @@
 #!/bin/bash
 
-base_packages=(base base-devel sudo)
+m4_include(lib/common.sh)
+
+# FIXME: temporary added curl until pacman 4.0 moves to [core]
+base_packages=(base base-devel sudo curl)
 
 cmd="${0##*/}"
 if [[ "${cmd%%-*}" == 'multilib' ]]; then
@@ -31,16 +34,15 @@ while getopts 'cr:' arg; do
 done
 
 if [[ "$EUID" != '0' ]]; then
-	echo 'This script must be run as root.'
-	exit 1
+	die 'This script must be run as root.'
 fi
 
 if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
-	echo "Creating chroot for [${repo}] (${arch})..."
+	msg "Creating chroot for [${repo}] (${arch})..."
 
 	for copy in "${chroots}/${repo}-${arch}"/*; do
 		[[ -d $copy ]] || continue
-		echo "Deleting chroot copy '$(basename "${copy}")'..."
+		msg2 "Deleting chroot copy '$(basename "${copy}")'..."
 
 		# Lock the copy
 		exec 9>"${copy}.lock"
@@ -71,5 +73,5 @@ else
 		"${chroots}/${repo}-${arch}/root"
 fi
 
-echo "Building in chroot for [${repo}] (${arch})..."
+msg "Building in chroot for [${repo}] (${arch})..."
 setarch "${arch}" makechrootpkg -c -r "${chroots}/${repo}-${arch}"

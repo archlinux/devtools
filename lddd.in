@@ -3,6 +3,8 @@
 # lddd - find broken library links on your machine
 #
 
+m4_include(lib/common.sh)
+
 ifs=$IFS
 IFS="${IFS}:"
 
@@ -11,10 +13,10 @@ extras=
 
 TEMPDIR=$(mktemp -d --tmpdir lddd-script.XXXX)
 
-echo 'Go out and drink some tea, this will take a while :) ...'
+msg 'Go out and drink some tea, this will take a while :) ...'
 #  Check ELF binaries in the PATH and specified dir trees.
 for tree in $PATH $libdirs $extras; do
-	echo DIR $tree
+	msg2 "DIR $tree"
 
 	#  Get list of files in tree.
 	files=$(find $tree -type f ! -name '*.a' ! -name '*.la' ! -name '*.py*' ! -name '*.txt' ! -name '*.h' ! -name '*.ttf' ! \
@@ -43,4 +45,4 @@ done
 # clean list
 sort -u $TEMPDIR/pacman.txt >> $TEMPDIR/possible-rebuilds.txt
 
-echo "Files saved to $TEMPDIR"
+msg "Files saved to $TEMPDIR"

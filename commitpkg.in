@@ -1,40 +1,22 @@
 #!/bin/bash
 
-abort() {
-	echo ${1:-'Cancelled'}
-	exit 1
-}
+m4_include(lib/common.sh)
 
 getpkgfile() {
 	if [[ ${#} -ne 1 ]]; then
-		echo 'ERROR: No canonical package found!' >&2
-		exit 1
+		die 'ERROR: No canonical package found!'
 	elif [ ! -f "${1}" ]; then
-		echo "ERROR: Package ${1} not found!" >&2
-		exit 1
+		die "ERROR: Package ${1} not found!"
 	fi
 
 	echo ${1}
-}
-
-##
-#  usage : get_full_version( $epoch, $pkgver, $pkgrel )
-# return : full version spec, including epoch (if necessary), pkgver, pkgrel
-##
-get_full_version() {
-	if [[ $1 -eq 0 ]]; then
-		# zero epoch case, don't include it in version
-		echo $2-$3
-	else
-		echo $1:$2-$3
-	fi
 }
 
 # Source makepkg.conf; fail if it is not found
 if [ -r '/etc/makepkg.conf' ]; then
 	source '/etc/makepkg.conf'
 else
-	abort '/etc/makepkg.conf not found!'
+	die '/etc/makepkg.conf not found!'
 fi
 
 # Source user-specific makepkg.conf overrides
@@ -45,7 +27,7 @@ fi
 cmd=${0##*/}
 
 if [ ! -f PKGBUILD ]; then
-	abort 'No PKGBUILD file'
+	die 'No PKGBUILD file'
 fi
 
 . PKGBUILD
@@ -54,7 +36,7 @@ pkgbase=${pkgbase:-$pkgname}
 case "$cmd" in
 	commitpkg)
 		if [ $# -eq 0 ]; then
-			abort 'usage: commitpkg <reponame> [-l limit] [-a arch] [commit message]'
+			die 'usage: commitpkg <reponame> [-l limit] [-a arch] [commit message]'
 		fi
 		repo="$1"
 		shift
@@ -63,7 +45,7 @@ case "$cmd" in
 		repo="${cmd%pkg}"
 		;;
 	*)
-		abort 'usage: commitpkg <reponame> [-l limit] [-a arch] [commit message]'
+		die 'usage: commitpkg <reponame> [-l limit] [-a arch] [commit message]'
 		;;
 esac
 
@@ -74,13 +56,13 @@ case "$repo" in
 		server='aur.archlinux.org' ;;
 	*)
 		server='gerolde.archlinux.org'
-		echo "Non-standard repository $repo in use, defaulting to server $server" ;;
+		msg "Non-standard repository $repo in use, defaulting to server $server" ;;
 esac
 
 # check if all local source files are under version control
 for s in "${source[@]}"; do
 	if [[ $s != *://* ]] && ! svn status -v "$s" | grep -q '^[ AMRX~]'; then
-		abort "$s is not under version control"
+		die "$s is not under version control"
 	fi
 done
 
@@ -90,7 +72,7 @@ for i in 'changelog' 'install'; do
 		# evaluate any bash variables used
 		eval file=\"$(sed 's/^\(['\''"]\)\(.*\)\1$/\2/' <<< "$file")\"
 		if ! svn status -v "${file}" | grep -q '^[ AMRX~]'; then
-			abort "${file} is not under version control"
+			die "${file} is not under version control"
 		fi
 	done < <(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
 done
@@ -101,20 +83,19 @@ while getopts ':l:a:' flag; do
 	case $flag in
 		l) rsyncopts+=("--bwlimit=$2") ;;
 		a) commit_arch=$2 ;;
-		:) echo "option requires an argument -- '$OPTARG'" >&2
-			exit 1 ;;
-		\?) echo "invalid option -- '$OPTARG'" >&2
-			exit 1 ;;
+		:) die "option requires an argument -- '$OPTARG'" ;;
+		\?) die "invalid option -- '$OPTARG'" ;;
 	esac
 done
 shift $(( OPTIND - 1 ))
 
 if [ -n "$(svn status -q)" ]; then
-	echo -n 'committing changes to trunk...'
-	msgtemplate="upgpkg: $pkgbase $(get_full_version ${epoch:-0} $pkgver $pkgrel)"$'\n\n'
 	if [ -n "$1" ]; then
-		svn commit -q -m "${msgtemplate}${1}" || abort
+		stat_busy 'committing changes to trunk'
+		svn commit -q -m "${msgtemplate}${1}" || die
+		stat_done
 	else
+		msgtemplate="upgpkg: $pkgbase $(get_full_version)"$'\n\n'
 		msgfile="$(mktemp)"
 		echo "$msgtemplate" > "$msgfile"
 		if [ -n "$SVN_EDITOR" ]; then
@@ -126,23 +107,24 @@ if [ -n "$(svn status -q)" ]; then
 		else
 			vi "$msgfile"
 		fi
-		[ -s "$msgfile" ] || abort
-		svn commit -q -F "$msgfile" || abort
+		[ -s "$msgfile" ] || die
+		stat_busy 'committing changes to trunk'
+		svn commit -q -F "$msgfile" || die
 		unlink "$msgfile"
+		stat_done
 	fi
-	echo 'done'
 fi
 
 declare -a uploads
 
 for _arch in ${arch[@]}; do
 	if [ -n "$commit_arch" ] && [ "${_arch}" != "$commit_arch" ]; then
-		echo "skipping ${_arch}"
+		warning "skipping ${_arch}"
 		continue
 	fi
 
 	for _pkgname in ${pkgname[@]}; do
-		fullver=$(get_full_version ${epoch:-0} $pkgver $pkgrel)
+		fullver=$(get_full_version $_pkgname)
 		pkgfile=$(getpkgfile "$_pkgname-$fullver-${_arch}".pkg.tar.?z 2>/dev/null)
 		pkgdestfile=$(getpkgfile "$PKGDEST/$_pkgname-$fullver-${_arch}".pkg.tar.?z 2>/dev/null)
 
@@ -151,58 +133,58 @@ for _arch in ${arch[@]}; do
 		elif [ -f "$pkgdestfile" ]; then
 			pkgfile="$pkgdestfile"
 		else
-			echo "skipping ${_arch}"
+			warning "skipping ${_arch}"
 			continue 2
 		fi
 		uploads+=("$pkgfile")
 
 		sigfile="${pkgfile}.sig"
 		if [[ $SIGNPKG == 'y' ]] && [ ! -f "${sigfile}" ]; then
-			echo "Signing package ${pkgfile}..."
+			msg "Signing package ${pkgfile}..."
 			if [[ -n $GPGKEY ]]; then
 				SIGNWITHKEY="-u ${GPGKEY}"
 			fi
-			gpg --detach-sign --use-agent ${SIGNWITHKEY} "${pkgfile}" || abort
+			gpg --detach-sign --use-agent ${SIGNWITHKEY} "${pkgfile}" || die
 		fi
 		if [ -f "${sigfile}" ]; then
 			if ! gpg --verify "$sigfile" >/dev/null 2>&1; then
-				abort "Signature ${pkgfile}.sig is incorrect!"
+				die "Signature ${pkgfile}.sig is incorrect!"
 			fi
 			uploads+=("$sigfile")
 		else
-			abort "Signature ${pkgfile}.sig was not found"
+			die "Signature ${pkgfile}.sig was not found"
 		fi
 	done
 done
 
 if [[ -n $commit_arch ]]; then
-	archrelease "$repo-$commit_arch" || abort
+	archrelease "$repo-$commit_arch" || die
 else
-	archrelease "${arch[@]/#/$repo-}" || abort
+	archrelease "${arch[@]/#/$repo-}" || die
 fi
 
 if [[ ${#uploads[*]} -gt 0 ]]; then
-	echo 'uploading all package and signature files'
-	rsync "${rsyncopts[@]}" "${uploads[@]}" "$server:staging/$repo/" || abort
+	msg 'uploading all package and signature files'
+	rsync "${rsyncopts[@]}" "${uploads[@]}" "$server:staging/$repo/" || die
 fi
 
 if [ "${arch[*]}" == 'any' ]; then
 	if [ -d ../repos/$repo-i686 -a -d ../repos/$repo-x86_64 ]; then
 		pushd ../repos/ >/dev/null
-		echo "removing $repo-i686 and $repo-x86_64..."
+		stat_busy "removing $repo-i686 and $repo-x86_64"
 		svn rm $repo-i686
 		svn rm $repo-x86_64
 		svn commit -q -m "removed $repo-i686 and $repo-x86_64 for $pkgname"
-		echo 'done'
+		stat_done
 		popd >/dev/null
 	fi
 else
 	if [ -d ../repos/$repo-any ]; then
 		pushd ../repos/ >/dev/null
-		echo "removing $repo-any..."
+		stat_busy "removing $repo-any"
 		svn rm $repo-any
 		svn commit -q -m "removed $repo-any for $pkgname"
-		echo 'done'
+		stat_done
 		popd >/dev/null
 	fi
 fi

@@ -9,6 +9,8 @@
 # Currently uses $(pwd)/rebuilds as the directory for rebuilding...
 # TODO make this work for community too
 
+m4_include(lib/common.sh)
+
 if [ $# -le 1 ]; then
 	echo "usage: $(basename $0) <chrootdir> <packages to rebuild>"
 	echo "  example: $(basename $0) ~/chroot readline bash foo bar baz"
@@ -19,14 +21,8 @@ fi
 if [ -r '/etc/makepkg.conf' ]; then
 	source '/etc/makepkg.conf'
 else
-	echo '/etc/makepkg.conf not found!'
-	exit 1
+	die '/etc/makepkg.conf not found!'
 fi
-
-die () {
-	echo $@ >&2
-	exit 1
-}
 
 bump_pkgrel() {
 	# Get the current pkgrel from SVN and update the working copy with it
@@ -53,7 +49,7 @@ pkgs="$@"
 
 SVNPATH='svn+ssh://gerolde.archlinux.org/srv/svn-packages'
 
-echo ":: Work will be done in $(pwd)/rebuilds"
+msg "Work will be done in $(pwd)/rebuilds"
 
 REBUILD_ROOT="$(pwd)/rebuilds"
 mkdir -p "$REBUILD_ROOT"
@@ -65,11 +61,11 @@ FAILED=""
 for pkg in $pkgs; do
 	cd "$REBUILD_ROOT/svn-packages"
 
-	echo ":: Building '$pkg'"
+	msg2 "Building '$pkg'"
 	/usr/bin/svn update "$pkg"
 	if [ ! -d "$pkg/trunk" ]; then
 		FAILED="$FAILED $pkg"
-		echo ":: $pkg does not exist in SVN"
+		warning "$pkg does not exist in SVN"
 		continue
 	fi
 	cd "$pkg/trunk/"
@@ -78,24 +74,24 @@ for pkg in $pkgs; do
 
 	if ! sudo makechrootpkg -u -d -r "$chrootdir" -- --noconfirm; then
 		FAILED="$FAILED $pkg"
-		echo ":: $pkg Failed!"
+		error "$pkg Failed!"
 	else
 		pkgfile=$(pkg_from_pkgbuild)
 		if [ -e "$pkgfile" ]; then
-			echo ":: $pkg Complete"
+			msg2 "$pkg Complete"
 		else
 			FAILED="$FAILED $pkg"
-			echo ":: $pkg Failed, no package built!"
+			error "$pkg Failed, no package built!"
 		fi
 	fi
 done
 
 cd "$REBUILD_ROOT"
 if [ "$FAILED" != "" ]; then
-	echo 'Packages failed:'
+	msg 'Packages failed:'
 	for pkg in $FAILED; do
-		echo -e "\t$pkg"
+		msg2 "$pkg"
 	done
 fi
 
-echo 'SVN pkgbumps in svn-packages/ - commit when ready'
+msg 'SVN pkgbumps in svn-packages/ - commit when ready'

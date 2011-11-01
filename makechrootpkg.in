@@ -8,6 +8,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+m4_include(lib/common.sh)
+
 shopt -s nullglob
 
 makepkg_args='-s --noconfirm -L'
@@ -91,24 +93,19 @@ for arg in ${*:$OPTIND}; do
 done
 
 if (( EUID )); then
-	echo 'This script must be run as root.'
-	exit 1
+	die 'This script must be run as root.'
 fi
 
 if [[ ! -f PKGBUILD && -z $install_pkg ]]; then
-	echo 'This must be run in a directory containing a PKGBUILD.'
-	exit 1
+	die 'This must be run in a directory containing a PKGBUILD.'
 fi
 
 if [[ ! -d $chrootdir ]]; then
-	echo "No chroot dir defined, or invalid path '$chrootdir'"
-	exit 1
+	die "No chroot dir defined, or invalid path '$chrootdir'"
 fi
 
 if [[ ! -d $chrootdir/root ]]; then
-	echo 'Missing chroot dir root directory.'
-	echo "Try using: mkarchroot $chrootdir/root base base-devel sudo"
-	exit 1
+	die "Missing chroot dir root directory. Try using: mkarchroot $chrootdir/root base base-devel sudo"
 fi
 
 umask 0022
@@ -117,9 +114,9 @@ umask 0022
 # Note this is the same FD number as in mkarchroot
 exec 9>"$copydir.lock"
 if ! flock -n 9; then
-	echo -n "locking chroot copy '$copy'..."
+	stat_busy "locking chroot copy '$copy'"
 	flock 9
-	echo "done"
+	stat_done
 fi
 
 if [[ ! -d $copydir ]] || $clean_first; then
@@ -128,12 +125,12 @@ if [[ ! -d $copydir ]] || $clean_first; then
 	exec 8>"$chrootdir/root.lock"
 
 	if ! flock -sn 8; then
-		echo -n "locking clean chroot..."
+		stat_busy "locking clean chroot"
 		flock -s 8
-		echo "done"
+		stat_done
 	fi
 
-	echo -n 'creating clean working copy...'
+	stat_busy 'creating clean working copy'
 	use_rsync=false
 	if type -P btrfs >/dev/null; then
 		[[ -d $copydir ]] && btrfs subvolume delete "$copydir" &>/dev/null
@@ -147,7 +144,7 @@ if [[ ! -d $copydir ]] || $clean_first; then
 		mkdir -p "$copydir"
 		rsync -a --delete -q -W -x "$chrootdir/root/" "$copydir"
 	fi
-	echo 'done'
+	stat_done
 
 	# Drop the read lock again
 	exec 8>&-
@@ -310,7 +307,6 @@ for f in "$copydir"/srcdest/*; do
 done
 
 if [[ -e $copydir/build/BUILD_FAILED ]]; then
-	echo "Build failed, check $copydir/build"
 	rm "$copydir/build/BUILD_FAILED"
-	exit 1
+	die "Build failed, check $copydir/build"
 fi

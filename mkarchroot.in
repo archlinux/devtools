@@ -8,6 +8,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+m4_include(lib/common.sh)
+
 FORCE='n'
 RUN=''
 NOCOPY='n'
@@ -28,7 +30,7 @@ usage() {
 	echo '    -n            Do not copy config files into the chroot'
 	echo '    -c <dir>      Set pacman cache. Default: /var/cache/pacman/pkg'
 	echo '    -h            This message'
-	exit $1
+	exit 1
 }
 
 while getopts 'r:ufnhC:M:c:' arg; do
@@ -41,29 +43,26 @@ while getopts 'r:ufnhC:M:c:' arg; do
 		n) NOCOPY='y' ;;
 		c) cache_dir="$OPTARG" ;;
 		h|?) usage 0 ;;
-		*) echo "invalid argument '${arg}'"; usage 1 ;;
+		*) error "invalid argument '${arg}'"; usage ;;
 	esac
 done
 
 if [ "$EUID" != '0' ]; then
-	echo 'error: this script must be run as root.'
-	exit 1
+	die 'this script must be run as root.'
 fi
 
 shift $(($OPTIND - 1))
 
 if [ "$RUN" = '' -a $# -lt 2 ]; then
-	echo 'you must specify a directory and one or more packages'
-	usage 1
+	die 'you must specify a directory and one or more packages'
 elif [ $# -lt 1 ]; then
-	echo 'you must specify a directory'
-	usage 1
+	die 'you must specify a directory'
 fi
 
 working_dir="$(readlink -f ${1})"
 shift 1
 
-[ "${working_dir}" = '' ] && echo 'error: please specify a working directory' && usage 1
+[ "${working_dir}" = '' ] && die 'please specify a working directory'
 
 if [ -z "$cache_dir" ]; then
 	cache_conf=${working_dir}/etc/pacman.conf
@@ -150,9 +149,9 @@ chroot_lock () {
 
 	# Lock the chroot. Take note of the FD number.
 	if ! flock -n 9; then
-		echo -n "locking chroot..."
+		stat_busy "locking chroot"
 		flock 9
-		echo "done"
+		stat_done
 	fi
 }
 # }}}
@@ -162,9 +161,7 @@ if [ "$RUN" != "" ]; then
 	# run chroot {{{
 	#Sanity check
 	if [ ! -f "${working_dir}/.arch-chroot" ]; then
-		echo "error: '${working_dir}' does not appear to be a Arch chroot"
-		echo '       please build the image using mkarchroot'
-		exit 1
+		die "'${working_dir}' does not appear to be a Arch chroot"
 	fi
 
 	chroot_lock
@@ -177,8 +174,7 @@ if [ "$RUN" != "" ]; then
 else
 	# {{{ build chroot
 	if [ -e "${working_dir}" -a "${FORCE}" = "n" ]; then
-		echo "error: working dir '${working_dir}' already exists - try using -f"
-		exit 1
+		die "working dir '${working_dir}' already exists - try using -f"
 	fi
 
 	if { type -P btrfs && btrfs subvolume create "${working_dir}"; } &>/dev/null; then
@@ -202,8 +198,7 @@ else
 			op="${op}f"
 		fi
 		if ! pacman ${op} ${pacargs} $@; then
-			echo 'error: failed to install all packages'
-			exit 1
+			die 'failed to install all packages'
 		fi
 	fi
 

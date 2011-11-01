@@ -3,6 +3,8 @@
 # finddeps - find packages that depend on a given depname
 #
 
+m4_include(lib/common.sh)
+
 match=$1
 
 if [[ -z $match ]]; then
@@ -11,7 +13,7 @@ if [[ -z $match ]]; then
 	echo 'Find packages that depend on a given depname.'
 	echo 'Run this script from the top-level directory of your ABS tree.'
 	echo ''
-	exit 0
+	exit 1
 fi
 
 find . -type d | while read d; do

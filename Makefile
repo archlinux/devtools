@@ -50,9 +50,11 @@ ARCHBUILD_LINKS = \
 
 all: $(BINPROGS) $(SBINPROGS) bash_completion zsh_completion
 
+edit = sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g"
+
 %: %.in
 	@echo "GEN $@"
-	@sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g" "$<" >"$@"
+	@m4 -P $@.in | $(edit) >$@
 	@chmod a-w "$@"
 	@chmod +x "$@"
 

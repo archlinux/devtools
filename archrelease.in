@@ -1,18 +1,16 @@
 #!/bin/bash
 
-abort() {
-	echo ${1:-'archrelease: Cancelled'}
-	exit 1
-}
+m4_include(lib/common.sh)
 
 if [[ -z $1 ]]; then
-	abort 'Usage: archrelease <repo>...'
+	echo 'Usage: archrelease <repo>...'
+	exit 1
 fi
 
 # TODO: validate repo is really repo-arch
 
 if [[ ! -f PKGBUILD ]]; then
-	abort 'archrelease: PKGBUILD not found'
+	die 'archrelease: PKGBUILD not found'
 fi
 
 trunk=${PWD##*/}
@@ -21,24 +19,24 @@ trunk=${PWD##*/}
 # such as 'gnome-unstable'
 IFS='/' read -r -d '' -a parts <<< "$PWD"
 if [[ "${parts[@]:(-2):1}" == "repos" ]]; then
-	abort 'archrelease: Should not be in repos dir (try from trunk/)'
+	die 'archrelease: Should not be in repos dir (try from trunk/)'
 fi
 unset parts
 
 if [[ $(svn status -q) ]]; then
-	abort 'archrelease: You have not committed your changes yet!'
+	die 'archrelease: You have not committed your changes yet!'
 fi
 
 pushd .. >/dev/null
 IFS=$'\n' read -r -d '' -a known_files < <(svn ls -r HEAD "$trunk")
 for file in "${known_files[@]}"; do
 	if [[ ${file:(-1)} = '/' ]]; then
-		abort "archrelease: subdirectories are not supported in package directories!"
+		die "archrelease: subdirectories are not supported in package directories!"
 	fi
 done
 
 for tag in "$@"; do
-	echo -n "copying ${trunk} to ${tag}..."
+	stat_busy "copying ${trunk} to ${tag}"
 
 	if [[ -d repos/$tag ]]; then
 		declare -a trash
@@ -55,12 +53,12 @@ for tag in "$@"; do
 	# copy all files at once from trunk to the subdirectory in repos/
 	svn copy -q -r HEAD ${known_files[@]/#/$trunk/} "repos/$tag/"
 
-	echo 'done'
+	stat_done
 done
 
-echo -n "releasing package..."
+stat_busy "releasing package"
 printf -v tag_list ", %s" "$@"; tag_list="${tag_list#, }"
 svn commit -q -m "archrelease: copy ${trunk} to $tag_list" || abort
-echo 'done'
+stat_done
 
 popd >/dev/null

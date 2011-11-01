@@ -1,11 +1,12 @@
 #!/bin/bash
 
+m4_include(lib/common.sh)
+
 # Source makepkg.conf; fail if it is not found
 if [[ -r '/etc/makepkg.conf' ]]; then
 	source '/etc/makepkg.conf'
 else
-	echo '/etc/makepkg.conf not found!'
-	exit 1
+	die '/etc/makepkg.conf not found!'
 fi
 
 # Source user-specific makepkg.conf overrides
@@ -14,8 +15,7 @@ if [[ -r ~/.makepkg.conf ]]; then
 fi
 
 if [[ ! -f PKGBUILD ]]; then
-	echo 'This must be run in the directory of a built package.'
-	exit 1
+	die 'This must be run in the directory of a built package.'
 fi
 
 . PKGBUILD
@@ -28,33 +28,26 @@ TEMPDIR=$(mktemp -d --tmpdir checkpkg-script.XXXX)
 cd "$TEMPDIR"
 
 for _pkgname in "${pkgname[@]}"; do
-	if [[ -z ${epoch} ]] ; then
-		pkgfile=${_pkgname}-${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
-	else
-		pkgfile=${_pkgname}-${epoch}:${pkgver}-${pkgrel}-${CARCH}${PKGEXT}
-	fi
+	pkgfile=${_pkgname}-$(get_full_version $_pkgname)-${CARCH}${PKGEXT}
 
 	if [[ -f "$STARTDIR/$pkgfile" ]]; then
 		ln -s "$STARTDIR/$pkgfile" "$pkgfile"
 	elif [[ -f "$PKGDEST/$pkgfile" ]]; then
 		ln -s "$PKGDEST/$pkgfile" "$pkgfile"
 	else
-		echo "File \"$pkgfile\" doesn't exist"
-		exit 1
+		die "File \"$pkgfile\" doesn't exist"
 	fi
 
 	pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm "$_pkgname")
 
 	if [[ $? -ne 0 ]]; then
-		echo "Couldn't download previous package for $_pkgname."
-		exit 1
+		die "Couldn't download previous package for $_pkgname."
 	fi
 
 	oldpkg=${pkgurl##*://*/}
 
 	if [[ ${oldpkg##*/} = ${pkgfile##*/} ]]; then
-		echo "The built package ($_pkgname) is the one in the repo right now!"
-		exit 1
+		die "The built package ($_pkgname) is the one in the repo right now!"
 	fi
 
 	if [[ ! -f $oldpkg ]]; then
@@ -83,8 +76,8 @@ for _pkgname in "${pkgname[@]}"; do
 		done
 		cd ..
 	else
-		echo "No soname differences for $_pkgname."
+		msg "No soname differences for $_pkgname."
 	fi
 done
 
-echo "Files saved to $TEMPDIR"
+msg "Files saved to $TEMPDIR"
