@@ -52,7 +52,7 @@ all: $(BINPROGS) $(SBINPROGS) bash_completion zsh_completion
 
 edit = sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g"
 
-%: %.in
+%: %.in Makefile lib/common.sh
 	@echo "GEN $@"
 	@m4 -P $@.in | $(edit) >$@
 	@chmod a-w "$@"
