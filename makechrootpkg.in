@@ -114,7 +114,7 @@ umask 0022
 # Note this is the same FD number as in mkarchroot
 exec 9>"$copydir.lock"
 if ! flock -n 9; then
-	stat_busy "locking chroot copy '$copy'"
+	stat_busy "Locking chroot copy '$copy'"
 	flock 9
 	stat_done
 fi
@@ -125,12 +125,12 @@ if [[ ! -d $copydir ]] || $clean_first; then
 	exec 8>"$chrootdir/root.lock"
 
 	if ! flock -sn 8; then
-		stat_busy "locking clean chroot"
+		stat_busy "Locking clean chroot"
 		flock -s 8
 		stat_done
 	fi
 
-	stat_busy 'creating clean working copy'
+	stat_busy 'Creating clean working copy'
 	use_rsync=false
 	if type -P btrfs >/dev/null; then
 		[[ -d $copydir ]] && btrfs subvolume delete "$copydir" &>/dev/null

@@ -48,21 +48,21 @@ while getopts 'r:ufnhC:M:c:' arg; do
 done
 
 if [ "$EUID" != '0' ]; then
-	die 'this script must be run as root.'
+	die 'This script must be run as root.'
 fi
 
 shift $(($OPTIND - 1))
 
 if [ "$RUN" = '' -a $# -lt 2 ]; then
-	die 'you must specify a directory and one or more packages'
+	die 'You must specify a directory and one or more packages.'
 elif [ $# -lt 1 ]; then
-	die 'you must specify a directory'
+	die 'You must specify a directory.'
 fi
 
 working_dir="$(readlink -f ${1})"
 shift 1
 
-[ "${working_dir}" = '' ] && die 'please specify a working directory'
+[ "${working_dir}" = '' ] && die 'Please specify a working directory.'
 
 if [ -z "$cache_dir" ]; then
 	cache_conf=${working_dir}/etc/pacman.conf
@@ -149,7 +149,7 @@ chroot_lock () {
 
 	# Lock the chroot. Take note of the FD number.
 	if ! flock -n 9; then
-		stat_busy "locking chroot"
+		stat_busy "Locking chroot"
 		flock 9
 		stat_done
 	fi
@@ -161,7 +161,7 @@ if [ "$RUN" != "" ]; then
 	# run chroot {{{
 	#Sanity check
 	if [ ! -f "${working_dir}/.arch-chroot" ]; then
-		die "'${working_dir}' does not appear to be a Arch chroot"
+		die "'${working_dir}' does not appear to be a Arch chroot."
 	fi
 
 	chroot_lock
@@ -174,7 +174,7 @@ if [ "$RUN" != "" ]; then
 else
 	# {{{ build chroot
 	if [ -e "${working_dir}" -a "${FORCE}" = "n" ]; then
-		die "working dir '${working_dir}' already exists - try using -f"
+		die "Working directory '${working_dir}' already exists - try using -f"
 	fi
 
 	if { type -P btrfs && btrfs subvolume create "${working_dir}"; } &>/dev/null; then
@@ -198,7 +198,7 @@ else
 			op="${op}f"
 		fi
 		if ! pacman ${op} ${pacargs} $@; then
-			die 'failed to install all packages'
+			die 'Failed to install all packages'
 		fi
 	fi
 

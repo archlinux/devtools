@@ -36,7 +36,7 @@ for file in "${known_files[@]}"; do
 done
 
 for tag in "$@"; do
-	stat_busy "copying ${trunk} to ${tag}"
+	stat_busy "Copying ${trunk} to ${tag}"
 
 	if [[ -d repos/$tag ]]; then
 		declare -a trash
@@ -56,7 +56,7 @@ for tag in "$@"; do
 	stat_done
 done
 
-stat_busy "releasing package"
+stat_busy "Releasing package"
 printf -v tag_list ", %s" "$@"; tag_list="${tag_list#, }"
 svn commit -q -m "archrelease: copy ${trunk} to $tag_list" || abort
 stat_done

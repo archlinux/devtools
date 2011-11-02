@@ -4,9 +4,9 @@ m4_include(lib/common.sh)
 
 getpkgfile() {
 	if [[ ${#} -ne 1 ]]; then
-		die 'ERROR: No canonical package found!'
+		die 'No canonical package found!'
 	elif [ ! -f "${1}" ]; then
-		die "ERROR: Package ${1} not found!"
+		die "Package ${1} not found!"
 	fi
 
 	echo ${1}
@@ -83,15 +83,15 @@ while getopts ':l:a:' flag; do
 	case $flag in
 		l) rsyncopts+=("--bwlimit=$2") ;;
 		a) commit_arch=$2 ;;
-		:) die "option requires an argument -- '$OPTARG'" ;;
-		\?) die "invalid option -- '$OPTARG'" ;;
+		:) die "Option requires an argument -- '$OPTARG'" ;;
+		\?) die "Invalid option -- '$OPTARG'" ;;
 	esac
 done
 shift $(( OPTIND - 1 ))
 
 if [ -n "$(svn status -q)" ]; then
 	if [ -n "$1" ]; then
-		stat_busy 'committing changes to trunk'
+		stat_busy 'Committing changes to trunk'
 		svn commit -q -m "${msgtemplate}${1}" || die
 		stat_done
 	else
@@ -108,7 +108,7 @@ if [ -n "$(svn status -q)" ]; then
 			vi "$msgfile"
 		fi
 		[ -s "$msgfile" ] || die
-		stat_busy 'committing changes to trunk'
+		stat_busy 'Committing changes to trunk'
 		svn commit -q -F "$msgfile" || die
 		unlink "$msgfile"
 		stat_done
@@ -164,26 +164,26 @@ else
 fi
 
 if [[ ${#uploads[*]} -gt 0 ]]; then
-	msg 'uploading all package and signature files'
+	msg 'Uploading all package and signature files'
 	rsync "${rsyncopts[@]}" "${uploads[@]}" "$server:staging/$repo/" || die
 fi
 
 if [ "${arch[*]}" == 'any' ]; then
 	if [ -d ../repos/$repo-i686 -a -d ../repos/$repo-x86_64 ]; then
 		pushd ../repos/ >/dev/null
-		stat_busy "removing $repo-i686 and $repo-x86_64"
+		stat_busy "Removing $repo-i686 and $repo-x86_64"
 		svn rm $repo-i686
 		svn rm $repo-x86_64
-		svn commit -q -m "removed $repo-i686 and $repo-x86_64 for $pkgname"
+		svn commit -q -m "Removed $repo-i686 and $repo-x86_64 for $pkgname"
 		stat_done
 		popd >/dev/null
 	fi
 else
 	if [ -d ../repos/$repo-any ]; then
 		pushd ../repos/ >/dev/null
-		stat_busy "removing $repo-any"
+		stat_busy "Removing $repo-any"
 		svn rm $repo-any
-		svn commit -q -m "removed $repo-any for $pkgname"
+		svn commit -q -m "Removed $repo-any for $pkgname"
 		stat_done
 		popd >/dev/null
 	fi
