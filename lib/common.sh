@@ -58,7 +58,7 @@ stat_done() {
 }
 
 setup_workdir() {
-	[[ -z $WORKDIR ]] && WORKDIR=$(mktemp -d /tmp/$(basename $0).XXXXXXXXXX)
+	[[ -z $WORKDIR ]] && WORKDIR=$(mktemp -d --tmpdir "${0##*/}.XXXXXXXXXX")
 }
 
 cleanup() {
