@@ -90,12 +90,12 @@ done
 shift $(( OPTIND - 1 ))
 
 if [ -n "$(svn status -q)" ]; then
+	msgtemplate="upgpkg: $pkgbase $(get_full_version)"$'\n\n'
 	if [ -n "$1" ]; then
 		stat_busy 'Committing changes to trunk'
 		svn commit -q -m "${msgtemplate}${1}" || die
 		stat_done
 	else
-		msgtemplate="upgpkg: $pkgbase $(get_full_version)"$'\n\n'
 		msgfile="$(mktemp)"
 		echo "$msgtemplate" > "$msgfile"
 		if [ -n "$SVN_EDITOR" ]; then
