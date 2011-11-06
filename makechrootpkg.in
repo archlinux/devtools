@@ -274,7 +274,10 @@ sudo -u nobody makepkg $makepkg_args || touch BUILD_FAILED
 
 if $run_namcap; then
 	pacman -S --needed --noconfirm namcap
-	namcap /build/PKGBUILD /pkgdest/*.pkg.tar.?z > /build/namcap.log
+	for pkgfile in /build/PKGBUILD /pkgdest/*.pkg.tar.?z; do
+		echo "Checking \${pkgfile##*/}"
+		namcap "\$pkgfile" 2>&1 | tee "/build/\${pkgfile##*/}-namcap.log"
+	done
 fi
 
 exit 0
@@ -282,7 +285,7 @@ EOF
 chmod +x "$copydir/chrootbuild"
 
 if mkarchroot -r "/chrootbuild" "$copydir"; then
-	for pkgfile in "$copydir"/pkgdest/*.pkg.tar.*; do
+	for pkgfile in "$copydir"/pkgdest/*.pkg.tar.?z; do
 		if $add_to_db; then
 			mkdir -p "$copydir/repo"
 			pushd "$copydir/repo" >/dev/null
@@ -294,7 +297,7 @@ if mkarchroot -r "/chrootbuild" "$copydir"; then
 		mv "$pkgfile" "$PKGDEST"
 	done
 
-	for l in "$copydir"/build/{namcap,*-{build,check,package,package_*}}.log; do
+	for l in "$copydir"/build/*-{build,check,namcap,package,package_*}.log; do
 		[[ -f $l ]] && mv "$l" .
 	done
 else
