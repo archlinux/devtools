@@ -129,6 +129,14 @@ copy_hostconf () {
 	chroot "${working_dir}" /bin/findmnt -rnu -o SOURCE,TARGET,FSTYPE,OPTIONS > "${working_dir}/etc/mtab"
 	cp /etc/resolv.conf "${working_dir}/etc/resolv.conf"
 	echo "Server = ${host_mirror}" > ${working_dir}/etc/pacman.d/mirrorlist
+
+	if [ "$pac_conf" != "" -a "$NOCOPY" = "n" ]; then
+		cp ${pac_conf} ${working_dir}/etc/pacman.conf
+	fi
+
+	if [ "$makepkg_conf" != "" -a "$NOCOPY" = "n" ]; then
+		cp ${makepkg_conf} ${working_dir}/etc/makepkg.conf
+	fi
 }
 
 chroot_umount () {
@@ -206,18 +214,12 @@ else
 		ldconfig -r "${working_dir}"
 	fi
 
-	if [ "$pac_conf" != "" -a "$NOCOPY" = "n" ]; then
-		cp ${pac_conf} ${working_dir}/etc/pacman.conf
-	fi
-
-	if [ "$makepkg_conf" != "" -a "$NOCOPY" = "n" ]; then
-		cp ${makepkg_conf} ${working_dir}/etc/makepkg.conf
-	fi
-
 	if [ -e "${working_dir}/etc/locale.gen" ]; then
 		sed -i 's@^#\(en_US\|de_DE\)\(\.UTF-8\)@\1\2@' "${working_dir}/etc/locale.gen"
 		chroot "${working_dir}" /usr/sbin/locale-gen
 	fi
+
+	copy_hostconf
 
 	if [ ! -e "${working_dir}/.arch-chroot" ]; then
 		date +%s > "${working_dir}/.arch-chroot"
