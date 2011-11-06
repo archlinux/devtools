@@ -53,25 +53,34 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 	done
 	exec 9>&-
 
+	# FIXME: temporary workaround until pacman 4.0 moves to [core]
+	if pacman -V | grep -q 'v4.' && ( [[ "$repo" == 'extra' || "$repo" == 'multilib' ]] ); then
+		pacman_conf=$(mktemp)
+		cp "@pkgdatadir@/pacman-${repo}.conf" "${pacman_conf}"
+		sed -r 's/^#(SigLevel = Never)/\1/' -i "${pacman_conf}"
+	else
+		pacman_conf="@pkgdatadir@/pacman-${repo}.conf"
+	fi
+
 	rm -rf "${chroots}/${repo}-${arch}"
 	mkdir -p "${chroots}/${repo}-${arch}"
 	setarch "${arch}" mkarchroot \
-		-C "@pkgdatadir@/pacman-${repo}.conf" \
+		-C "${pacman_conf}" \
 		-M "@pkgdatadir@/makepkg-${arch}.conf" \
 		"${chroots}/${repo}-${arch}/root" \
 		"${base_packages[@]}"
 
 	# FIXME: temporary workaround until pacman 4.0 moves to [core]
-	case $repo in
-		core|extra|community|multilib)
-			sed -r '/^SigLevel.*/d' -i "${chroots}/${repo}-${arch}/root/etc/pacman.conf"
-		;;
-	esac
+	if pacman -V | grep -q 'v4.' && ( [[ "$repo" == 'extra' || "$repo" == 'multilib' ]] ); then
+		cp "@pkgdatadir@/pacman-${repo}.conf" "${chroots}/${repo}-${arch}/root/etc/pacman.conf"
+	fi
 else
 	setarch ${arch} mkarchroot \
 		-u \
+		-C "@pkgdatadir@/pacman-${repo}.conf" \
+		-M "@pkgdatadir@/makepkg-${arch}.conf" \
 		"${chroots}/${repo}-${arch}/root"
 fi
 
 msg "Building in chroot for [${repo}] (${arch})..."
-setarch "${arch}" makechrootpkg -c -r "${chroots}/${repo}-${arch}"
+setarch "${arch}" makechrootpkg -c -n -r "${chroots}/${repo}-${arch}"
