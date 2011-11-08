@@ -87,7 +87,7 @@ makepkg_args="$makepkg_args ${*:$OPTIND}"
 # See if -R was passed to makepkg
 for arg in ${*:$OPTIND}; do
 	if [[ $arg = -R ]]; then
-		repack=1
+		repack=true
 		break
 	fi
 done
