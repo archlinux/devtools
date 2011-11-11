@@ -1,4 +1,4 @@
-V=20111106
+V=20111111
 
 PREFIX = /usr/local
 
