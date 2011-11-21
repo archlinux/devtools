@@ -116,10 +116,12 @@ if [ -n "$(svn status -q)" ]; then
 fi
 
 declare -a uploads
+declare -a commit_arches
+declare -a skip_arches
 
 for _arch in ${arch[@]}; do
 	if [ -n "$commit_arch" ] && [ "${_arch}" != "$commit_arch" ]; then
-		warning "skipping ${_arch}"
+		skip_arches+=($_arch)
 		continue
 	fi
 
@@ -133,7 +135,8 @@ for _arch in ${arch[@]}; do
 		elif [ -f "$pkgdestfile" ]; then
 			pkgfile="$pkgdestfile"
 		else
-			warning "skipping ${_arch}"
+			warning "Could not find ${pkgfile}. Skipping ${_arch}"
+			skip_arches+=($_arch)
 			continue 2
 		fi
 		uploads+=("$pkgfile")
@@ -157,11 +160,12 @@ for _arch in ${arch[@]}; do
 	done
 done
 
-if [[ -n $commit_arch ]]; then
-	archrelease "$repo-$commit_arch" || die
-else
-	archrelease "${arch[@]/#/$repo-}" || die
-fi
+for _arch in ${arch[@]}; do
+	if ! in_array $_arch ${skip_arches[@]}; then
+		commit_arches+=($_arch)
+	fi
+done
+archrelease "${commit_arches[@]/#/$repo-}" || die
 
 if [[ ${#uploads[*]} -gt 0 ]]; then
 	msg 'Uploading all package and signature files'
