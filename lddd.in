@@ -27,9 +27,9 @@ for tree in $PATH $libdirs $extras; do
 	-name '*.mcopclass' ! -name '*.mcoptype')
 	IFS=$ifs
 	for i in $files; do
-		if [ $(file $i | grep -c 'ELF') -ne 0 ]; then
+		if (( $(file $i | grep -c 'ELF') != 0 )); then
 			#  Is an ELF binary.
-			if [ $(ldd $i 2>/dev/null | grep -c 'not found') -ne 0 ]; then
+			if (( $(ldd $i 2>/dev/null | grep -c 'not found') != 0 )); then
 				#  Missing lib.
 				echo "$i:" >> $TEMPDIR/raw.txt
 				ldd $i 2>/dev/null | grep 'not found' >> $TEMPDIR/raw.txt

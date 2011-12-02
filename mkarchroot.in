@@ -47,34 +47,34 @@ while getopts 'r:ufnhC:M:c:' arg; do
 	esac
 done
 
-if [ "$EUID" != '0' ]; then
+if (( $EUID != 0 )); then
 	die 'This script must be run as root.'
 fi
 
 shift $(($OPTIND - 1))
 
-if [ "$RUN" = '' -a $# -lt 2 ]; then
+if [[ -z $RUN ]] && (( $# < 2 )); then
 	die 'You must specify a directory and one or more packages.'
-elif [ $# -lt 1 ]; then
+elif (( $# < 1 )); then
 	die 'You must specify a directory.'
 fi
 
 working_dir="$(readlink -f ${1})"
 shift 1
 
-[ "${working_dir}" = '' ] && die 'Please specify a working directory.'
+[[ -z $working_dir ]] && die 'Please specify a working directory.'
 
-if [ -z "$cache_dir" ]; then
+if [[ -z $cache_dir ]]; then
 	cache_conf=${working_dir}/etc/pacman.conf
-	[ ! -f $cache_conf ] && cache_conf=${pac_conf:-/etc/pacman.conf}
+	[[ ! -f $cache_conf ]] && cache_conf=${pac_conf:-/etc/pacman.conf}
 	cache_dir=$( (grep -m 1 '^CacheDir' $cache_conf || echo 'CacheDir = /var/cache/pacman/pkg') | sed 's/CacheDir\s*=\s*//')
 	unset cache_conf
 fi
 
-if [ -f /etc/pacman.d/mirrorlist ]; then
+if [[ -f /etc/pacman.d/mirrorlist ]]; then
 	host_mirror=$(pacman -Sddp extra/devtools 2>/dev/null | sed -E 's#(.*/)extra/os/.*#\1$repo/os/$arch#')
 fi
-if [ -z "${host_mirror}" ]; then
+if [[ -z $host_mirror ]]; then
 	host_mirror='http://mirrors.kernel.org/archlinux/$repo/os/$arch'
 fi
 if echo "${host_mirror}" | grep -q 'file://'; then
@@ -83,13 +83,13 @@ fi
 
 # {{{ functions
 chroot_mount() {
-	[ -e "${working_dir}/sys" ] || mkdir "${working_dir}/sys"
+	[[ -e "${working_dir}/sys" ]] || mkdir "${working_dir}/sys"
 	mount -t sysfs sysfs "${working_dir}/sys"
 
-	[ -e "${working_dir}/proc" ] || mkdir "${working_dir}/proc"
+	[[ -e "${working_dir}/proc" ]] || mkdir "${working_dir}/proc"
 	mount -t proc proc "${working_dir}/proc"
 
-	[ -e "${working_dir}/dev" ] || mkdir "${working_dir}/dev"
+	[[ -e "${working_dir}/dev" ]] || mkdir "${working_dir}/dev"
 	mount -t tmpfs dev "${working_dir}/dev" -o mode=0755,size=10M,nosuid
 	mknod -m 666 "${working_dir}/dev/null" c 1 3
 	mknod -m 666 "${working_dir}/dev/zero" c 1 5
@@ -105,19 +105,19 @@ chroot_mount() {
 	ln -s /proc/self/fd/1 "${working_dir}/dev/stdout"
 	ln -s /proc/self/fd/2 "${working_dir}/dev/stderr"
 
-	[ -e "${working_dir}/dev/shm" ] || mkdir "${working_dir}/dev/shm"
+	[[ -e "${working_dir}/dev/shm" ]] || mkdir "${working_dir}/dev/shm"
 	mount -t tmpfs shm "${working_dir}/dev/shm" -o nodev,nosuid,size=128M
 
-	[ -e "${working_dir}/dev/pts" ] || mkdir "${working_dir}/dev/pts"
+	[[ -e "${working_dir}/dev/pts" ]] || mkdir "${working_dir}/dev/pts"
 	mount -t devpts devpts "${working_dir}/dev/pts" -o newinstance,ptmxmode=666
 	ln -s pts/ptmx "${working_dir}/dev/ptmx"
 
-	[ -e "${cache_dir}" ] || mkdir -p "${cache_dir}"
-	[ -e "${working_dir}/${cache_dir}" ] || mkdir -p "${working_dir}/${cache_dir}"
+	[[ -e $cache_dir ]] || mkdir -p "${cache_dir}"
+	[[ -e "${working_dir}/${cache_dir}" ]] || mkdir -p "${working_dir}/${cache_dir}"
 	mount -o bind "${cache_dir}" "${working_dir}/${cache_dir}"
 
-	if [ -n "${host_mirror_path}" ]; then
-		[ -e "${working_dir}/${host_mirror_path}" ] || mkdir -p "${working_dir}/${host_mirror_path}"
+	if [[ -n $host_mirror_path ]]; then
+		[[ -e "${working_dir}/${host_mirror_path}" ]] || mkdir -p "${working_dir}/${host_mirror_path}"
 		mount -o bind "${host_mirror_path}" "${working_dir}/${host_mirror_path}"
 		mount -o remount,ro,bind "${host_mirror_path}" "${working_dir}/${host_mirror_path}"
 	fi
@@ -130,11 +130,11 @@ copy_hostconf () {
 	cp /etc/resolv.conf "${working_dir}/etc/resolv.conf"
 	echo "Server = ${host_mirror}" > ${working_dir}/etc/pacman.d/mirrorlist
 
-	if [ "$pac_conf" != "" -a "$NOCOPY" = "n" ]; then
+	if [[ -n $pac_conf && $NOCOPY = 'n' ]]; then
 		cp ${pac_conf} ${working_dir}/etc/pacman.conf
 	fi
 
-	if [ "$makepkg_conf" != "" -a "$NOCOPY" = "n" ]; then
+	if [[ -n $makepkg_conf && $NOCOPY = 'n' ]]; then
 		cp ${makepkg_conf} ${working_dir}/etc/makepkg.conf
 	fi
 }
@@ -146,12 +146,12 @@ chroot_umount () {
 	umount "${working_dir}/dev/shm"
 	umount "${working_dir}/dev"
 	umount "${working_dir}/${cache_dir}"
-	[ -n "${host_mirror_path}" ] && umount "${working_dir}/${host_mirror_path}"
+	[[ -n $host_mirror_path ]] && umount "${working_dir}/${host_mirror_path}"
 }
 
 chroot_lock () {
 	# Only reopen the FD if it wasn't handed to us
-	if [ "$(readlink -f /dev/fd/9)" != "${working_dir}.lock" ]; then
+	if [[ $(readlink -f /dev/fd/9) != "${working_dir}.lock" ]]; then
 	  exec 9>"${working_dir}.lock"
 	fi
 
@@ -165,10 +165,10 @@ chroot_lock () {
 # }}}
 
 umask 0022
-if [ "$RUN" != "" ]; then
+if [[ -n $RUN ]]; then
 	# run chroot {{{
 	#Sanity check
-	if [ ! -f "${working_dir}/.arch-chroot" ]; then
+	if [[ ! -f "${working_dir}/.arch-chroot" ]]; then
 		die "'${working_dir}' does not appear to be a Arch chroot."
 	fi
 
@@ -181,7 +181,7 @@ if [ "$RUN" != "" ]; then
 	# }}}
 else
 	# {{{ build chroot
-	if [ -e "${working_dir}" -a "${FORCE}" = "n" ]; then
+	if [[ -e $working_dir && $FORCE = 'n' ]]; then
 		die "Working directory '${working_dir}' already exists - try using -f"
 	fi
 
@@ -196,13 +196,13 @@ else
 	chroot_mount
 
 	pacargs="--noconfirm --root=${working_dir} --cachedir=${cache_dir}"
-	if [ "$pac_conf" != "" ]; then
+	if [[ -n $pac_conf ]]; then
 		pacargs="$pacargs --config=${pac_conf}"
 	fi
 
-	if [ $# -ne 0 ]; then
+	if (( $# != 0 )); then
 		op='-Sy'
-		if [ "$FORCE" = "y" ]; then
+		if [[ $FORCE = 'y' ]]; then
 			op="${op}f"
 		fi
 		if ! pacman ${op} ${pacargs} $@; then
@@ -210,18 +210,18 @@ else
 		fi
 	fi
 
-	if [ -d "${working_dir}/lib/modules" ]; then
+	if [[ -d "${working_dir}/lib/modules" ]]; then
 		ldconfig -r "${working_dir}"
 	fi
 
-	if [ -e "${working_dir}/etc/locale.gen" ]; then
+	if [[ -e "${working_dir}/etc/locale.gen" ]]; then
 		sed -i 's@^#\(en_US\|de_DE\)\(\.UTF-8\)@\1\2@' "${working_dir}/etc/locale.gen"
 		chroot "${working_dir}" /usr/sbin/locale-gen
 	fi
 
 	copy_hostconf
 
-	if [ ! -e "${working_dir}/.arch-chroot" ]; then
+	if [[ ! -e "${working_dir}/.arch-chroot" ]]; then
 		date +%s > "${working_dir}/.arch-chroot"
 	fi
 	# }}}

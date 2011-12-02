@@ -11,14 +11,14 @@
 
 m4_include(lib/common.sh)
 
-if [ $# -le 1 ]; then
+if (( $# < 1 )); then
 	echo "usage: $(basename $0) <chrootdir> <packages to rebuild>"
 	echo "  example: $(basename $0) ~/chroot readline bash foo bar baz"
 	exit 1
 fi
 
 # Source makepkg.conf; fail if it is not found
-if [ -r '/etc/makepkg.conf' ]; then
+if [[ -r '/etc/makepkg.conf' ]]; then
 	source '/etc/makepkg.conf'
 else
 	die '/etc/makepkg.conf not found!'
@@ -63,7 +63,7 @@ for pkg in $pkgs; do
 
 	msg2 "Building '$pkg'"
 	/usr/bin/svn update "$pkg"
-	if [ ! -d "$pkg/trunk" ]; then
+	if [[ ! -d "$pkg/trunk" ]]; then
 		FAILED="$FAILED $pkg"
 		warning "$pkg does not exist in SVN"
 		continue
@@ -77,7 +77,7 @@ for pkg in $pkgs; do
 		error "$pkg Failed!"
 	else
 		pkgfile=$(pkg_from_pkgbuild)
-		if [ -e "$pkgfile" ]; then
+		if [[ -e $pkgfile ]]; then
 			msg2 "$pkg Complete"
 		else
 			FAILED="$FAILED $pkg"
@@ -87,7 +87,7 @@ for pkg in $pkgs; do
 done
 
 cd "$REBUILD_ROOT"
-if [ "$FAILED" != "" ]; then
+if [[ -n $FAILED ]]; then
 	msg 'Packages failed:'
 	for pkg in $FAILED; do
 		msg2 "$pkg"

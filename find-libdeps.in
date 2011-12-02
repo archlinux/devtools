@@ -68,12 +68,12 @@ find . -type f $find_args | while read filename; do
 
 	# get architecture of the file; if soarch is empty it's not an ELF binary
 	soarch=$(LC_ALL=C readelf -h "$filename" 2>/dev/null | sed -n 's/.*Class.*ELF\(32\|64\)/\1/p')
-	[ -n "$soarch" ] || continue
+	[[ -n $soarch ]] || continue
 
 	if [[ $script_mode = "provides" ]]; then
 		# get the string binaries link to: libfoo.so.1.2 -> libfoo.so.1
 		sofile=$(LC_ALL=C readelf -d "$filename" 2>/dev/null | sed -n 's/.*Library soname: \[\(.*\)\].*/\1/p')
-		[ -z "$sofile" ] && sofile="${filename##*/}"
+		[[ -z $sofile" ]] && sofile="${filename##*/}"
 		process_sofile
 	elif [[ $script_mode = "deps" ]]; then
 		# process all libraries needed by the binary
