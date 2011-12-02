@@ -62,6 +62,7 @@ edit = sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g"
 
 %: %.in Makefile lib/common.sh
 	@echo "GEN $@"
+	@$(RM) "$@"
 	@m4 -P $@.in | $(edit) >$@
 	@chmod a-w "$@"
 	@chmod +x "$@"
