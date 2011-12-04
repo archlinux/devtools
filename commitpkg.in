@@ -50,7 +50,7 @@ case "$cmd" in
 esac
 
 case "$repo" in
-	core|extra|testing|staging)
+	core|extra|testing|staging|kde-unstable|gnome-unstable)
 		server='gerolde.archlinux.org' ;;
 	community*|multilib*)
 		server='aur.archlinux.org' ;;

@@ -25,7 +25,9 @@ CONFIGFILES = \
 	pacman-testing.conf \
 	pacman-staging.conf \
 	pacman-multilib.conf \
-	pacman-multilib-testing.conf
+	pacman-multilib-testing.conf \
+	pacman-kde-unstable.conf \
+	pacman-gnome-unstable.conf
 
 COMMITPKG_LINKS = \
 	extrapkg \
@@ -36,7 +38,9 @@ COMMITPKG_LINKS = \
 	community-testingpkg \
 	community-stagingpkg \
 	multilibpkg \
-	multilib-testingpkg
+	multilib-testingpkg \
+	kde-unstablepkg \
+	gnome-unstablepkg
 
 ARCHBUILD_LINKS = \
 	extra-i686-build \
@@ -46,7 +50,11 @@ ARCHBUILD_LINKS = \
 	staging-i686-build \
 	staging-x86_64-build \
 	multilib-build \
-	multilib-testing-build
+	multilib-testing-build \
+	kde-unstable-i686-build \
+	kde-unstable-x86_64-build \
+	gnome-unstable-i686-build \
+	gnome-unstable-x86_64-build
 
 all: $(BINPROGS) $(SBINPROGS) bash_completion zsh_completion
 
