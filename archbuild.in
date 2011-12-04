@@ -83,4 +83,4 @@ else
 fi
 
 msg "Building in chroot for [${repo}] (${arch})..."
-setarch "${arch}" makechrootpkg -c -n -r "${chroots}/${repo}-${arch}"
+exec setarch "${arch}" makechrootpkg -c -n -r "${chroots}/${repo}-${arch}"
