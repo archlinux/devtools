@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # lddd - find broken library links on your machine
 #
