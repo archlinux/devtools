@@ -126,7 +126,6 @@ chroot_mount() {
 }
 
 copy_hostconf () {
-	chroot "${working_dir}" /bin/findmnt -rnu -o SOURCE,TARGET,FSTYPE,OPTIONS > "${working_dir}/etc/mtab"
 	cp /etc/resolv.conf "${working_dir}/etc/resolv.conf"
 	echo "Server = ${host_mirror}" > ${working_dir}/etc/pacman.d/mirrorlist
 
