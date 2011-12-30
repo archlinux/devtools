@@ -52,8 +52,8 @@ usage() {
 	echo '-I <pkg>   Install a package into the working copy of the chroot'
 	echo '-l <copy>  The directory to use as the working copy of the chroot'
 	echo '           Useful for maintaining multiple copies.'
-	echo '-n         Run namcap on the package'
 	echo "           Default: $default_copy"
+	echo '-n         Run namcap on the package'
 	exit 1
 }
 
