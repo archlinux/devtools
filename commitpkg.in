@@ -3,13 +3,19 @@
 m4_include(lib/common.sh)
 
 getpkgfile() {
-	if [[ ${#} -ne 1 ]]; then
-		die 'No canonical package found!'
-	elif [[ ! -f $1 ]]; then
-		die "Package ${1} not found!"
-	fi
+	case $# in
+		0)
+			error 'No canonical package found!'
+			return 1
+			;;
+		[!1])
+			error 'Failed to canonicalize package name -- multiple packages found:'
+			msg2 '%s' "$@"
+			return 1
+			;;
+	esac
 
-	echo ${1}
+	echo "$1"
 }
 
 # Source makepkg.conf; fail if it is not found
@@ -127,15 +133,10 @@ for _arch in ${arch[@]}; do
 
 	for _pkgname in ${pkgname[@]}; do
 		fullver=$(get_full_version $_pkgname)
-		pkgfile=$(getpkgfile "$_pkgname-$fullver-${_arch}".pkg.tar.?z 2>/dev/null)
-		pkgdestfile=$(getpkgfile "$PKGDEST/$_pkgname-$fullver-${_arch}".pkg.tar.?z 2>/dev/null)
 
-		if [[ -f $pkgfile ]]; then
-			pkgfile="./$pkgfile"
-		elif [[ -f $pkgdestfile ]]; then
-			pkgfile="$pkgdestfile"
-		else
-			warning "Could not find ${pkgfile}. Skipping ${_arch}"
+		if ! pkgfile=$(shopt -s nullglob;
+				getpkgfile "${DESTDIR+$DESTDIR/}$_pkgname-$fullver-${_arch}".pkg.tar.?z); then
+			warning "Skipping $_pkgname-$fullver-$_arch: failed to locate package file"
 			skip_arches+=($_arch)
 			continue 2
 		fi
