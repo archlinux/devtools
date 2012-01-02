@@ -20,6 +20,7 @@ install_pkg=
 add_to_db=false
 run_namcap=false
 chrootdir=
+passeddir=
 
 default_copy=$USER
 [[ -n $SUDO_USER ]] && default_copy=$SUDO_USER
@@ -63,7 +64,7 @@ while getopts 'hcudr:I:l:n' arg; do
 		c) clean_first=true ;;
 		u) update_first=true ;;
 		d) add_to_db=true ;;
-		r) chrootdir="$OPTARG" ;;
+		r) passeddir="$OPTARG" ;;
 		I) install_pkg="$OPTARG" ;;
 		l) copy="$OPTARG" ;;
 		n) run_namcap=true ;;
@@ -72,7 +73,7 @@ while getopts 'hcudr:I:l:n' arg; do
 done
 
 # Canonicalize chrootdir, getting rid of trailing /
-chrootdir=$(readlink -e "$chrootdir")
+chrootdir=$(readlink -e "$passeddir")
 
 if [[ ${copy:0:1} = / ]]; then
 	copydir=$copy
@@ -101,7 +102,7 @@ if [[ ! -f PKGBUILD && -z $install_pkg ]]; then
 fi
 
 if [[ ! -d $chrootdir ]]; then
-	die "No chroot dir defined, or invalid path '$chrootdir'"
+	die "No chroot dir defined, or invalid path '$passeddir'"
 fi
 
 if [[ ! -d $chrootdir/root ]]; then
