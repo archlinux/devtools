@@ -1,4 +1,4 @@
-V=20111220
+V=20110114
 
 PREFIX = /usr/local
 
@@ -26,6 +26,7 @@ CONFIGFILES = \
 	pacman-staging.conf \
 	pacman-multilib.conf \
 	pacman-multilib-testing.conf \
+	pacman-multilib-staging.conf \
 	pacman-kde-unstable.conf \
 	pacman-gnome-unstable.conf
 
@@ -39,6 +40,7 @@ COMMITPKG_LINKS = \
 	community-stagingpkg \
 	multilibpkg \
 	multilib-testingpkg \
+	multilib-stagingpkg \
 	kde-unstablepkg \
 	gnome-unstablepkg
 
@@ -51,6 +53,7 @@ ARCHBUILD_LINKS = \
 	staging-x86_64-build \
 	multilib-build \
 	multilib-testing-build \
+	multilib-staging-build \
 	kde-unstable-i686-build \
 	kde-unstable-x86_64-build \
 	gnome-unstable-i686-build \

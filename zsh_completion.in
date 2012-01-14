@@ -1,4 +1,4 @@
-#compdef archbuild archco archrelease archrm commitpkg finddeps makechrootpkg mkarchroot rebuildpkgs extrapkg=commitpkg corepkg=commitpkg testingpkg=commitpkg stagingpkg=commitpkg communitypkg=commitpkg community-testingpkg=commitpkg community-stagingpkg=commitpkg multilibpkg=commitpkg multilib-testingpkg=commitpkg extra-i686-build=archbuild extra-x86_64-build=archbuild testing-i686-build=archbuild testing-x86_64-build=archbuild staging-i686-build=archbuild staging-x86_64-build=archbuild multilib-build=archbuild multilib-testing-build=archbuild kde-unstable-i686-build=archbuild kde-unstable-x86_64-build=archbuild gnome-unstable-i686-build=archbuild gnome-unstable-x86_64-build=archbuild communityco=archco
+#compdef archbuild archco archrelease archrm commitpkg finddeps makechrootpkg mkarchroot rebuildpkgs extrapkg=commitpkg corepkg=commitpkg testingpkg=commitpkg stagingpkg=commitpkg communitypkg=commitpkg community-testingpkg=commitpkg community-stagingpkg=commitpkg multilibpkg=commitpkg multilib-testingpkg=commitpkg extra-i686-build=archbuild extra-x86_64-build=archbuild testing-i686-build=archbuild testing-x86_64-build=archbuild staging-i686-build=archbuild staging-x86_64-build=archbuild multilib-build=archbuild multilib-testing-build=archbuild multilib-staging-build=archbuild kde-unstable-i686-build=archbuild kde-unstable-x86_64-build=archbuild gnome-unstable-i686-build=archbuild gnome-unstable-x86_64-build=archbuild communityco=archco
 
 _arch=(i686 x86_64 any)
 
@@ -9,6 +9,7 @@ _tags=(
 	staging-i686 staging-x86_64 staging-any
 	testing-i686 testing-x86_64 testing-any
 	multilib-testing-i686 multilib-testing-x86_64 multilib-testing-any
+	multilib-staging-i686 multilib-staging-x86_64 multilib-staging-any
 	community-i686 community-x86_64 community-any
 	community-staging-i686 community-staging-x86_64 community-staging-any
 	community-testing-i686 community-testing-x86_64 community-testing-any
