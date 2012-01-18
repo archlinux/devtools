@@ -55,7 +55,7 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 	rm -rf "${chroots}/${repo}-${arch}"
 	mkdir -p "${chroots}/${repo}-${arch}"
 	setarch "${arch}" mkarchroot \
-		-C "${pacman_conf}" \
+		-C "@pkgdatadir@/pacman-${repo}.conf" \
 		-M "@pkgdatadir@/makepkg-${arch}.conf" \
 		"${chroots}/${repo}-${arch}/root" \
 		"${base_packages[@]}"
