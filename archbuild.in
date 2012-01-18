@@ -2,8 +2,7 @@
 
 m4_include(lib/common.sh)
 
-# FIXME: temporary added curl until pacman 4.0 moves to [core]
-base_packages=(base base-devel sudo curl)
+base_packages=(base base-devel sudo)
 
 cmd="${0##*/}"
 if [[ "${cmd%%-*}" == 'multilib' ]]; then
@@ -53,15 +52,6 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 	done
 	exec 9>&-
 
-	# FIXME: temporary workaround until pacman 4.0 moves to [core]
-	if pacman -V | grep -q 'v4.' && ( [[ "$repo" == 'extra' || "$repo" == 'multilib' ]] ); then
-		pacman_conf=$(mktemp)
-		cp "@pkgdatadir@/pacman-${repo}.conf" "${pacman_conf}"
-		sed -r 's/^#(SigLevel = Never)/\1/' -i "${pacman_conf}"
-	else
-		pacman_conf="@pkgdatadir@/pacman-${repo}.conf"
-	fi
-
 	rm -rf "${chroots}/${repo}-${arch}"
 	mkdir -p "${chroots}/${repo}-${arch}"
 	setarch "${arch}" mkarchroot \
@@ -69,11 +59,6 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 		-M "@pkgdatadir@/makepkg-${arch}.conf" \
 		"${chroots}/${repo}-${arch}/root" \
 		"${base_packages[@]}"
-
-	# FIXME: temporary workaround until pacman 4.0 moves to [core]
-	if pacman -V | grep -q 'v4.' && ( [[ "$repo" == 'extra' || "$repo" == 'multilib' ]] ); then
-		cp "@pkgdatadir@/pacman-${repo}.conf" "${chroots}/${repo}-${arch}/root/etc/pacman.conf"
-	fi
 else
 	setarch ${arch} mkarchroot \
 		-u \
