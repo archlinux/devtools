@@ -135,7 +135,7 @@ for _arch in ${arch[@]}; do
 		fullver=$(get_full_version $_pkgname)
 
 		if ! pkgfile=$(shopt -s nullglob;
-				getpkgfile "${DESTDIR+$DESTDIR/}$_pkgname-$fullver-${_arch}".pkg.tar.?z); then
+				getpkgfile "${PKGDEST+$PKGDEST/}$_pkgname-$fullver-${_arch}".pkg.tar.?z); then
 			warning "Skipping $_pkgname-$fullver-$_arch: failed to locate package file"
 			skip_arches+=($_arch)
 			continue 2
