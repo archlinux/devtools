@@ -1,13 +1,32 @@
 #!/bin/bash
 
 m4_include(lib/common.sh)
+m4_include(lib/valid-tags.sh)
 
-if [[ -z $1 ]]; then
-	echo 'Usage: archrelease <repo>...'
+# parse command line options
+FORCE=
+while getopts ':f' flag; do
+	case $flag in
+		f) FORCE=1 ;;
+		:) die "Option requires an argument -- '$OPTARG'" ;;
+		\?) die "Invalid option -- '$OPTARG'" ;;
+	esac
+done
+shift $(( OPTIND - 1 ))
+
+if ! (( $# )); then
+	echo 'Usage: archrelease [-f] <repo>...'
 	exit 1
 fi
 
-# TODO: validate repo is really repo-arch
+# validate repo is really repo-arch
+if [[ -z $FORCE ]]; then
+	for tag in "$@"; do
+		if ! in_array "$tag" "${_tags[@]}"; then
+			die 'archrelease: Invalid tag: "'$tag'" (use -f to force release)'
+		fi
+	done
+fi
 
 if [[ ! -f PKGBUILD ]]; then
 	die 'archrelease: PKGBUILD not found'
