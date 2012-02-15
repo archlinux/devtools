@@ -143,21 +143,17 @@ for _arch in ${arch[@]}; do
 		uploads+=("$pkgfile")
 
 		sigfile="${pkgfile}.sig"
-		if [[ $SIGNPKG == 'y' && ! -f $sigfile ]]; then
+		if [[ ! -f $sigfile ]]; then
 			msg "Signing package ${pkgfile}..."
 			if [[ -n $GPGKEY ]]; then
 				SIGNWITHKEY="-u ${GPGKEY}"
 			fi
 			gpg --detach-sign --use-agent ${SIGNWITHKEY} "${pkgfile}" || die
 		fi
-		if [[ -f $sigfile ]]; then
-			if ! gpg --verify "$sigfile" >/dev/null 2>&1; then
-				die "Signature ${pkgfile}.sig is incorrect!"
-			fi
-			uploads+=("$sigfile")
-		else
-			die "Signature ${pkgfile}.sig was not found"
+		if ! gpg --verify "$sigfile" >/dev/null 2>&1; then
+			die "Signature ${pkgfile}.sig is incorrect!"
 		fi
+		uploads+=("$sigfile")
 	done
 done
 
