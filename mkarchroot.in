@@ -13,6 +13,7 @@ m4_include(lib/common.sh)
 FORCE='n'
 RUN=''
 NOCOPY='n'
+USE_DEVTMPFS='n'
 
 working_dir=''
 
@@ -29,11 +30,12 @@ usage() {
 	echo '    -M <file>     Location of a makepkg config file'
 	echo '    -n            Do not copy config files into the chroot'
 	echo '    -c <dir>      Set pacman cache. Default: /var/cache/pacman/pkg'
+	echo '    -d            Use devtmpfs instead of minimal /dev (tmpfs)'
 	echo '    -h            This message'
 	exit 1
 }
 
-while getopts 'r:ufnhC:M:c:' arg; do
+while getopts 'r:ufnhC:M:c:d' arg; do
 	case "${arg}" in
 		r) RUN="$OPTARG" ;;
 		u) RUN='/bin/sh -c "pacman -Syu --noconfirm && (pacman -Qqu >/dev/null && pacman -Su --noconfirm || exit 0)"' ;;
@@ -42,6 +44,7 @@ while getopts 'r:ufnhC:M:c:' arg; do
 		M) makepkg_conf="$OPTARG" ;;
 		n) NOCOPY='y' ;;
 		c) cache_dir="$OPTARG" ;;
+		d) USE_DEVTMPFS="y" ;;
 		h|?) usage 0 ;;
 		*) error "invalid argument '${arg}'"; usage ;;
 	esac
@@ -90,20 +93,24 @@ chroot_mount() {
 	mount -t proc proc "${working_dir}/proc"
 
 	[[ -e "${working_dir}/dev" ]] || mkdir "${working_dir}/dev"
-	mount -t tmpfs dev "${working_dir}/dev" -o mode=0755,size=10M,nosuid
-	mknod -m 666 "${working_dir}/dev/null" c 1 3
-	mknod -m 666 "${working_dir}/dev/zero" c 1 5
-	mknod -m 600 "${working_dir}/dev/console" c 5 1
-	mknod -m 644 "${working_dir}/dev/random" c 1 8
-	mknod -m 644 "${working_dir}/dev/urandom" c 1 9
-	mknod -m 666 "${working_dir}/dev/tty" c 5 0
-	mknod -m 666 "${working_dir}/dev/tty0" c 4 0
-	mknod -m 666 "${working_dir}/dev/full" c 1 7
-	ln -s /proc/kcore "${working_dir}/dev/core"
-	ln -s /proc/self/fd "${working_dir}/dev/fd"
-	ln -s /proc/self/fd/0 "${working_dir}/dev/stdin"
-	ln -s /proc/self/fd/1 "${working_dir}/dev/stdout"
-	ln -s /proc/self/fd/2 "${working_dir}/dev/stderr"
+	if [[ ${USE_DEVTMPFS} = "y" ]]; then
+		mount -t devtmpfs dev "${working_dir}/dev" -o mode=0755,nosuid
+	else
+		mount -t tmpfs dev "${working_dir}/dev" -o mode=0755,size=10M,nosuid
+		mknod -m 666 "${working_dir}/dev/null" c 1 3
+		mknod -m 666 "${working_dir}/dev/zero" c 1 5
+		mknod -m 600 "${working_dir}/dev/console" c 5 1
+		mknod -m 644 "${working_dir}/dev/random" c 1 8
+		mknod -m 644 "${working_dir}/dev/urandom" c 1 9
+		mknod -m 666 "${working_dir}/dev/tty" c 5 0
+		mknod -m 666 "${working_dir}/dev/tty0" c 4 0
+		mknod -m 666 "${working_dir}/dev/full" c 1 7
+		ln -s /proc/kcore "${working_dir}/dev/core"
+		ln -s /proc/self/fd "${working_dir}/dev/fd"
+		ln -s /proc/self/fd/0 "${working_dir}/dev/stdin"
+		ln -s /proc/self/fd/1 "${working_dir}/dev/stdout"
+		ln -s /proc/self/fd/2 "${working_dir}/dev/stderr"
+	fi
 
 	[[ -e "${working_dir}/dev/shm" ]] || mkdir "${working_dir}/dev/shm"
 	mount -t tmpfs shm "${working_dir}/dev/shm" -o nodev,nosuid,size=128M
