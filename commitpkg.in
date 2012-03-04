@@ -42,7 +42,7 @@ pkgbase=${pkgbase:-$pkgname}
 case "$cmd" in
 	commitpkg)
 		if (( $# == 0 )); then
-			die 'usage: commitpkg <reponame> [-l limit] [-a arch] [commit message]'
+			die 'usage: commitpkg <reponame> [-s server] [-l limit] [-a arch] [commit message]'
 		fi
 		repo="$1"
 		shift
@@ -51,18 +51,8 @@ case "$cmd" in
 		repo="${cmd%pkg}"
 		;;
 	*)
-		die 'usage: commitpkg <reponame> [-l limit] [-a arch] [commit message]'
+		die 'usage: commitpkg <reponame> [-s server] [-l limit] [-a arch] [commit message]'
 		;;
-esac
-
-case "$repo" in
-	core|extra|testing|staging|kde-unstable|gnome-unstable)
-		server='gerolde.archlinux.org' ;;
-	community*|multilib*)
-		server='aur.archlinux.org' ;;
-	*)
-		server='gerolde.archlinux.org'
-		msg "Non-standard repository $repo in use, defaulting to server $server" ;;
 esac
 
 # check if all local source files are under version control
@@ -83,10 +73,10 @@ for i in 'changelog' 'install'; do
 	done < <(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
 done
 
-# see if any limit options were passed, we'll send them to rsync
 rsyncopts=(-e ssh -p --chmod=ug=rw,o=r -c -h -L --progress --partial -y)
-while getopts ':l:a:' flag; do
+while getopts ':l:a:s:' flag; do
 	case $flag in
+		s) server=$2 ;;
 		l) rsyncopts+=("--bwlimit=$2") ;;
 		a) commit_arch=$2 ;;
 		:) die "Option requires an argument -- '$OPTARG'" ;;
@@ -94,6 +84,18 @@ while getopts ':l:a:' flag; do
 	esac
 done
 shift $(( OPTIND - 1 ))
+
+if [[ -z $server ]]; then
+	case "$repo" in
+		core|extra|testing|staging|kde-unstable|gnome-unstable)
+			server='gerolde.archlinux.org' ;;
+		community*|multilib*)
+			server='aur.archlinux.org' ;;
+		*)
+			server='gerolde.archlinux.org'
+			msg "Non-standard repository $repo in use, defaulting to server $server" ;;
+	esac
+fi
 
 if [[ -n $(svn status -q) ]]; then
 	msgtemplate="upgpkg: $pkgbase $(get_full_version)"$'\n\n'
