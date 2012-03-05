@@ -67,7 +67,7 @@ while getopts 'hcudr:I:l:n' arg; do
 		r) passeddir="$OPTARG" ;;
 		I) install_pkg="$OPTARG" ;;
 		l) copy="$OPTARG" ;;
-		n) run_namcap=true ;;
+		n) run_namcap=true; makepkg_args="$makepkg_args -i" ;;
 		*) makepkg_args="$makepkg_args -$arg $OPTARG" ;;
 	esac
 done
