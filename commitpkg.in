@@ -42,7 +42,7 @@ pkgbase=${pkgbase:-$pkgname}
 case "$cmd" in
 	commitpkg)
 		if (( $# == 0 )); then
-			die 'usage: commitpkg <reponame> [-s server] [-l limit] [-a arch] [commit message]'
+			die 'usage: commitpkg <reponame> [-f] [-s server] [-l limit] [-a arch] [commit message]'
 		fi
 		repo="$1"
 		shift
@@ -51,7 +51,7 @@ case "$cmd" in
 		repo="${cmd%pkg}"
 		;;
 	*)
-		die 'usage: commitpkg <reponame> [-s server] [-l limit] [-a arch] [commit message]'
+		die 'usage: commitpkg <reponame> [-f] [-s server] [-l limit] [-a arch] [commit message]'
 		;;
 esac
 
@@ -74,11 +74,13 @@ for i in 'changelog' 'install'; do
 done
 
 rsyncopts=(-e ssh -p --chmod=ug=rw,o=r -c -h -L --progress --partial -y)
-while getopts ':l:a:s:' flag; do
+archreleaseopts=()
+while getopts ':l:a:s:f' flag; do
 	case $flag in
-		s) server=$2 ;;
-		l) rsyncopts+=("--bwlimit=$2") ;;
-		a) commit_arch=$2 ;;
+		f) archreleaseopts+=('-f') ;;
+		s) server=$OPTARG ;;
+		l) rsyncopts+=("--bwlimit=$OPTARG") ;;
+		a) commit_arch=$OPTARG ;;
 		:) die "Option requires an argument -- '$OPTARG'" ;;
 		\?) die "Invalid option -- '$OPTARG'" ;;
 	esac
@@ -164,7 +166,7 @@ for _arch in ${arch[@]}; do
 		commit_arches+=($_arch)
 	fi
 done
-archrelease "${commit_arches[@]/#/$repo-}" || die
+archrelease "${archreleaseopts[@]}" "${commit_arches[@]/#/$repo-}" || die
 
 new_uploads=()
 
