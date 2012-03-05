@@ -14,3 +14,4 @@ mkarchroot
 rebuildpkgs
 zsh_completion
 find-libdeps
+crossrepomove

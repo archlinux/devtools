@@ -12,7 +12,8 @@ BINPROGS = \
 	lddd \
 	finddeps \
 	rebuildpkgs \
-	find-libdeps
+	find-libdeps \
+	crossrepomove
 
 SBINPROGS = \
 	mkarchroot \
@@ -59,6 +60,10 @@ ARCHBUILD_LINKS = \
 	gnome-unstable-i686-build \
 	gnome-unstable-x86_64-build
 
+CROSSREPOMOVE_LINKS = \
+	extra2community \
+	community2extra
+
 all: $(BINPROGS) $(SBINPROGS) bash_completion zsh_completion
 
 edit = sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g"
@@ -82,6 +87,7 @@ install:
 	install -m0644 ${CONFIGFILES} $(DESTDIR)$(PREFIX)/share/devtools
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
+	for l in ${CROSSREPOMOVE_LINKS}; do ln -sf crossrepomove $(DESTDIR)$(PREFIX)/bin/$$l; done
 	ln -sf find-libdeps $(DESTDIR)$(PREFIX)/bin/find-libprovides
 	install -Dm0644 bash_completion $(DESTDIR)/etc/bash_completion.d/devtools
 	install -Dm0644 zsh_completion $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
@@ -93,6 +99,7 @@ uninstall:
 	for f in ${CONFIGFILES}; do rm -f $(DESTDIR)$(PREFIX)/share/devtools/$$f; done
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
+	for l in ${CROSSREPOMOVE_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	rm $(DESTDIR)/etc/bash_completion.d/devtools
 	rm $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	rm -f $(DESTDIR)$(PREFIX)/bin/communityco

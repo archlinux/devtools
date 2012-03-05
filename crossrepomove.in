@@ -1,0 +1,86 @@
+#!/bin/bash
+
+m4_include(lib/common.sh)
+
+scriptname=${0##*/}
+
+if [[ -z $1 ]]; then
+	echo 'Usage: '$scriptname' [pkgbase]'
+	exit 1
+fi
+
+pkgbase="${1}"
+
+packages_svn='svn+ssh://gerolde.archlinux.org/srv/svn-packages'
+packages_server='gerolde.archlinux.org'
+community_svn='svn+ssh://aur.archlinux.org/srv/svn-packages'
+community_server='aur.archlinux.org'
+mirror='http://mirrors.kernel.org/archlinux'
+
+case $scriptname in
+	extra2community)
+		source_svn="${packages_svn}"
+		target_svn="${community_svn}"
+		source_server="${packages_server}"
+		target_server="${community_server}"
+		source_repo='extra'
+		target_repo='community'
+		;;
+	community2extra)
+		source_svn="${community_svn}"
+		target_svn="${packages_svn}"
+		source_server="${community_server}"
+		target_server="${packages_server}"
+		source_repo='community'
+		target_repo='extra'
+		;;
+	*)
+		die "Couldn't find configuration for $scriptname"
+		;;
+esac
+
+setup_workdir
+
+pushd $WORKDIR >/dev/null
+
+msg "Downloading sources for ${pkgbase}"
+svn -q checkout -N "${target_svn}" target_checkout
+mkdir -p "target_checkout/${pkgbase}/repos"
+svn -q export "${source_svn}/${pkgbase}/trunk" "target_checkout/${pkgbase}/trunk" || die
+. "target_checkout/${pkgbase}/trunk/PKGBUILD"
+
+msg "Downloading packages for ${pkgbase}"
+for _arch in ${arch[@]}; do
+	if [[ "${_arch[*]}" == 'any' ]]; then
+		repo_arch='x86_64'
+	else
+		repo_arch=${_arch}
+	fi
+	for _pkgname in ${pkgname[@]}; do
+		fullver=$(get_full_version $_pkgname)
+		# FIXME: this only works with .xz packages
+		ssh "${target_server}" "cd staging/${target_repo}
+			curl -O ${mirror}/${source_repo}/os/${repo_arch}/$_pkgname-$fullver-${_arch}.pkg.tar.xz
+			curl -O ${mirror}/${source_repo}/os/${repo_arch}/$_pkgname-$fullver-${_arch}.pkg.tar.xz.sig" || die
+	done
+done
+
+msg "Adding ${pkgbase} to ${target_repo}"
+svn -q add "target_checkout/${pkgbase}"
+svn -q propset svn:keywords 'Id' "target_checkout/${pkgbase}/trunk/PKGBUILD"
+svn -q commit -m"${scriptname}: Moving ${pkgbase} from ${source_repo} to ${target_repo}" target_checkout
+pushd "target_checkout/${pkgbase}/trunk" >/dev/null
+archrelease "${arch[@]/#/$target_repo-}" || die
+popd >/dev/null
+ssh "${target_server}" '/arch/db-update' || die
+
+msg "Removing ${pkgbase} from ${source_repo}"
+for _arch in ${arch[@]}; do
+	ssh "${source_server}" "/arch/db-remove ${source_repo} ${_arch} ${pkgbase}"
+done
+svn -q checkout -N "${source_svn}" source_checkout
+svn -q up "source_checkout/${pkgbase}"
+svn -q rm "source_checkout/${pkgbase}"
+svn -q commit -m"${scriptname}: Moving ${pkgbase} from ${source_repo} to ${target_repo}" source_checkout
+
+popd >/dev/null
