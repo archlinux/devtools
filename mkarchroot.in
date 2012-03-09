@@ -103,6 +103,7 @@ chroot_mount() {
 		mknod -m 644 "${working_dir}/dev/random" c 1 8
 		mknod -m 644 "${working_dir}/dev/urandom" c 1 9
 		mknod -m 666 "${working_dir}/dev/tty" c 5 0
+		mknod -m 666 "${working_dir}/dev/ptmx" c 5 2
 		mknod -m 666 "${working_dir}/dev/tty0" c 4 0
 		mknod -m 666 "${working_dir}/dev/full" c 1 7
 		ln -s /proc/kcore "${working_dir}/dev/core"
@@ -117,7 +118,7 @@ chroot_mount() {
 
 	[[ -e "${working_dir}/dev/pts" ]] || mkdir "${working_dir}/dev/pts"
 	mount -t devpts devpts "${working_dir}/dev/pts" -o newinstance,ptmxmode=666
-	ln -s pts/ptmx "${working_dir}/dev/ptmx"
+	mount -o bind "${working_dir}/dev/pts/ptmx" "${working_dir}/dev/ptmx"
 
 	[[ -e $cache_dir ]] || mkdir -p "${cache_dir}"
 	[[ -e "${working_dir}/${cache_dir}" ]] || mkdir -p "${working_dir}/${cache_dir}"
@@ -148,6 +149,7 @@ copy_hostconf () {
 chroot_umount () {
 	umount "${working_dir}/proc"
 	umount "${working_dir}/sys"
+	umount "${working_dir}/dev/ptmx"
 	umount "${working_dir}/dev/pts"
 	umount "${working_dir}/dev/shm"
 	umount "${working_dir}/dev"
