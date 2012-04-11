@@ -87,6 +87,23 @@ while getopts ':l:a:s:f' flag; do
 done
 shift $(( OPTIND - 1 ))
 
+# check packages have the packager field set
+for _arch in ${arch[@]}; do
+	if [[ -n $commit_arch && ${_arch} != "$commit_arch" ]]; then
+		continue
+	fi
+	for _pkgname in ${pkgname[@]}; do
+		fullver=$(get_full_version $_pkgname)
+
+		if pkgfile=$(shopt -s nullglob;
+				getpkgfile "${PKGDEST+$PKGDEST/}$_pkgname-$fullver-${_arch}".pkg.tar.?z); then
+			if grep -q "packager = Unknown Packager" <(bsdtar -xOqf $pkgfile .PKGINFO); then
+				die "PACKAGER was not set when building package"
+			fi
+		fi
+	done
+done
+
 if [[ -z $server ]]; then
 	case "$repo" in
 		core|extra|testing|staging|kde-unstable|gnome-unstable)
