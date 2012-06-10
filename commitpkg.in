@@ -57,7 +57,7 @@ esac
 
 # check if all local source files are under version control
 for s in "${source[@]}"; do
-	if [[ $s != *://* ]] && ! svn status -v "$s" | grep -q '^[ AMRX~]'; then
+	if [[ $s != *://* ]] && ! svn status -v "$s@" | grep -q '^[ AMRX~]'; then
 		die "$s is not under version control"
 	fi
 done
