@@ -10,6 +10,8 @@
 
 m4_include(lib/common.sh)
 
+CHROOT_VERSION='v2'
+
 FORCE='n'
 RUN=''
 NOCOPY='n'
@@ -181,6 +183,8 @@ if [[ -n $RUN ]]; then
 	#Sanity check
 	if [[ ! -f "${working_dir}/.arch-chroot" ]]; then
 		die "'${working_dir}' does not appear to be a Arch chroot."
+	elif [[ $(cat "${working_dir}/.arch-chroot") != ${CHROOT_VERSION} ]]; then
+		die "'${working_dir}' is not compatible with ${APPNAME} version ${CHROOT_VERSION}. Please rebuild."
 	fi
 
 	chroot_lock
@@ -235,8 +239,6 @@ else
 
 	copy_hostconf
 
-	if [[ ! -e "${working_dir}/.arch-chroot" ]]; then
-		date +%s > "${working_dir}/.arch-chroot"
-	fi
+	echo "${CHROOT_VERSION}" > "${working_dir}/.arch-chroot"
 	# }}}
 fi
