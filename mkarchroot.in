@@ -15,7 +15,6 @@ CHROOT_VERSION='v2'
 FORCE='n'
 RUN=''
 NOCOPY='n'
-USE_DEVTMPFS='n'
 
 working_dir=''
 
@@ -36,7 +35,7 @@ usage() {
 	exit 1
 }
 
-while getopts 'r:ufnhC:M:c:d' arg; do
+while getopts 'r:ufnhC:M:c:' arg; do
 	case "${arg}" in
 		r) RUN="$OPTARG" ;;
 		u) RUN='/bin/sh -c "pacman -Syu --noconfirm && (pacman -Qqu >/dev/null && pacman -Su --noconfirm || exit 0)"' ;;
@@ -45,7 +44,6 @@ while getopts 'r:ufnhC:M:c:d' arg; do
 		M) makepkg_conf="$OPTARG" ;;
 		n) NOCOPY='y' ;;
 		c) cache_dir="$OPTARG" ;;
-		d) USE_DEVTMPFS="y" ;;
 		h|?) usage 0 ;;
 		*) error "invalid argument '${arg}'"; usage ;;
 	esac
