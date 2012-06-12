@@ -14,7 +14,7 @@ else
 	repo=${tag%-*}
 	arch=${tag##*-}
 fi
-chroots='/var/tmp/archbuild'
+chroots='/var/lib/archbuild'
 clean_first=false
 
 usage() {
