@@ -30,7 +30,7 @@ usage() {
 	echo '    -C <file>     Location of a pacman config file'
 	echo '    -M <file>     Location of a makepkg config file'
 	echo '    -n            Do not copy config files into the chroot'
-	echo '    -c <dir>      Set pacman cache. Default: /var/cache/pacman/pkg'
+	echo '    -c <dir>      Set pacman cache'
 	echo '    -h            This message'
 	exit 1
 }
@@ -67,18 +67,12 @@ shift 1
 [[ -z $working_dir ]] && die 'Please specify a working directory.'
 
 if [[ -z $cache_dir ]]; then
-	cache_conf=${working_dir}/etc/pacman.conf
-	[[ ! -f $cache_conf ]] && cache_conf=${pac_conf:-/etc/pacman.conf}
-	cache_dir=$( (grep -m 1 '^CacheDir' $cache_conf || echo 'CacheDir = /var/cache/pacman/pkg') | sed 's/CacheDir\s*=\s*//')
-	unset cache_conf
+	cache_dirs=($(pacman -v $cache_conf 2>&1 | grep '^Cache Dirs:' | sed 's/Cache Dirs:\s*//g'))
+else
+	cache_dirs=(${cache_dir})
 fi
 
-if [[ -f /etc/pacman.d/mirrorlist ]]; then
-	host_mirror=$(pacman -Sddp extra/devtools 2>/dev/null | sed -E 's#(.*/)extra/os/.*#\1$repo/os/$arch#')
-fi
-if [[ -z $host_mirror ]]; then
-	host_mirror='http://mirrors.kernel.org/archlinux/$repo/os/$arch'
-fi
+host_mirror=$(pacman -Sddp extra/devtools 2>/dev/null | sed -E 's#(.*/)extra/os/.*#\1$repo/os/$arch#')
 if echo "${host_mirror}" | grep -q 'file://'; then
 	host_mirror_path=$(echo "${host_mirror}" | sed -E 's#file://(/.*)/\$repo/os/\$arch#\1#g')
 fi
@@ -121,15 +115,23 @@ chroot_mount() {
 	[[ -e "${working_dir}/run" ]] || mkdir "${working_dir}/run"
 	mount -t tmpfs tmpfs "${working_dir}/run" -o nodev,nosuid,strictatime,size=64M
 
-	[[ -e $cache_dir ]] || mkdir -p "${cache_dir}"
-	[[ -e "${working_dir}/${cache_dir}" ]] || mkdir -p "${working_dir}/${cache_dir}"
-	mount -o bind "${cache_dir}" "${working_dir}/${cache_dir}"
-
 	if [[ -n $host_mirror_path ]]; then
 		[[ -e "${working_dir}/${host_mirror_path}" ]] || mkdir -p "${working_dir}/${host_mirror_path}"
 		mount -o bind "${host_mirror_path}" "${working_dir}/${host_mirror_path}"
-		mount -o remount,ro,bind "${host_mirror_path}" "${working_dir}/${host_mirror_path}"
+		mount -o remount,ro,bind "${working_dir}/${host_mirror_path}"
 	fi
+
+	local cache_dir_first=true
+	for cache_dir in ${cache_dirs[@]}; do
+		[[ -e $cache_dir ]] || mkdir -p "${cache_dir}"
+		[[ -e "${working_dir}/${cache_dir}" ]] || mkdir -p "${working_dir}/${cache_dir}"
+		mount -o bind "${cache_dir}" "${working_dir}/${cache_dir}"
+		if ! ${cache_dir_first}; then
+			mount -o remount,ro,bind "${working_dir}/${cache_dir}"
+		else
+			cache_dir_first=false
+		fi
+	done
 
 	trap 'chroot_umount' EXIT INT QUIT TERM HUP
 }
@@ -146,6 +148,8 @@ copy_hostconf () {
 	if [[ -n $makepkg_conf && $NOCOPY = 'n' ]]; then
 		cp ${makepkg_conf} ${working_dir}/etc/makepkg.conf
 	fi
+
+	sed -r "s|^#?\\s*CacheDir.+|CacheDir = $(echo -n ${cache_dirs[@]})|g" -i ${working_dir}/etc/pacman.conf
 }
 
 chroot_umount () {
@@ -156,7 +160,9 @@ chroot_umount () {
 	umount "${working_dir}/dev/shm"
 	umount "${working_dir}/dev"
 	umount "${working_dir}/run"
-	umount "${working_dir}/${cache_dir}"
+	for cache_dir in ${cache_dirs[@]}; do
+		umount "${working_dir}/${cache_dir}"
+	done
 	[[ -n $host_mirror_path ]] && umount "${working_dir}/${host_mirror_path}"
 }
 
@@ -208,7 +214,7 @@ else
 	chroot_lock
 	chroot_mount
 
-	pacargs="--noconfirm --root=${working_dir} --cachedir=${cache_dir}"
+	pacargs="--noconfirm --root=${working_dir} ${cache_dirs[@]/#/--cachedir=}"
 	if [[ -n $pac_conf ]]; then
 		pacargs="$pacargs --config=${pac_conf}"
 	fi
