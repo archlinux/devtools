@@ -113,7 +113,7 @@ chroot_mount() {
 	mount -o bind /dev/pts "${working_dir}/dev/pts"
 
 	[[ -e "${working_dir}/run" ]] || mkdir "${working_dir}/run"
-	mount -t tmpfs tmpfs "${working_dir}/run" -o nodev,nosuid,strictatime,size=64M
+	mount -t tmpfs tmpfs "${working_dir}/run" -o mode=0755,nodev,nosuid,strictatime,size=64M
 
 	if [[ -n $host_mirror_path ]]; then
 		[[ -e "${working_dir}/${host_mirror_path}" ]] || mkdir -p "${working_dir}/${host_mirror_path}"
