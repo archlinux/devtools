@@ -183,19 +183,21 @@ for _arch in ${arch[@]}; do
 		commit_arches+=($_arch)
 	fi
 done
-archrelease "${archreleaseopts[@]}" "${commit_arches[@]/#/$repo-}" || die
 
-new_uploads=()
-
-# convert to absolute paths so rsync can work with colons (epoch)
-while read -r -d '' upload; do
-	  new_uploads+=("$upload")
-done < <(realpath -z "${uploads[@]}")
-
-uploads=("${new_uploads[@]}")
-unset new_uploads
+if [[ ${#commit_arches[*]} -gt 0 ]]; then
+	archrelease "${archreleaseopts[@]}" "${commit_arches[@]/#/$repo-}" || die
+fi
 
 if [[ ${#uploads[*]} -gt 0 ]]; then
+	new_uploads=()
+
+	# convert to absolute paths so rsync can work with colons (epoch)
+	while read -r -d '' upload; do
+		new_uploads+=("$upload")
+	done < <(realpath -z "${uploads[@]}")
+
+	uploads=("${new_uploads[@]}")
+	unset new_uploads
 	msg 'Uploading all package and signature files'
 	rsync "${rsyncopts[@]}" "${uploads[@]}" "$server:staging/$repo/" || die
 fi
