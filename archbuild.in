@@ -51,11 +51,11 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 		fi
 
 		{ type -P btrfs && btrfs subvolume delete "${copy}"; } &>/dev/null
-		rm -rf "${copy}"
+		rm -rf --one-file-system "${copy}"
 	done
 	exec 9>&-
 
-	rm -rf "${chroots}/${repo}-${arch}"
+	rm -rf --one-file-system "${chroots}/${repo}-${arch}"
 	mkdir -p "${chroots}/${repo}-${arch}"
 	setarch "${arch}" mkarchroot \
 		-C "@pkgdatadir@/pacman-${repo}.conf" \
