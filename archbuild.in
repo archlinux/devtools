@@ -43,9 +43,12 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 		[[ -d $copy ]] || continue
 		msg2 "Deleting chroot copy '$(basename "${copy}")'..."
 
-		# Lock the copy
-		exec 9>"${copy}.lock"
-		flock 9
+		exec 9>"$copydir.lock"
+		if ! flock -n 9; then
+			stat_busy "Locking chroot copy '$copy'"
+			flock 9
+			stat_done
+		fi
 
 		{ type -P btrfs && btrfs subvolume delete "${copy}"; } &>/dev/null
 		rm -rf "${copy}"
