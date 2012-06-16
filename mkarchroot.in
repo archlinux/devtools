@@ -153,6 +153,7 @@ copy_hostconf () {
 }
 
 chroot_umount () {
+	trap - EXIT INT QUIT TERM HUP
 	umount "${working_dir}/proc/sys"
 	umount "${working_dir}/proc"
 	umount "${working_dir}/sys"

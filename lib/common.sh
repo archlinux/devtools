@@ -62,7 +62,7 @@ setup_workdir() {
 }
 
 cleanup() {
-	trap - EXIT INT QUIT TERM
+	trap - EXIT INT QUIT TERM HUP
 
 	[[ -n $WORKDIR ]] && rm -rf "$WORKDIR"
 	[[ $1 ]] && exit $1
