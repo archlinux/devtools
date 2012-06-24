@@ -64,6 +64,10 @@ CROSSREPOMOVE_LINKS = \
 	extra2community \
 	community2extra
 
+BASHCOMPLETION_LINKS = \
+	archco \
+	communityco
+
 all: $(BINPROGS) $(SBINPROGS) bash_completion zsh_completion
 
 edit = sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g"
@@ -90,6 +94,7 @@ install:
 	for l in ${CROSSREPOMOVE_LINKS}; do ln -sf crossrepomove $(DESTDIR)$(PREFIX)/bin/$$l; done
 	ln -sf find-libdeps $(DESTDIR)$(PREFIX)/bin/find-libprovides
 	install -Dm0644 bash_completion $(DESTDIR)/usr/share/bash-completion/completions/devtools
+	for l in ${BASHCOMPLETION_LINKS}; do ln -sf devtools $(DESTDIR)/usr/share/bash-completion/completions/$$l; done
 	install -Dm0644 zsh_completion $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	ln -sf archco $(DESTDIR)$(PREFIX)/bin/communityco
 
