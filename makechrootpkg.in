@@ -25,6 +25,7 @@ passeddir=
 default_copy=$USER
 [[ -n $SUDO_USER ]] && default_copy=$SUDO_USER
 [[ -z $default_copy || $default_copy = root ]] && default_copy=copy
+src_owner=${SUDO_USER:-$USER}
 
 usage() {
 	echo "usage ${0##*/} [options] -r <chrootdir> [--] [makepkg args]"
@@ -292,10 +293,12 @@ if mkarchroot -r "/chrootbuild" "$copydir"; then
 			popd >/dev/null
 		fi
 
+		chown "$src_owner" "$pkgfile"
 		mv "$pkgfile" "$PKGDEST"
 	done
 
 	for l in "$copydir"/build/*-{build,check,namcap,package,package_*}.log; do
+		chown "$src_owner" "$l"
 		[[ -f $l ]] && mv "$l" .
 	done
 else
@@ -304,6 +307,7 @@ else
 fi
 
 for f in "$copydir"/srcdest/*; do
+	chown "$src_owner" "$f"
 	mv "$f" "$SRCDEST"
 done
 
