@@ -275,7 +275,7 @@ if $run_namcap; then
 	pacman -S --needed --noconfirm namcap
 	for pkgfile in /build/PKGBUILD /pkgdest/*.pkg.tar.?z; do
 		echo "Checking \${pkgfile##*/}"
-		namcap "\$pkgfile" 2>&1 | tee "/build/\${pkgfile##*/}-namcap.log"
+		sudo -u nobody namcap "\$pkgfile" 2>&1 | tee "/build/\${pkgfile##*/}-namcap.log"
 	done
 fi
 
