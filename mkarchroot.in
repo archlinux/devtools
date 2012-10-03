@@ -79,41 +79,51 @@ fi
 
 # {{{ functions
 chroot_mount() {
-	[[ -e "${working_dir}/sys" ]] || mkdir "${working_dir}/sys"
-	mount -o bind /sys "${working_dir}/sys"
-	mount -o remount,ro,bind "${working_dir}/sys"
+	trap 'trap_chroot_umount' EXIT INT QUIT TERM HUP
 
-	[[ -e "${working_dir}/proc" ]] || mkdir "${working_dir}/proc"
-	mount -t proc proc -o nosuid,noexec,nodev "${working_dir}/proc"
-	mount -o bind /proc/sys "${working_dir}/proc/sys"
-	mount -o remount,ro,bind "${working_dir}/proc/sys"
+	if (( ! have_nspawn )); then
+		[[ -e "${working_dir}/sys" ]] || mkdir "${working_dir}/sys"
+		mount -o bind /sys "${working_dir}/sys"
+		mount -o remount,ro,bind "${working_dir}/sys"
 
-	[[ -e "${working_dir}/dev" ]] || mkdir "${working_dir}/dev"
-	mount -t tmpfs dev "${working_dir}/dev" -o mode=0755,size=10M,nosuid,strictatime
-	mknod -m 666 "${working_dir}/dev/null" c 1 3
-	mknod -m 666 "${working_dir}/dev/zero" c 1 5
-	mknod -m 600 "${working_dir}/dev/console" c 5 1
-	mknod -m 644 "${working_dir}/dev/random" c 1 8
-	mknod -m 644 "${working_dir}/dev/urandom" c 1 9
-	mknod -m 666 "${working_dir}/dev/tty" c 5 0
-	mknod -m 666 "${working_dir}/dev/ptmx" c 5 2
-	mknod -m 666 "${working_dir}/dev/tty0" c 4 0
-	mknod -m 666 "${working_dir}/dev/full" c 1 7
-	mknod -m 666 "${working_dir}/dev/rtc0" c 254 0
-	ln -s /proc/kcore "${working_dir}/dev/core"
-	ln -s /proc/self/fd "${working_dir}/dev/fd"
-	ln -s /proc/self/fd/0 "${working_dir}/dev/stdin"
-	ln -s /proc/self/fd/1 "${working_dir}/dev/stdout"
-	ln -s /proc/self/fd/2 "${working_dir}/dev/stderr"
+		[[ -e "${working_dir}/proc" ]] || mkdir "${working_dir}/proc"
+		mount -t proc proc -o nosuid,noexec,nodev "${working_dir}/proc"
+		mount -o bind /proc/sys "${working_dir}/proc/sys"
+		mount -o remount,ro,bind "${working_dir}/proc/sys"
 
-	[[ -e "${working_dir}/dev/shm" ]] || mkdir "${working_dir}/dev/shm"
-	mount -t tmpfs shm "${working_dir}/dev/shm" -o nodev,nosuid,size=128M
+		[[ -e "${working_dir}/dev" ]] || mkdir "${working_dir}/dev"
+		mount -t tmpfs dev "${working_dir}/dev" -o mode=0755,size=10M,nosuid,strictatime
+		mknod -m 666 "${working_dir}/dev/null" c 1 3
+		mknod -m 666 "${working_dir}/dev/zero" c 1 5
+		mknod -m 600 "${working_dir}/dev/console" c 5 1
+		mknod -m 644 "${working_dir}/dev/random" c 1 8
+		mknod -m 644 "${working_dir}/dev/urandom" c 1 9
+		mknod -m 666 "${working_dir}/dev/tty" c 5 0
+		mknod -m 666 "${working_dir}/dev/ptmx" c 5 2
+		mknod -m 666 "${working_dir}/dev/tty0" c 4 0
+		mknod -m 666 "${working_dir}/dev/full" c 1 7
+		mknod -m 666 "${working_dir}/dev/rtc0" c 254 0
+		ln -s /proc/kcore "${working_dir}/dev/core"
+		ln -s /proc/self/fd "${working_dir}/dev/fd"
+		ln -s /proc/self/fd/0 "${working_dir}/dev/stdin"
+		ln -s /proc/self/fd/1 "${working_dir}/dev/stdout"
+		ln -s /proc/self/fd/2 "${working_dir}/dev/stderr"
 
-	[[ -e "${working_dir}/dev/pts" ]] || mkdir "${working_dir}/dev/pts"
-	mount -o bind /dev/pts "${working_dir}/dev/pts"
+		[[ -e "${working_dir}/dev/shm" ]] || mkdir "${working_dir}/dev/shm"
+		mount -t tmpfs shm "${working_dir}/dev/shm" -o nodev,nosuid,size=128M
 
-	[[ -e "${working_dir}/run" ]] || mkdir "${working_dir}/run"
-	mount -t tmpfs tmpfs "${working_dir}/run" -o mode=0755,nodev,nosuid,strictatime,size=64M
+		[[ -e "${working_dir}/dev/pts" ]] || mkdir "${working_dir}/dev/pts"
+		mount -o bind /dev/pts "${working_dir}/dev/pts"
+
+		[[ -e "${working_dir}/run" ]] || mkdir "${working_dir}/run"
+		mount -t tmpfs tmpfs "${working_dir}/run" -o mode=0755,nodev,nosuid,strictatime,size=64M
+
+		for host_config in resolv.conf timezone localtime; do
+			[[ -e "${working_dir}/etc/${host_config}" ]] || touch "${working_dir}/etc/${host_config}"
+			mount -o bind /etc/${host_config} "${working_dir}/etc/${host_config}"
+			mount -o remount,ro,bind "${working_dir}/etc/${host_config}"
+		done
+	fi
 
 	if [[ -n $host_mirror_path ]]; then
 		[[ -e "${working_dir}/${host_mirror_path}" ]] || mkdir -p "${working_dir}/${host_mirror_path}"
@@ -132,12 +142,9 @@ chroot_mount() {
 			cache_dir_first=false
 		fi
 	done
-
-	trap 'chroot_umount' EXIT INT QUIT TERM HUP
 }
 
 copy_hostconf () {
-	cp /etc/resolv.conf "${working_dir}/etc/resolv.conf"
 	cp -a /etc/pacman.d/gnupg "${working_dir}/etc/pacman.d"
 	echo "Server = ${host_mirror}" > ${working_dir}/etc/pacman.d/mirrorlist
 
@@ -152,19 +159,26 @@ copy_hostconf () {
 	sed -r "s|^#?\\s*CacheDir.+|CacheDir = $(echo -n ${cache_dirs[@]})|g" -i ${working_dir}/etc/pacman.conf
 }
 
-chroot_umount () {
-	trap - EXIT INT QUIT TERM HUP
-	umount "${working_dir}/proc/sys"
-	umount "${working_dir}/proc"
-	umount "${working_dir}/sys"
-	umount "${working_dir}/dev/pts"
-	umount "${working_dir}/dev/shm"
-	umount "${working_dir}/dev"
-	umount "${working_dir}/run"
+trap_chroot_umount () {
+	trap 'trap_exit' EXIT INT QUIT TERM HUP
+
 	for cache_dir in ${cache_dirs[@]}; do
 		umount "${working_dir}/${cache_dir}"
 	done
 	[[ -n $host_mirror_path ]] && umount "${working_dir}/${host_mirror_path}"
+
+	if (( ! have_nspawn )); then
+		for host_config in resolv.conf timezone localtime; do
+			umount "${working_dir}/etc/${host_config}"
+		done
+		umount "${working_dir}/proc/sys"
+		umount "${working_dir}/proc"
+		umount "${working_dir}/sys"
+		umount "${working_dir}/dev/pts"
+		umount "${working_dir}/dev/shm"
+		umount "${working_dir}/dev"
+		umount "${working_dir}/run"
+	fi
 }
 
 chroot_lock () {
@@ -180,7 +194,23 @@ chroot_lock () {
 		stat_done
 	fi
 }
+
+chroot_run() {
+	local dir=$1
+	shift
+	if (( have_nspawn)); then
+		eval systemd-nspawn -D "${dir}" -- ${@} 2>/dev/null
+	else
+		eval unshare -mui -- chroot "${dir}" ${@}
+	fi
+}
+
 # }}}
+
+# use systemd-nspawn if we have it available and systemd is running
+if type -P systemd-nspawn >/dev/null && mountpoint -q /sys/fs/cgroup/systemd; then
+	have_nspawn=1
+fi
 
 umask 0022
 if [[ -n $RUN ]]; then
@@ -196,7 +226,7 @@ if [[ -n $RUN ]]; then
 	chroot_mount
 	copy_hostconf
 
-	eval unshare -mui -- chroot "${working_dir}" ${RUN}
+	chroot_run "${working_dir}" ${RUN}
 
 	# }}}
 else
@@ -209,37 +239,31 @@ else
 		chmod 0755 "${working_dir}"
 	fi
 
-	mkdir -p "${working_dir}/var/lib/pacman/sync"
-	mkdir -p "${working_dir}/etc/"
-
 	chroot_lock
 	chroot_mount
 
-	pacargs="--noconfirm --root=${working_dir} ${cache_dirs[@]/#/--cachedir=}"
+	pacargs="${cache_dirs[@]/#/--cachedir=}"
 	if [[ -n $pac_conf ]]; then
 		pacargs="$pacargs --config=${pac_conf}"
 	fi
 
 	if (( $# != 0 )); then
-		op='-Sy'
 		if [[ $FORCE = 'y' ]]; then
-			op="${op}f"
+			pacargs="$pacargs --force"
 		fi
-		if ! pacman ${op} ${pacargs} $@; then
+		if ! pacstrap -GMcd "${working_dir}" ${pacargs} $@; then
 			die 'Failed to install all packages'
 		fi
 	fi
 
 	if [[ -d "${working_dir}/lib/modules" ]]; then
-		ldconfig -r "${working_dir}"
+		chroot_run "${working_dir}" ldconfig
 	fi
 
 	if [[ -e "${working_dir}/etc/locale.gen" ]]; then
 		sed -i 's@^#\(en_US\|de_DE\)\(\.UTF-8\)@\1\2@' "${working_dir}/etc/locale.gen"
-		chroot "${working_dir}" /usr/sbin/locale-gen
+		chroot_run "${working_dir}" locale-gen
 	fi
-	echo 'UTC' > "${working_dir}/etc/timezone"
-	ln -s /usr/share/zoneinfo/UTC "${working_dir}/etc/localtime"
 	echo 'LANG=C' > "${working_dir}/etc/locale.conf"
 
 	copy_hostconf
