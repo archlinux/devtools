@@ -62,8 +62,6 @@ setup_workdir() {
 }
 
 cleanup() {
-	trap - EXIT INT QUIT TERM HUP
-
 	[[ -n $WORKDIR ]] && rm -rf "$WORKDIR"
 	[[ $1 ]] && exit $1
 }
@@ -73,13 +71,23 @@ abort() {
 	cleanup 0
 }
 
+trap_abort() {
+	trap - EXIT INT QUIT TERM HUP
+	abort
+}
+
+trap_exit() {
+	trap - EXIT INT QUIT TERM HUP
+	cleanup 0
+}
+
 die() {
 	error "$*"
 	cleanup 1
 }
 
-trap abort INT QUIT TERM HUP
-trap 'cleanup 0' EXIT
+trap 'trap_abort' INT QUIT TERM HUP
+trap 'trap_exit' EXIT
 
 ##
 #  usage : in_array( $needle, $haystack )
