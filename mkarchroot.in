@@ -78,18 +78,32 @@ if echo "${host_mirror}" | grep -q 'file://'; then
 fi
 
 # {{{ functions
+bind_mount() {
+	local mode="${2:-rw}"
+	local target="${working_dir}${1}"
+
+	if [[ ! -e "$target" ]]; then
+		if [[ -d "$1" ]]; then
+			install -d "$target"
+		else
+			install -D /dev/null "$target"
+		fi
+	fi
+
+	mount -o bind "$1" "$target"
+	mount -o remount,${mode},bind "$target"
+	mount --make-slave "$target"
+}
+
 chroot_mount() {
 	trap 'trap_chroot_umount' EXIT INT QUIT TERM HUP
 
 	if (( ! have_nspawn )); then
-		[[ -e "${working_dir}/sys" ]] || mkdir "${working_dir}/sys"
-		mount -o bind /sys "${working_dir}/sys"
-		mount -o remount,ro,bind "${working_dir}/sys"
+		bind_mount /sys ro
 
 		[[ -e "${working_dir}/proc" ]] || mkdir "${working_dir}/proc"
 		mount -t proc proc -o nosuid,noexec,nodev "${working_dir}/proc"
-		mount -o bind /proc/sys "${working_dir}/proc/sys"
-		mount -o remount,ro,bind "${working_dir}/proc/sys"
+		bind_mount /proc/sys ro
 
 		[[ -e "${working_dir}/dev" ]] || mkdir "${working_dir}/dev"
 		mount -t tmpfs dev "${working_dir}/dev" -o mode=0755,size=10M,nosuid,strictatime
@@ -112,35 +126,21 @@ chroot_mount() {
 		[[ -e "${working_dir}/dev/shm" ]] || mkdir "${working_dir}/dev/shm"
 		mount -t tmpfs shm "${working_dir}/dev/shm" -o nodev,nosuid,size=128M
 
-		[[ -e "${working_dir}/dev/pts" ]] || mkdir "${working_dir}/dev/pts"
-		mount -o bind /dev/pts "${working_dir}/dev/pts"
+		bind_mount /dev/pts
 
 		[[ -e "${working_dir}/run" ]] || mkdir "${working_dir}/run"
 		mount -t tmpfs tmpfs "${working_dir}/run" -o mode=0755,nodev,nosuid,strictatime,size=64M
 
 		for host_config in resolv.conf timezone localtime; do
-			[[ -e "${working_dir}/etc/${host_config}" ]] || touch "${working_dir}/etc/${host_config}"
-			mount -o bind /etc/${host_config} "${working_dir}/etc/${host_config}"
-			mount -o remount,ro,bind "${working_dir}/etc/${host_config}"
+			bind_mount /etc/$host_config ro
 		done
 	fi
 
-	if [[ -n $host_mirror_path ]]; then
-		[[ -e "${working_dir}/${host_mirror_path}" ]] || mkdir -p "${working_dir}/${host_mirror_path}"
-		mount -o bind "${host_mirror_path}" "${working_dir}/${host_mirror_path}"
-		mount -o remount,ro,bind "${working_dir}/${host_mirror_path}"
-	fi
+	[[ -n $host_mirror_path ]] && bind_mount "$host_mirror_path" ro
 
-	local cache_dir_first=true
-	for cache_dir in ${cache_dirs[@]}; do
-		[[ -e $cache_dir ]] || mkdir -p "${cache_dir}"
-		[[ -e "${working_dir}/${cache_dir}" ]] || mkdir -p "${working_dir}/${cache_dir}"
-		mount -o bind "${cache_dir}" "${working_dir}/${cache_dir}"
-		if ! ${cache_dir_first}; then
-			mount -o remount,ro,bind "${working_dir}/${cache_dir}"
-		else
-			cache_dir_first=false
-		fi
+	bind_mount "${cache_dirs[0]}"
+	for cache_dir in ${cache_dirs[@]:1}; do
+		bind_mount "$cache_dir" ro
 	done
 }
 
