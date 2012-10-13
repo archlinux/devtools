@@ -131,7 +131,7 @@ chroot_mount() {
 		[[ -e "${working_dir}/run" ]] || mkdir "${working_dir}/run"
 		mount -t tmpfs tmpfs "${working_dir}/run" -o mode=0755,nodev,nosuid,strictatime,size=64M
 
-		for host_config in resolv.conf timezone localtime; do
+		for host_config in resolv.conf localtime; do
 			bind_mount /etc/$host_config ro
 		done
 	fi
@@ -168,7 +168,7 @@ trap_chroot_umount () {
 	[[ -n $host_mirror_path ]] && umount "${working_dir}/${host_mirror_path}"
 
 	if (( ! have_nspawn )); then
-		for host_config in resolv.conf timezone localtime; do
+		for host_config in resolv.conf localtime; do
 			umount "${working_dir}/etc/${host_config}"
 		done
 		umount "${working_dir}/proc/sys"
