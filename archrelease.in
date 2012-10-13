@@ -66,7 +66,7 @@ for tag in "$@"; do
 		while read -r file; do
 			trash+=("repos/$tag/$file")
 		done < <(svn ls "repos/$tag")
-		[[ $trash ]] && svn rm -q "${trash[@]}"
+		[[ $trash ]] && svn rm -q "${trash[@]/%/@}"
 	else
 		mkdir -p "repos/$tag"
 		svn add --parents -q "repos/$tag"
