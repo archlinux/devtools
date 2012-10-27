@@ -13,8 +13,8 @@ pkgbase="${1}"
 
 packages_svn='svn+ssh://gerolde.archlinux.org/srv/svn-packages'
 packages_server='gerolde.archlinux.org'
-community_svn='svn+ssh://aur.archlinux.org/srv/svn-packages'
-community_server='aur.archlinux.org'
+community_svn='svn+ssh://sigurd.archlinux.org/srv/svn-packages'
+community_server='sigurd.archlinux.org'
 mirror='http://mirrors.kernel.org/archlinux'
 
 case $scriptname in

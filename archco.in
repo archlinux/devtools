@@ -13,7 +13,7 @@ case $scriptname in
 	archco)
 		SVNURL="svn+ssh://gerolde.archlinux.org/srv/svn-packages";;
 	communityco)
-		SVNURL="svn+ssh://aur.archlinux.org/srv/svn-packages";;
+		SVNURL="svn+ssh://sigurd.archlinux.org/srv/svn-packages";;
 	*)
 		die "Couldn't find svn url for $scriptname"
 		;;

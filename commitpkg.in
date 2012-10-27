@@ -109,7 +109,7 @@ if [[ -z $server ]]; then
 		core|extra|testing|staging|kde-unstable|gnome-unstable)
 			server='gerolde.archlinux.org' ;;
 		community*|multilib*)
-			server='aur.archlinux.org' ;;
+			server='sigurd.archlinux.org' ;;
 		*)
 			server='gerolde.archlinux.org'
 			msg "Non-standard repository $repo in use, defaulting to server $server" ;;
