@@ -78,7 +78,7 @@ trap_abort() {
 
 trap_exit() {
 	trap - EXIT INT QUIT TERM HUP
-	cleanup 0
+	cleanup
 }
 
 die() {

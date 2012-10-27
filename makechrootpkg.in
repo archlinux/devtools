@@ -213,12 +213,12 @@ if ! grep -q 'SRCDEST="/srcdest"' "$copydir/etc/makepkg.conf"; then
 	echo 'SRCDEST="/srcdest"' >> "$copydir/etc/makepkg.conf"
 fi
 
-if [[ -n $MAKEFLAGS ]]; then 
+if [[ -n $MAKEFLAGS ]]; then
 	sed -i '/^MAKEFLAGS=/d' "$copydir/etc/makepkg.conf"
 	echo "MAKEFLAGS='${MAKEFLAGS}'" >> "$copydir/etc/makepkg.conf"
 fi
 
-if [[ -n $PACKAGER ]]; then 
+if [[ -n $PACKAGER ]]; then
 	sed -i '/^PACKAGER=/d' "$copydir/etc/makepkg.conf"
 	echo "PACKAGER='${PACKAGER}'" >> "$copydir/etc/makepkg.conf"
 fi
