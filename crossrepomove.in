@@ -11,10 +11,10 @@ fi
 
 pkgbase="${1}"
 
-packages_svn='svn+ssh://gerolde.archlinux.org/srv/svn-packages'
-packages_server='gerolde.archlinux.org'
-community_svn='svn+ssh://sigurd.archlinux.org/srv/svn-packages'
-community_server='sigurd.archlinux.org'
+packages_svn='svn+ssh://svn-packages@nymeria.archlinux.org/srv/repos/svn-packages/svn'
+packages_server='nymeria.archlinux.org'
+community_svn='svn+ssh://svn-community@nymeria.archlinux.org/srv/repos/svn-community/svn'
+community_server='nymeria.archlinux.org'
 mirror='http://mirrors.kernel.org/archlinux'
 
 case $scriptname in
