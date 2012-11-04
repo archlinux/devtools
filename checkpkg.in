@@ -58,7 +58,7 @@ for _pkgname in "${pkgname[@]}"; do
 		elif [[ -f "$STARTDIR/$oldpkg" ]]; then
 			ln -s "$STARTDIR/$oldpkg" "$oldpkg"
 		else
-			wget --quiet "$pkgurl"
+		        curl -fsLC - --retry 3 --retry-delay 3 -o "$oldpkg" "$pkgurl"
 		fi
 	fi
 
