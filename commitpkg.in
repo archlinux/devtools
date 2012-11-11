@@ -105,7 +105,15 @@ for _arch in ${arch[@]}; do
 done
 
 if [[ -z $server ]]; then
-	server='nymeria.archlinux.org'
+	case "$repo" in
+		core|extra|testing|staging|kde-unstable|gnome-unstable)
+			server='gerolde.archlinux.org' ;;
+		community*|multilib*)
+			server='nymeria.archlinux.org' ;;
+		*)
+			server='gerolde.archlinux.org'
+			msg "Non-standard repository $repo in use, defaulting to server $server" ;;
+	esac
 fi
 
 if [[ -n $(svn status -q) ]]; then
