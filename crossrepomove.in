@@ -72,11 +72,23 @@ svn -q commit -m"${scriptname}: Moving ${pkgbase} from ${source_repo} to ${targe
 pushd "target_checkout/${pkgbase}/trunk" >/dev/null
 archrelease "${arch[@]/#/$target_repo-}" || die
 popd >/dev/null
-ssh "${target_server}" '/arch/db-update' || die
+
+if [[ "${target_server}" == "${community_server}" ]]; then
+        dbscripts_path='/srv/repos/svn-community/dbscripts'
+else
+        dbscripts_path='/arch'
+fi
+
+ssh "${target_server}" "${dbscripts_path}/db-update" || die
 
 msg "Removing ${pkgbase} from ${source_repo}"
+if [[ "${source_server}" == "${community_server}" ]]; then
+        dbscripts_path='/srv/repos/svn-community/dbscripts'
+else
+        dbscripts_path='/arch'
+fi
 for _arch in ${arch[@]}; do
-	ssh "${source_server}" "/arch/db-remove ${source_repo} ${_arch} ${pkgbase}"
+	ssh "${source_server}" "${dbscripts_path}/db-remove ${source_repo} ${_arch} ${pkgbase}"
 done
 svn -q checkout -N "${source_svn}" source_checkout
 svn -q up "source_checkout/${pkgbase}"
