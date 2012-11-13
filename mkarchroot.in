@@ -44,7 +44,7 @@ while getopts 'r:ufnhC:M:c:' arg; do
 		M) makepkg_conf="$OPTARG" ;;
 		n) NOCOPY='y' ;;
 		c) cache_dir="$OPTARG" ;;
-		h|?) usage 0 ;;
+		h|?) usage ;;
 		*) error "invalid argument '${arg}'"; usage ;;
 	esac
 done
