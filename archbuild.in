@@ -18,7 +18,7 @@ chroots='/var/lib/archbuild'
 clean_first=false
 
 usage() {
-	echo "usage $cmd"
+	echo "Usage: $cmd"
 	echo '    -c         Recreate the chroot before building'
 	echo '    -r <dir>   Create chroots in this directory'
 	exit 1

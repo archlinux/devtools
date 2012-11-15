@@ -12,7 +12,7 @@
 m4_include(lib/common.sh)
 
 if (( $# < 1 )); then
-	echo "usage: $(basename $0) <chrootdir> <packages to rebuild>"
+	echo "Usage: $(basename $0) <chrootdir> <packages to rebuild>"
 	echo "  example: $(basename $0) ~/chroot readline bash foo bar baz"
 	exit 1
 fi

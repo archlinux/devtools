@@ -42,7 +42,7 @@ pkgbase=${pkgbase:-$pkgname}
 case "$cmd" in
 	commitpkg)
 		if (( $# == 0 )); then
-			die 'usage: commitpkg <reponame> [-f] [-s server] [-l limit] [-a arch] [commit message]'
+			die 'Usage: commitpkg <reponame> [-f] [-s server] [-l limit] [-a arch] [commit message]'
 		fi
 		repo="$1"
 		shift
@@ -51,7 +51,7 @@ case "$cmd" in
 		repo="${cmd%pkg}"
 		;;
 	*)
-		die 'usage: commitpkg <reponame> [-f] [-s server] [-l limit] [-a arch] [commit message]'
+		die 'Usage: commitpkg <reponame> [-f] [-s server] [-l limit] [-a arch] [commit message]'
 		;;
 esac
 

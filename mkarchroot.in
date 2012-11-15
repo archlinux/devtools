@@ -22,7 +22,7 @@ APPNAME=$(basename "${0}")
 
 # usage: usage <exitvalue>
 usage() {
-	echo "usage ${APPNAME} [options] working-dir [package-list | app]"
+	echo "Usage: ${APPNAME} [options] working-dir [package-list | app]"
 	echo ' options:'
 	echo '    -r <app>      Run "app" within the context of the chroot'
 	echo '    -u            Update the chroot via pacman'

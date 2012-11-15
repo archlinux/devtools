@@ -8,7 +8,7 @@ m4_include(lib/common.sh)
 match=$1
 
 if [[ -z $match ]]; then
-	echo 'usage: finddeps <depname>'
+	echo 'Usage: finddeps <depname>'
 	echo ''
 	echo 'Find packages that depend on a given depname.'
 	echo 'Run this script from the top-level directory of your ABS tree.'

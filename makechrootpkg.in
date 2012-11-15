@@ -28,7 +28,7 @@ default_copy=$USER
 src_owner=${SUDO_USER:-$USER}
 
 usage() {
-	echo "usage ${0##*/} [options] -r <chrootdir> [--] [makepkg args]"
+	echo "Usage: ${0##*/} [options] -r <chrootdir> [--] [makepkg args]"
 	echo ' Run this script in a PKGBUILD dir to build a package inside a'
 	echo ' clean chroot. All unrecognized arguments passed to this script'
 	echo ' will be passed to makepkg.'
