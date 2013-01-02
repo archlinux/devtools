@@ -161,8 +161,8 @@ if [[ -n $install_pkg ]]; then
 
 	rm "$copydir/$pkgname"
 
-	# Exit early, we've done all we need to
-	exit $ret
+	# If there is no PKGBUILD we have done
+	[[ -f PKGBUILD ]] || exit $ret
 fi
 
 $update_first && mkarchroot -u "$copydir"
