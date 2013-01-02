@@ -3,6 +3,7 @@
 m4_include(lib/common.sh)
 
 base_packages=(base base-devel sudo)
+makechrootpkg_args=(-c -n)
 
 cmd="${0##*/}"
 if [[ "${cmd%%-*}" == 'multilib' ]]; then
@@ -18,13 +19,17 @@ chroots='/var/lib/archbuild'
 clean_first=false
 
 usage() {
-	echo "Usage: $cmd"
+	echo "Usage: $cmd [options] -- [makechrootpkg args]"
+	echo '    -h         This help'
 	echo '    -c         Recreate the chroot before building'
 	echo '    -r <dir>   Create chroots in this directory'
+	echo ''
+	echo "Default makechrootpkg args: ${makechrootpkg_args[*]}"
+	echo ''
 	exit 1
 }
 
-while getopts 'cr:' arg; do
+while getopts 'hcr:' arg; do
 	case "${arg}" in
 		c) clean_first=true ;;
 		r) chroots="$OPTARG" ;;
@@ -32,7 +37,10 @@ while getopts 'cr:' arg; do
 	esac
 done
 
-if [[ "$EUID" != '0' ]]; then
+# Pass all arguments after -- right to makepkg
+makechrootpkg_args=("${@:$OPTIND}")
+
+if (( EUID )); then
 	die 'This script must be run as root.'
 fi
 
@@ -71,4 +79,4 @@ else
 fi
 
 msg "Building in chroot for [${repo}] (${arch})..."
-exec setarch "${arch}" makechrootpkg -c -n -r "${chroots}/${repo}-${arch}"
+exec setarch "${arch}" makechrootpkg "${makechrootpkg_args[@]}" -r "${chroots}/${repo}-${arch}"
