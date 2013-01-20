@@ -11,8 +11,8 @@ fi
 
 pkgbase="${1}"
 
-packages_svn='svn+ssh://gerolde.archlinux.org/srv/svn-packages'
-packages_server='gerolde.archlinux.org'
+packages_svn='svn+ssh://svn-packages@nymeria.archlinux.org/srv/repos/svn-packages/svn'
+packages_server='nymeria.archlinux.org'
 community_svn='svn+ssh://svn-community@nymeria.archlinux.org/srv/repos/svn-community/svn'
 community_server='nymeria.archlinux.org'
 mirror='http://mirrors.kernel.org/archlinux'
@@ -76,7 +76,7 @@ popd >/dev/null
 if [[ "${target_server}" == "${community_server}" ]]; then
         dbscripts_path='/srv/repos/svn-community/dbscripts'
 else
-        dbscripts_path='/arch'
+        dbscripts_path='/srv/repos/svn-packages/dbscripts'
 fi
 
 ssh "${target_server}" "${dbscripts_path}/db-update" || die
@@ -85,7 +85,7 @@ msg "Removing ${pkgbase} from ${source_repo}"
 if [[ "${source_server}" == "${community_server}" ]]; then
         dbscripts_path='/srv/repos/svn-community/dbscripts'
 else
-        dbscripts_path='/arch'
+        dbscripts_path='/srv/repos/svn-packages/dbscripts'
 fi
 for _arch in ${arch[@]}; do
 	ssh "${source_server}" "${dbscripts_path}/db-remove ${source_repo} ${_arch} ${pkgbase}"

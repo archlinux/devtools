@@ -47,7 +47,7 @@ pkg_from_pkgbuild() {
 chrootdir="$1"; shift
 pkgs="$@"
 
-SVNPATH='svn+ssh://gerolde.archlinux.org/srv/svn-packages'
+SVNPATH='svn+ssh://nymeria.archlinux.org/srv/repos/svn-packages/svn'
 
 msg "Work will be done in $(pwd)/rebuilds"
 
