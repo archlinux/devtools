@@ -38,7 +38,7 @@ while getopts 'hcr:' arg; do
 done
 
 # Pass all arguments after -- right to makepkg
-makechrootpkg_args=("${@:$OPTIND}")
+makechrootpkg_args+=("${@:$OPTIND}")
 
 if (( EUID )); then
 	die 'This script must be run as root.'
