@@ -11,26 +11,16 @@ fi
 
 pkgbase="${1}"
 
-packages_svn='svn+ssh://svn-packages@nymeria.archlinux.org/srv/repos/svn-packages/svn'
-packages_server='nymeria.archlinux.org'
-community_svn='svn+ssh://svn-community@nymeria.archlinux.org/srv/repos/svn-community/svn'
-community_server='nymeria.archlinux.org'
-mirror='http://mirrors.kernel.org/archlinux'
-
 case $scriptname in
 	extra2community)
-		source_svn="${packages_svn}"
-		target_svn="${community_svn}"
-		source_server="${packages_server}"
-		target_server="${community_server}"
+		source_name='packages'
+		target_name='community'
 		source_repo='extra'
 		target_repo='community'
 		;;
 	community2extra)
-		source_svn="${community_svn}"
-		target_svn="${packages_svn}"
-		source_server="${community_server}"
-		target_server="${packages_server}"
+		source_name='community'
+		target_name='packages'
 		source_repo='community'
 		target_repo='extra'
 		;;
@@ -38,6 +28,13 @@ case $scriptname in
 		die "Couldn't find configuration for $scriptname"
 		;;
 esac
+
+server='nymeria.archlinux.org'
+mirror="http://${server}"
+source_svn="svn+ssh://svn-${source_name}@${server}/srv/repos/svn-${source_name}/svn"
+target_svn="svn+ssh://svn-${target_name}@${server}/srv/repos/svn-${target_name}/svn"
+source_dbscripts="/srv/repos/svn-${source_name}/dbscripts"
+target_dbscripts="/srv/repos/svn-${target_name}/dbscripts"
 
 setup_workdir
 
@@ -59,7 +56,7 @@ for _arch in ${arch[@]}; do
 	for _pkgname in ${pkgname[@]}; do
 		fullver=$(get_full_version $_pkgname)
 		# FIXME: this only works with .xz packages
-		ssh "${target_server}" "cd staging/${target_repo}
+		ssh "${server}" "cd staging/${target_repo}
 			curl -O ${mirror}/${source_repo}/os/${repo_arch}/$_pkgname-$fullver-${_arch}.pkg.tar.xz
 			curl -O ${mirror}/${source_repo}/os/${repo_arch}/$_pkgname-$fullver-${_arch}.pkg.tar.xz.sig" || die
 	done
@@ -73,22 +70,11 @@ pushd "target_checkout/${pkgbase}/trunk" >/dev/null
 archrelease "${arch[@]/#/$target_repo-}" || die
 popd >/dev/null
 
-if [[ "${target_server}" == "${community_server}" ]]; then
-        dbscripts_path='/srv/repos/svn-community/dbscripts'
-else
-        dbscripts_path='/srv/repos/svn-packages/dbscripts'
-fi
-
-ssh "${target_server}" "${dbscripts_path}/db-update" || die
+ssh "${server}" "${target_dbscripts}/db-update" || die
 
 msg "Removing ${pkgbase} from ${source_repo}"
-if [[ "${source_server}" == "${community_server}" ]]; then
-        dbscripts_path='/srv/repos/svn-community/dbscripts'
-else
-        dbscripts_path='/srv/repos/svn-packages/dbscripts'
-fi
 for _arch in ${arch[@]}; do
-	ssh "${source_server}" "${dbscripts_path}/db-remove ${source_repo} ${_arch} ${pkgbase}"
+	ssh "${server}" "${source_dbscripts}/db-remove ${source_repo} ${_arch} ${pkgbase}"
 done
 svn -q checkout -N "${source_svn}" source_checkout
 svn -q up "source_checkout/${pkgbase}"
