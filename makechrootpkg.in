@@ -21,6 +21,7 @@ add_to_db=false
 run_namcap=false
 chrootdir=
 passeddir=
+declare -a install_pkgs
 
 default_copy=$USER
 [[ -n $SUDO_USER ]] && default_copy=$SUDO_USER
@@ -66,7 +67,7 @@ while getopts 'hcudr:I:l:n' arg; do
 		u) update_first=true ;;
 		d) add_to_db=true ;;
 		r) passeddir="$OPTARG" ;;
-		I) install_pkg="$OPTARG" ;;
+		I) install_pkgs+=("$OPTARG") ;;
 		l) copy="$OPTARG" ;;
 		n) run_namcap=true; makepkg_args="$makepkg_args -i" ;;
 		*) makepkg_args="$makepkg_args -$arg $OPTARG" ;;
@@ -98,7 +99,7 @@ if (( EUID )); then
 	die 'This script must be run as root.'
 fi
 
-if [[ ! -f PKGBUILD && -z $install_pkg ]]; then
+if [[ ! -f PKGBUILD && -z "${install_pkgs[*]}" ]]; then
 	die 'This must be run in a directory containing a PKGBUILD.'
 fi
 
@@ -152,14 +153,17 @@ if [[ ! -d $copydir ]] || $clean_first; then
 	exec 8>&-
 fi
 
-if [[ -n $install_pkg ]]; then
-	pkgname="${install_pkg##*/}"
-	cp "$install_pkg" "$copydir/$pkgname"
+if [[ -n "${install_pkgs[*]}" ]]; then
+	declare -i ret=0
+	for install_pkg in "${install_pkgs[@]}"; do
+		pkgname="${install_pkg##*/}"
+		cp "$install_pkg" "$copydir/$pkgname"
 
-	mkarchroot -r "pacman -U /$pkgname --noconfirm" "$copydir"
-	ret=$?
+		mkarchroot -r "pacman -U /$pkgname --noconfirm" "$copydir"
+		(( ret += !! $? ))
 
-	rm "$copydir/$pkgname"
+		rm "$copydir/$pkgname"
+	done
 
 	# If there is no PKGBUILD we have done
 	[[ -f PKGBUILD ]] || exit $ret
