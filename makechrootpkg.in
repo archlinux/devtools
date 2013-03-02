@@ -22,6 +22,7 @@ run_namcap=false
 chrootdir=
 passeddir=
 declare -a install_pkgs
+declare -i ret=0
 
 default_copy=$USER
 [[ -n $SUDO_USER ]] && default_copy=$SUDO_USER
@@ -155,7 +156,6 @@ if [[ ! -d $copydir ]] || $clean_first; then
 fi
 
 if [[ -n "${install_pkgs[*]}" ]]; then
-	declare -i ret=0
 	for install_pkg in "${install_pkgs[@]}"; do
 		pkgname="${install_pkg##*/}"
 		cp "$install_pkg" "$copydir/$pkgname"
@@ -272,9 +272,7 @@ cat >"$copydir/chrootbuild" <<EOF
 export HOME=/build
 
 cd /build
-sudo -u nobody makepkg $makepkg_args || touch BUILD_FAILED
-
-[[ -f BUILD_FAILED ]] && exit 1
+sudo -u nobody makepkg $makepkg_args || exit 1
 
 if $run_namcap; then
 	pacman -S --needed --noconfirm namcap
@@ -308,7 +306,7 @@ if mkarchroot -r "/chrootbuild" "$copydir"; then
 	done
 else
 	# Just in case. We returned 1, make sure we fail
-	touch "$copydir/build/BUILD_FAILED"
+	ret=1
 fi
 
 for f in "$copydir"/srcdest/*; do
@@ -316,7 +314,6 @@ for f in "$copydir"/srcdest/*; do
 	mv "$f" "$SRCDEST"
 done
 
-if [[ -e $copydir/build/BUILD_FAILED ]]; then
-	rm "$copydir/build/BUILD_FAILED"
+if (( ret != 0 )); then
 	die "Build failed, check $copydir/build"
 fi
