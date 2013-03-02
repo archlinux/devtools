@@ -77,6 +77,9 @@ done
 # Canonicalize chrootdir, getting rid of trailing /
 chrootdir=$(readlink -e "$passeddir")
 
+# Detect chrootdir filesystem type
+chroottype=$(stat -f -c %T "$chrootdir")
+
 if [[ ${copy:0:1} = / ]]; then
 	copydir=$copy
 else
@@ -134,16 +137,14 @@ if [[ ! -d $copydir ]] || $clean_first; then
 	fi
 
 	stat_busy "Creating clean working copy [$copy]"
-	use_rsync=false
-	if type -P btrfs >/dev/null; then
-		[[ -d $copydir ]] && btrfs subvolume delete "$copydir" &>/dev/null
-		btrfs subvolume snapshot "$chrootdir/root" "$copydir" &>/dev/null ||
-			use_rsync=true
+	if [[ "$chroottype" == btrfs ]]; then
+		if [[ -d $copydir ]]; then
+			btrfs subvolume delete "$copydir" >/dev/null ||
+				die "Unable to delete subvolume $copydir"
+		fi
+		btrfs subvolume snapshot "$chrootdir/root" "$copydir" >/dev/null ||
+			die "Unable to create subvolume $copydir"
 	else
-		use_rsync=true
-	fi
-
-	if $use_rsync; then
 		mkdir -p "$copydir"
 		rsync -a --delete -q -W -x "$chrootdir/root/" "$copydir"
 	fi
