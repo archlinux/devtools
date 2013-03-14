@@ -19,14 +19,15 @@ clean_first=false
 install_pkg=
 add_to_db=false
 run_namcap=false
+temp_chroot=false
 chrootdir=
 passeddir=
 declare -a install_pkgs
 declare -i ret=0
 
-default_copy=$USER
-[[ -n $SUDO_USER ]] && default_copy=$SUDO_USER
-[[ -z $default_copy || $default_copy = root ]] && default_copy=copy
+copy=$USER
+[[ -n $SUDO_USER ]] && copy=$SUDO_USER
+[[ -z "$copy" || $copy = root ]] && copy=copy
 src_owner=${SUDO_USER:-$USER}
 
 usage() {
@@ -55,13 +56,14 @@ usage() {
 	echo '-r <dir>   The chroot dir to use'
 	echo '-I <pkg>   Install a package into the working copy of the chroot'
 	echo '-l <copy>  The directory to use as the working copy of the chroot'
-	echo '           Useful for maintaining multiple copies.'
-	echo "           Default: $default_copy"
+	echo '           Useful for maintaining multiple copies'
+	echo "           Default: $copy"
 	echo '-n         Run namcap on the package'
+	echo '-T         Build in a temporary directory'
 	exit 1
 }
 
-while getopts 'hcudr:I:l:n' arg; do
+while getopts 'hcudr:I:l:nT' arg; do
 	case "$arg" in
 		h) usage ;;
 		c) clean_first=true ;;
@@ -71,6 +73,7 @@ while getopts 'hcudr:I:l:n' arg; do
 		I) install_pkgs+=("$OPTARG") ;;
 		l) copy="$OPTARG" ;;
 		n) run_namcap=true; makepkg_args="$makepkg_args -i" ;;
+		T) temp_chroot=true; copy+="-$RANDOM" ;;
 		*) makepkg_args="$makepkg_args -$arg $OPTARG" ;;
 	esac
 done
@@ -81,7 +84,6 @@ chrootdir=$(readlink -e "$passeddir")
 if [[ ${copy:0:1} = / ]]; then
 	copydir=$copy
 else
-	[[ -z $copy ]] && copy=$default_copy
 	copydir="$chrootdir/$copy"
 fi
 
@@ -314,6 +316,21 @@ for f in "$copydir"/srcdest/*; do
 	mv "$f" "$SRCDEST"
 done
 
-if (( ret != 0 )); then
+if $temp_chroot; then
+	stat_busy "Removing temporary directoy [$copy]"
+	if [[ "$chroottype" == btrfs ]]; then
+		btrfs subvolume delete "$copydir" >/dev/null ||
+			die "Unable to delete subvolume $copydir"
+	else
+		# avoid change of filesystem in case of an umount failure
+		rm --recursive --force --one-file-system "$copydir" ||
+			die "Unable to delete $copydir"
+	fi
+	# remove lock file
+	rm --force "$copydir.lock"
+	stat_done
+elif (( ret != 0 )); then
 	die "Build failed, check $copydir/build"
+else
+	true
 fi
