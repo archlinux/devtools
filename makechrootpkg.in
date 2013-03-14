@@ -41,7 +41,7 @@ usage() {
 	echo ''
 	echo 'The chroot "root" directory must be created via the following'
 	echo 'command:'
-	echo '    mkarchroot <chrootdir>/root base base-devel sudo'
+	echo '    mkarchroot <chrootdir>/root base-devel'
 	echo ''
 	echo "Default makepkg args: $makepkg_args"
 	echo ''
@@ -112,7 +112,7 @@ if [[ ! -d $chrootdir ]]; then
 fi
 
 if [[ ! -d $chrootdir/root ]]; then
-	die "Missing chroot dir root directory. Try using: mkarchroot $chrootdir/root base base-devel sudo"
+	die "Missing chroot dir root directory. Try using: mkarchroot $chrootdir/root base-devel"
 fi
 
 umask 0022

@@ -2,7 +2,7 @@
 
 m4_include(lib/common.sh)
 
-base_packages=(base base-devel sudo)
+base_packages=(base-devel)
 makechrootpkg_args=(-c -n)
 
 cmd="${0##*/}"
