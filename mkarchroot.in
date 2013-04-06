@@ -38,7 +38,7 @@ usage() {
 while getopts 'r:ufnhC:M:c:' arg; do
 	case "${arg}" in
 		r) RUN="$OPTARG" ;;
-		u) RUN='/bin/sh -c "pacman -Syu --noconfirm && (pacman -Qqu >/dev/null && pacman -Su --noconfirm || exit 0)"' ;;
+		u) RUN='pacman -Syu --noconfirm' ;;
 		f) FORCE='y' ;;
 		C) pac_conf="$OPTARG" ;;
 		M) makepkg_conf="$OPTARG" ;;
@@ -128,7 +128,7 @@ chroot_lock () {
 chroot_run() {
 	local dir=$1
 	shift
-	eval systemd-nspawn -D "${dir}" "${mount_args[@]}" -- ${@} 2>/dev/null
+	systemd-nspawn -D "${dir}" "${mount_args[@]}" -- ${@} 2>/dev/null
 }
 
 # }}}
