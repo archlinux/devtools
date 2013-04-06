@@ -58,7 +58,9 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 			stat_done
 		fi
 
-		{ type -P btrfs && btrfs subvolume delete "${copy}"; } &>/dev/null
+		if [[ "$(stat -f -c %T "${copy}")" == btrfs ]]; then
+			{ type -P btrfs && btrfs subvolume delete "${copy}"; } &>/dev/null
+		fi
 		rm -rf --one-file-system "${copy}"
 	done
 	exec 9>&-

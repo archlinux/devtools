@@ -160,8 +160,10 @@ else
 		mkdir -p "${working_dir}"
 	fi
 
-	if { type -P btrfs && btrfs subvolume create "${working_dir}"; } &>/dev/null; then
-		chmod 0755 "${working_dir}"
+	if [[ "$(stat -f -c %T "${working_dir}")" == btrfs ]]; then
+		if { type -P btrfs && btrfs subvolume create "${working_dir}"; } &>/dev/null; then
+			chmod 0755 "${working_dir}"
+		fi
 	fi
 
 	chroot_lock
