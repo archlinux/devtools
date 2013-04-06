@@ -171,23 +171,15 @@ else
 		pacargs+=("--config=${pac_conf}")
 	fi
 
-	if (( $# != 0 )); then
-		if [[ $FORCE = 'y' ]]; then
-			pacargs+=("--force")
-		fi
-		if ! pacstrap -GMcd "${working_dir}" "${pacargs[@]}" "$@"; then
-			die 'Failed to install all packages'
-		fi
+	if [[ $FORCE = 'y' ]]; then
+		pacargs+=("--force")
+	fi
+	if ! pacstrap -GMcd "${working_dir}" "${pacargs[@]}" "$@"; then
+		die 'Failed to install all packages'
 	fi
 
-	if [[ -d "${working_dir}/lib/modules" ]]; then
-		chroot_run "${working_dir}" ldconfig
-	fi
-
-	if [[ -e "${working_dir}/etc/locale.gen" ]]; then
-		sed -i 's@^#\(en_US\|de_DE\)\(\.UTF-8\)@\1\2@' "${working_dir}/etc/locale.gen"
-		chroot_run "${working_dir}" locale-gen
-	fi
+	printf '%s.UTF-8 UTF-8\n' en_US de_DE > "${working_dir}/etc/locale.gen"
+	chroot_run "${working_dir}" locale-gen
 	echo 'LANG=C' > "${working_dir}/etc/locale.conf"
 
 	copy_hostconf
