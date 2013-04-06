@@ -156,6 +156,10 @@ else
 		die "Working directory '${working_dir}' already exists - try using -f"
 	fi
 
+	if [[ ! -d "${working_dir}" ]]; then
+		mkdir -p "${working_dir}"
+	fi
+
 	if { type -P btrfs && btrfs subvolume create "${working_dir}"; } &>/dev/null; then
 		chmod 0755 "${working_dir}"
 	fi
