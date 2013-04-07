@@ -42,7 +42,6 @@ _makechrootpkg_args=(
 _mkarchroot_args=(
 	'-r[Run a program within the context of the chroot]:app'
 	'-u[Update the chroot via pacman]'
-	'-f[Force overwrite of files in the working-dir]'
 	'-C[Location of a pacman config file]:pacman_config:_files'
 	'-M[Location of a makepkg config file]:makepkg_config:_files'
 	'-n[Do not copy config files into the chroot]'

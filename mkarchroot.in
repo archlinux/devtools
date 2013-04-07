@@ -12,7 +12,6 @@ m4_include(lib/common.sh)
 
 CHROOT_VERSION='v3'
 
-FORCE='n'
 RUN=''
 NOCOPY='n'
 
@@ -26,7 +25,6 @@ usage() {
 	echo ' options:'
 	echo '    -r <app>      Run "app" within the context of the chroot'
 	echo '    -u            Update the chroot via pacman'
-	echo '    -f            Force overwrite of files in the working-dir'
 	echo '    -C <file>     Location of a pacman config file'
 	echo '    -M <file>     Location of a makepkg config file'
 	echo '    -n            Do not copy config files into the chroot'
@@ -39,7 +37,6 @@ while getopts 'r:ufnhC:M:c:' arg; do
 	case "${arg}" in
 		r) RUN="$OPTARG" ;;
 		u) RUN='pacman -Syu --noconfirm' ;;
-		f) FORCE='y' ;;
 		C) pac_conf="$OPTARG" ;;
 		M) makepkg_conf="$OPTARG" ;;
 		n) NOCOPY='y' ;;
@@ -152,18 +149,18 @@ if [[ -n $RUN ]]; then
 	# }}}
 else
 	# {{{ build chroot
-	if [[ -e $working_dir && $FORCE = 'n' ]]; then
-		die "Working directory '${working_dir}' already exists - try using -f"
+	if [[ -e $working_dir ]]; then
+		die "Working directory '${working_dir}' already exists"
 	fi
 
-	if [[ ! -d "${working_dir}" ]]; then
-		mkdir -p "${working_dir}"
-	fi
+	mkdir -p "${working_dir}"
 
 	if [[ "$(stat -f -c %T "${working_dir}")" == btrfs ]]; then
-		if { type -P btrfs && btrfs subvolume create "${working_dir}"; } &>/dev/null; then
-			chmod 0755 "${working_dir}"
+		rmdir "${working_dir}"
+		if ! btrfs subvolume create "${working_dir}"; then
+			die "Couldn't create subvolume for '${working_dir}'"
 		fi
+		chmod 0755 "${working_dir}"
 	fi
 
 	chroot_lock
@@ -173,9 +170,6 @@ else
 		pacargs+=("--config=${pac_conf}")
 	fi
 
-	if [[ $FORCE = 'y' ]]; then
-		pacargs+=("--force")
-	fi
 	if ! pacstrap -GMcd "${working_dir}" "${pacargs[@]}" "$@"; then
 		die 'Failed to install all packages'
 	fi

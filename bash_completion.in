@@ -53,7 +53,7 @@ _mkarchroot() {
 
   case $cur in
     -*)
-       COMPREPLY=( $( compgen -W '-C -M -c -f -h -n -r -u' -- "$cur" ) )
+       COMPREPLY=( $( compgen -W '-C -M -c -h -n -r -u' -- "$cur" ) )
        ;;
     *)
       _filedir
