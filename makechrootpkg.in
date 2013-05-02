@@ -162,7 +162,7 @@ if [[ -n "${install_pkgs[*]}" ]]; then
 		pkgname="${install_pkg##*/}"
 		cp "$install_pkg" "$copydir/$pkgname"
 
-		mkarchroot -r "pacman -U /$pkgname --noconfirm" "$copydir"
+		arch-nspawn "$copydir" pacman -U /$pkgname --noconfirm
 		(( ret += !! $? ))
 
 		rm "$copydir/$pkgname"
@@ -172,7 +172,7 @@ if [[ -n "${install_pkgs[*]}" ]]; then
 	[[ -f PKGBUILD ]] || exit $ret
 fi
 
-$update_first && mkarchroot -u "$copydir"
+$update_first && arch-nspawn "$copydir" pacman -Syu --noconfirm
 
 mkdir -p "$copydir/build"
 
@@ -288,7 +288,7 @@ exit 0
 EOF
 chmod +x "$copydir/chrootbuild"
 
-if mkarchroot -r "/chrootbuild" "$copydir"; then
+if arch-nspawn "$copydir" /chrootbuild; then
 	for pkgfile in "$copydir"/pkgdest/*.pkg.tar.?z; do
 		if $add_to_db; then
 			mkdir -p "$copydir/repo"

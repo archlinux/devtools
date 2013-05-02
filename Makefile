@@ -16,6 +16,7 @@ BINPROGS = \
 	crossrepomove
 
 SBINPROGS = \
+	arch-nspawn \
 	mkarchroot \
 	makechrootpkg
 

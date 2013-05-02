@@ -53,7 +53,7 @@ _mkarchroot() {
 
   case $cur in
     -*)
-       COMPREPLY=( $( compgen -W '-C -M -c -h -n -r -u' -- "$cur" ) )
+       COMPREPLY=( $( compgen -W '-C -M -c -h' -- "$cur" ) )
        ;;
     *)
       _filedir
@@ -65,5 +65,22 @@ _mkarchroot() {
 } &&
 complete -F _mkarchroot mkarchroot
 
+_arch-nspawn() {
+  local cur
+  COMPREPLY=()
+  _get_comp_words_by_ref cur
 
+  case $cur in
+    -*)
+       COMPREPLY=( $( compgen -W '-C -M -c -h' -- "$cur" ) )
+       ;;
+    *)
+      _filedir
+      return 0
+      ;;
+  esac
+
+  true
+} &&
+complete -F _arch-nspawn arch-nspawn
 # ex:et ts=2 sw=2 ft=sh

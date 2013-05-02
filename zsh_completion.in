@@ -1,4 +1,4 @@
-#compdef archbuild archco archrelease archrm commitpkg finddeps makechrootpkg mkarchroot rebuildpkgs extrapkg=commitpkg corepkg=commitpkg testingpkg=commitpkg stagingpkg=commitpkg communitypkg=commitpkg community-testingpkg=commitpkg community-stagingpkg=commitpkg multilibpkg=commitpkg multilib-testingpkg=commitpkg extra-i686-build=archbuild extra-x86_64-build=archbuild testing-i686-build=archbuild testing-x86_64-build=archbuild staging-i686-build=archbuild staging-x86_64-build=archbuild multilib-build=archbuild multilib-testing-build=archbuild multilib-staging-build=archbuild kde-unstable-i686-build=archbuild kde-unstable-x86_64-build=archbuild gnome-unstable-i686-build=archbuild gnome-unstable-x86_64-build=archbuild communityco=archco
+#compdef archbuild archco arch-nspawn archrelease archrm commitpkg finddeps makechrootpkg mkarchroot rebuildpkgs extrapkg=commitpkg corepkg=commitpkg testingpkg=commitpkg stagingpkg=commitpkg communitypkg=commitpkg community-testingpkg=commitpkg community-stagingpkg=commitpkg multilibpkg=commitpkg multilib-testingpkg=commitpkg extra-i686-build=archbuild extra-x86_64-build=archbuild testing-i686-build=archbuild testing-x86_64-build=archbuild staging-i686-build=archbuild staging-x86_64-build=archbuild multilib-build=archbuild multilib-testing-build=archbuild multilib-staging-build=archbuild kde-unstable-i686-build=archbuild kde-unstable-x86_64-build=archbuild gnome-unstable-i686-build=archbuild gnome-unstable-x86_64-build=archbuild communityco=archco
 
 m4_include(lib/valid-tags.sh)
 
@@ -9,6 +9,13 @@ _archbuild_args=(
 
 _archco_args=(
 	'*:packages:_devtools_completions_all_packages'
+)
+
+_arch_nspawn_args=(
+	'-C[Location of a pacman config file]:pacman_config:_files'
+	'-M[Location of a makepkg config file]:makepkg_config:_files'
+	'-c[Set pacman cache]:pacman_cache:_files -/'
+	'-h[Display usage]'
 )
 
 _archrelease_args=(
@@ -40,11 +47,8 @@ _makechrootpkg_args=(
 )
 
 _mkarchroot_args=(
-	'-r[Run a program within the context of the chroot]:app'
-	'-u[Update the chroot via pacman]'
 	'-C[Location of a pacman config file]:pacman_config:_files'
 	'-M[Location of a makepkg config file]:makepkg_config:_files'
-	'-n[Do not copy config files into the chroot]'
 	'-c[Set pacman cache]:pacman_cache:_files -/'
 	'-h[Display usage]'
 )
@@ -61,7 +65,7 @@ _devtools_completions_all_packages() {
 }
 
 _devtools() {
-	local argname="_${service}_args[@]"
+	local argname="_${service//-/_}_args[@]"
 	_arguments -s "${(P)argname}"
 }
 

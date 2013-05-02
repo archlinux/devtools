@@ -73,11 +73,11 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 		"${chroots}/${repo}-${arch}/root" \
 		"${base_packages[@]}" || abort
 else
-	setarch ${arch} mkarchroot \
-		-u \
+	setarch ${arch} arch-nspawn \
 		-C "@pkgdatadir@/pacman-${repo}.conf" \
 		-M "@pkgdatadir@/makepkg-${arch}.conf" \
-		"${chroots}/${repo}-${arch}/root" || abort
+		"${chroots}/${repo}-${arch}/root" \
+                pacman -Syu --noconfirm || abort
 fi
 
 msg "Building in chroot for [${repo}] (${arch})..."

@@ -12,53 +12,33 @@ m4_include(lib/common.sh)
 
 CHROOT_VERSION='v3'
 
-RUN=''
-NOCOPY='n'
-
 working_dir=''
 
-APPNAME=$(basename "${0}")
-
-# usage: usage <exitvalue>
 usage() {
-	echo "Usage: ${APPNAME} [options] working-dir [package-list | app]"
+	echo "Usage: ${0##*/} [options] working-dir [package-list | app]"
 	echo ' options:'
-	echo '    -r <app>      Run "app" within the context of the chroot'
-	echo '    -u            Update the chroot via pacman'
 	echo '    -C <file>     Location of a pacman config file'
 	echo '    -M <file>     Location of a makepkg config file'
-	echo '    -n            Do not copy config files into the chroot'
 	echo '    -c <dir>      Set pacman cache'
 	echo '    -h            This message'
 	exit 1
 }
 
-while getopts 'r:ufnhC:M:c:' arg; do
-	case "${arg}" in
-		r) RUN="$OPTARG" ;;
-		u) RUN='pacman -Syu --noconfirm' ;;
+while getopts 'hC:M:c:' arg; do
+	case "$arg" in
 		C) pac_conf="$OPTARG" ;;
 		M) makepkg_conf="$OPTARG" ;;
-		n) NOCOPY='y' ;;
 		c) cache_dir="$OPTARG" ;;
 		h|?) usage ;;
-		*) error "invalid argument '${arg}'"; usage ;;
+		*) error "invalid argument '$arg'"; usage ;;
 	esac
 done
-
-if (( $EUID != 0 )); then
-	die 'This script must be run as root.'
-fi
-
 shift $(($OPTIND - 1))
 
-if [[ -z $RUN ]] && (( $# < 2 )); then
-	die 'You must specify a directory and one or more packages.'
-elif (( $# < 1 )); then
-	die 'You must specify a directory.'
-fi
+(( $EUID != 0 )) && die 'This script must be run as root.'
+(( $# < 2 )) && die 'You must specify a directory and one or more packages.'
 
-working_dir="$(readlink -f ${1})"
+working_dir="$(readlink -f $1)"
 shift 1
 
 [[ -z $working_dir ]] && die 'Please specify a working directory.'
@@ -69,45 +49,7 @@ else
 	cache_dirs=(${cache_dir})
 fi
 
-host_mirror=$(pacman -Sddp extra/devtools 2>/dev/null | sed -E 's#(.*/)extra/os/.*#\1$repo/os/$arch#')
-if echo "${host_mirror}" | grep -q 'file://'; then
-	host_mirror_path=$(echo "${host_mirror}" | sed -E 's#file://(/.*)/\$repo/os/\$arch#\1#g')
-fi
-
 # {{{ functions
-build_mount_args() {
-	local p
-	declare -g mount_args=()
-
-	if [[ -n $host_mirror_path ]]; then
-		printf -v p '%q' "$host_mirror_path"
-		mount_args+=(--bind-ro="$p")
-	fi
-
-	printf -v p '%q' "${cache_dirs[0]}"
-	mount_args+=(--bind="$p")
-
-	for cache_dir in ${cache_dirs[@]:1}; do
-		printf -v p '%q' "$cache_dir"
-		mount_args+=(--bind-ro="$p")
-	done
-}
-
-copy_hostconf () {
-	cp -a /etc/pacman.d/gnupg "${working_dir}/etc/pacman.d"
-	echo "Server = ${host_mirror}" > ${working_dir}/etc/pacman.d/mirrorlist
-
-	if [[ -n $pac_conf && $NOCOPY = 'n' ]]; then
-		cp ${pac_conf} ${working_dir}/etc/pacman.conf
-	fi
-
-	if [[ -n $makepkg_conf && $NOCOPY = 'n' ]]; then
-		cp ${makepkg_conf} ${working_dir}/etc/makepkg.conf
-	fi
-
-	sed -r "s|^#?\\s*CacheDir.+|CacheDir = $(echo -n ${cache_dirs[@]})|g" -i ${working_dir}/etc/pacman.conf
-}
-
 chroot_lock () {
 	# Only reopen the FD if it wasn't handed to us
 	if [[ $(readlink -f /dev/fd/9) != "${working_dir}.lock" ]]; then
@@ -121,65 +63,33 @@ chroot_lock () {
 		stat_done
 	fi
 }
-
-chroot_run() {
-	local dir=$1
-	shift
-	systemd-nspawn -D "${dir}" "${mount_args[@]}" -- ${@} 2>/dev/null
-}
-
 # }}}
 
 umask 0022
-if [[ -n $RUN ]]; then
-	# run chroot {{{
-	#Sanity check
-	if [[ ! -f "${working_dir}/.arch-chroot" ]]; then
-		die "'${working_dir}' does not appear to be a Arch chroot."
-	elif [[ $(cat "${working_dir}/.arch-chroot") != ${CHROOT_VERSION} ]]; then
-		die "'${working_dir}' is not compatible with ${APPNAME} version ${CHROOT_VERSION}. Please rebuild."
+
+[[ -e $working_dir ]] && die "Working directory '$working_dir' already exists"
+
+mkdir -p "$working_dir"
+
+chroot_lock
+
+if [[ $(stat -f -c %T "$working_dir") == btrfs ]]; then
+	rmdir "$working_dir"
+	if ! btrfs subvolume create "$working_dir"; then
+		die "Couldn't create subvolume for '$working_dir'"
 	fi
-
-	chroot_lock
-	build_mount_args
-	copy_hostconf
-
-	chroot_run "${working_dir}" ${RUN}
-
-	# }}}
-else
-	# {{{ build chroot
-	if [[ -e $working_dir ]]; then
-		die "Working directory '${working_dir}' already exists"
-	fi
-
-	mkdir -p "${working_dir}"
-
-	if [[ "$(stat -f -c %T "${working_dir}")" == btrfs ]]; then
-		rmdir "${working_dir}"
-		if ! btrfs subvolume create "${working_dir}"; then
-			die "Couldn't create subvolume for '${working_dir}'"
-		fi
-		chmod 0755 "${working_dir}"
-	fi
-
-	chroot_lock
-
-	pacargs=("${cache_dirs[@]/#/--cachedir=}")
-	if [[ -n $pac_conf ]]; then
-		pacargs+=("--config=${pac_conf}")
-	fi
-
-	if ! pacstrap -GMcd "${working_dir}" "${pacargs[@]}" "$@"; then
-		die 'Failed to install all packages'
-	fi
-
-	printf '%s.UTF-8 UTF-8\n' en_US de_DE > "${working_dir}/etc/locale.gen"
-	chroot_run "${working_dir}" locale-gen
-	echo 'LANG=C' > "${working_dir}/etc/locale.conf"
-
-	copy_hostconf
-
-	echo "${CHROOT_VERSION}" > "${working_dir}/.arch-chroot"
-	# }}}
+	chmod 0755 "$working_dir"
 fi
+
+pacstrap -GMcd ${pac_conf:+-C "$pac_conf"} "$working_dir" \
+  "${cache_dirs[@]/#/--cachedir=}" "$@" || die 'Failed to install all packages'
+
+printf '%s.UTF-8 UTF-8\n' en_US de_DE > "$working_dir/etc/locale.gen"
+echo 'LANG=C' > "$working_dir/etc/locale.conf"
+echo "$CHROOT_VERSION" > "$working_dir/.arch-chroot"
+
+exec arch-nspawn \
+	${pac_conf:+-C "$pac_conf"} \
+	${makepkg_conf:+-M "$makepkg_conf"} \
+	${cache_dir:+-c "$cache_dir"} \
+	"$working_dir" locale-gen

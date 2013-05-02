@@ -1,0 +1,99 @@
+#!/bin/bash
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+m4_include(lib/common.sh)
+
+CHROOT_VERSION='v3'
+
+working_dir=''
+
+usage() {
+	echo "Usage: ${0##*/} [options] working-dir [systemd-nspawn arguments]"
+	echo "A wrapper around systemd-nspawn. Provides support for pacman."
+	echo
+	echo ' options:'
+	echo '    -C <file>     Location of a pacman config file'
+	echo '    -M <file>     Location of a makepkg config file'
+	echo '    -c <dir>      Set pacman cache'
+	echo '    -h            This message'
+	exit 1
+}
+
+while getopts 'hC:M:c:' arg; do
+	case "$arg" in
+		C) pac_conf="$OPTARG" ;;
+		M) makepkg_conf="$OPTARG" ;;
+		c) cache_dir="$OPTARG" ;;
+		h|?) usage ;;
+		*) error "invalid argument '$arg'"; usage ;;
+	esac
+done
+shift $(($OPTIND - 1))
+
+(( $EUID != 0 )) && die 'This script must be run as root.'
+(( $# < 1 )) && die 'You must specify a directory.'
+
+working_dir="$(readlink -f $1)"
+shift 1
+
+[[ -z $working_dir ]] && die 'Please specify a working directory.'
+
+if [[ -z $cache_dir ]]; then
+	cache_dirs=($(pacman -v $cache_conf 2>&1 | grep '^Cache Dirs:' | sed 's/Cache Dirs:\s*//g'))
+else
+	cache_dirs=(${cache_dir})
+fi
+
+host_mirror=$(pacman -Sddp extra/devtools 2>/dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#')
+[[ $host_mirror == *file://* ]] && host_mirror_path=$(echo "$host_mirror" | sed -r 's#file://(/.*)/\$repo/os/\$arch#\1#g')
+
+# {{{ functions
+build_mount_args() {
+	local p
+	declare -g mount_args=()
+
+	if [[ -n $host_mirror_path ]]; then
+		printf -v p '%q' "$host_mirror_path"
+		mount_args+=(--bind-ro="$p")
+	fi
+
+	printf -v p '%q' "${cache_dirs[0]}"
+	mount_args+=(--bind="$p")
+
+	for cache_dir in ${cache_dirs[@]:1}; do
+		printf -v p '%q' "$cache_dir"
+		mount_args+=(--bind-ro="$p")
+	done
+}
+
+copy_hostconf () {
+	cp -a /etc/pacman.d/gnupg "$working_dir/etc/pacman.d"
+	echo "Server = $host_mirror" > $working_dir/etc/pacman.d/mirrorlist
+
+	[[ -n $pac_conf ]] && cp $pac_conf $working_dir/etc/pacman.conf
+	[[ -n $makepkg_conf ]] && cp $makepkg_conf $working_dir/etc/makepkg.conf
+
+	sed -r "s|^#?\\s*CacheDir.+|CacheDir = $(echo -n ${cache_dirs[@]})|g" -i $working_dir/etc/pacman.conf
+}
+# }}}
+
+umask 0022
+
+# Sanity check
+if [[ ! -f "$working_dir/.arch-chroot" ]]; then
+	die "'$working_dir' does not appear to be a Arch chroot."
+elif [[ $(cat "$working_dir/.arch-chroot") != $CHROOT_VERSION ]]; then
+	die "chroot '$working_dir' is not at version $CHROOT_VERSION. Please rebuild."
+fi
+
+build_mount_args
+copy_hostconf
+
+exec systemd-nspawn -D "$working_dir" "${mount_args[@]}" "$@"
