@@ -130,3 +130,27 @@ get_full_version() {
 		fi
 	fi
 }
+
+##
+#  usage : lock( $fd, $file, $message )
+##
+lock() {
+	eval "exec $1>"'"$2"'
+	if ! flock -n $1; then
+		stat_busy "$3"
+		flock $1
+		stat_done
+	fi
+}
+
+##
+#  usage : slock( $fd, $file, $message )
+##
+slock() {
+	eval "exec $1>"'"$2"'
+	if ! flock -sn $1; then
+		stat_busy "$3"
+		flock -s $1
+		stat_done
+	fi
+}

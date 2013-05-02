@@ -49,29 +49,13 @@ else
 	cache_dirs=(${cache_dir})
 fi
 
-# {{{ functions
-chroot_lock () {
-	# Only reopen the FD if it wasn't handed to us
-	if [[ $(readlink -f /dev/fd/9) != "${working_dir}.lock" ]]; then
-	  exec 9>"${working_dir}.lock"
-	fi
-
-	# Lock the chroot. Take note of the FD number.
-	if ! flock -n 9; then
-		stat_busy "Locking chroot"
-		flock 9
-		stat_done
-	fi
-}
-# }}}
-
 umask 0022
 
 [[ -e $working_dir ]] && die "Working directory '$working_dir' already exists"
 
 mkdir -p "$working_dir"
 
-chroot_lock
+lock 9 "${working_dir}.lock" "Locking chroot"
 
 if [[ $(stat -f -c %T "$working_dir") == btrfs ]]; then
 	rmdir "$working_dir"

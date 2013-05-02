@@ -51,12 +51,7 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 		[[ -d $copy ]] || continue
 		msg2 "Deleting chroot copy '$(basename "${copy}")'..."
 
-		exec 9>"$copydir.lock"
-		if ! flock -n 9; then
-			stat_busy "Locking chroot copy '$copy'"
-			flock 9
-			stat_done
-		fi
+		lock 9 "$copydir.lock" "Locking chroot copy '$copy'"
 
 		if [[ "$(stat -f -c %T "${copy}")" == btrfs ]]; then
 			{ type -P btrfs && btrfs subvolume delete "${copy}"; } &>/dev/null
@@ -73,6 +68,7 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 		"${chroots}/${repo}-${arch}/root" \
 		"${base_packages[@]}" || abort
 else
+	lock 9 "${chroots}/${repo}-${arch}/root.lock" "Locking clean chroot"
 	setarch ${arch} arch-nspawn \
 		-C "@pkgdatadir@/pacman-${repo}.conf" \
 		-M "@pkgdatadir@/makepkg-${arch}.conf" \
