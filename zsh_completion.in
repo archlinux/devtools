@@ -39,7 +39,6 @@ _finddeps_args=(
 _makechrootpkg_args=(
 	'-I[Install a package into the working copy]:target:_files -g "*.pkg.tar.*(.)"'
 	'-c[Clean the chroot before building]'
-	'-d[Add the package to a local db at /repo after building]'
 	'-h[Display usage]'
 	'-l[The directory to use as the working copy]:copy_dir:_files -/'
 	'-r[The chroot dir to use]:chroot_dir:_files -/'

@@ -34,7 +34,7 @@ _makechrootpkg() {
 
   case $cur in
     -*)
-       COMPREPLY=( $( compgen -W '-I -c -d -h -l -r -u' -- "$cur" ) )
+       COMPREPLY=( $( compgen -W '-I -c -h -l -r -u' -- "$cur" ) )
        ;;
     *)
       _filedir

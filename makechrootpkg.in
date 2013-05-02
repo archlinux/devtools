@@ -17,7 +17,6 @@ repack=false
 update_first=false
 clean_first=false
 install_pkg=
-add_to_db=false
 run_namcap=false
 temp_chroot=false
 chrootdir=
@@ -52,7 +51,6 @@ usage() {
 	echo '-u         Update the working copy of the chroot before building'
 	echo '           This is useful for rebuilds without dirtying the pristine'
 	echo '           chroot'
-	echo '-d         Add the package to a local db at /repo after building'
 	echo '-r <dir>   The chroot dir to use'
 	echo '-I <pkg>   Install a package into the working copy of the chroot'
 	echo '-l <copy>  The directory to use as the working copy of the chroot'
@@ -63,12 +61,11 @@ usage() {
 	exit 1
 }
 
-while getopts 'hcudr:I:l:nT' arg; do
+while getopts 'hcur:I:l:nT' arg; do
 	case "$arg" in
 		h) usage ;;
 		c) clean_first=true ;;
 		u) update_first=true ;;
-		d) add_to_db=true ;;
 		r) passeddir="$OPTARG" ;;
 		I) install_pkgs+=("$OPTARG") ;;
 		l) copy="$OPTARG" ;;
@@ -278,14 +275,6 @@ chmod +x "$copydir/chrootbuild"
 
 if arch-nspawn "$copydir" /chrootbuild; then
 	for pkgfile in "$copydir"/pkgdest/*.pkg.tar.?z; do
-		if $add_to_db; then
-			mkdir -p "$copydir/repo"
-			pushd "$copydir/repo" >/dev/null
-			cp "$pkgfile" .
-			repo-add repo.db.tar.gz "${pkgfile##*/}"
-			popd >/dev/null
-		fi
-
 		chown "$src_owner" "$pkgfile"
 		mv "$pkgfile" "$PKGDEST"
 	done
