@@ -247,6 +247,11 @@ shopt -s nullglob
 ln -sft /srcdest /srcdest_host/*
 ln -sft /startdir /startdir_host/*
 
+# Keep PKGBUILD writable for pkgver()
+rm /startdir/PKGBUILD*
+cp /startdir_host/PKGBUILD* /startdir
+chown nobody /startdir/PKGBUILD*
+
 cd /startdir
 sudo -u nobody makepkg $makepkg_args || exit 1
 
