@@ -69,7 +69,7 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 		"${base_packages[@]}" || abort
 else
 	lock 9 "${chroots}/${repo}-${arch}/root.lock" "Locking clean chroot"
-	setarch ${arch} arch-nspawn \
+	arch-nspawn \
 		-C "@pkgdatadir@/pacman-${repo}.conf" \
 		-M "@pkgdatadir@/makepkg-${arch}.conf" \
 		"${chroots}/${repo}-${arch}/root" \
@@ -77,4 +77,4 @@ else
 fi
 
 msg "Building in chroot for [${repo}] (${arch})..."
-exec setarch "${arch}" makechrootpkg "${makechrootpkg_args[@]}" -r "${chroots}/${repo}-${arch}"
+exec makechrootpkg "${makechrootpkg_args[@]}" -r "${chroots}/${repo}-${arch}"
