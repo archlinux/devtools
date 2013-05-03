@@ -96,4 +96,4 @@ fi
 build_mount_args
 copy_hostconf
 
-exec systemd-nspawn -D "$working_dir" "${mount_args[@]}" "$@"
+exec systemd-nspawn -D "$working_dir" --machine "${working_dir//\//-}" "${mount_args[@]}" "$@"
