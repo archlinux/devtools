@@ -98,7 +98,7 @@ copy_hostconf
 
 eval $(grep '^CARCH=' "$working_dir/etc/makepkg.conf")
 
-exec ${CARCH:+setarch "$CARCH"} systemd-nspawn \
+exec ${CARCH:+setarch "$CARCH"} systemd-nspawn 2>/dev/null \
 	-D "$working_dir" \
 	--machine "${working_dir//\//-}" \
 	"${mount_args[@]}" \
