@@ -77,4 +77,4 @@ else
 fi
 
 msg "Building in chroot for [${repo}] (${arch})..."
-exec makechrootpkg "${makechrootpkg_args[@]}" -r "${chroots}/${repo}-${arch}"
+exec makechrootpkg -r "${chroots}/${repo}-${arch}" "${makechrootpkg_args[@]}"
