@@ -208,7 +208,8 @@ prepare_chroot() {
 		echo 'LOGDEST="/logdest"' >> "$copydir/etc/makepkg.conf"
 	fi
 
-	# These two get bind-mounted
+	# These two get bind-mounted read-only
+	# XXX: makepkg dislikes having these dirs read-only, so separate them
 	mkdir -p "$copydir/startdir" "$copydir/startdir_host"
 	mkdir -p "$copydir/srcdest" "$copydir/srcdest_host"
 	if ! grep -q 'SRCDEST="/srcdest"' "$copydir/etc/makepkg.conf"; then
@@ -271,13 +272,13 @@ _chrootbuild() {
 	export HOME=/build
 	shopt -s nullglob
 
-	# Workaround makepkg disliking read-only dirs
+	# XXX: Workaround makepkg disliking read-only dirs
 	ln -sft /srcdest /srcdest_host/*
 	ln -sft /startdir /startdir_host/*
 
 	cd /startdir
 
-	# Keep PKGBUILD writable for pkgver()
+	# XXX: Keep PKGBUILD writable for pkgver()
 	rm PKGBUILD*
 	cp /startdir_host/PKGBUILD* .
 	chown nobody PKGBUILD*
