@@ -276,6 +276,17 @@ _chrootbuild() {
 	ln -sft /srcdest /srcdest_host/*
 	ln -sft /startdir /startdir_host/*
 
+	# XXX: Keep svn sources writable
+	# Since makepkg 4.1.1 they get checked out via cp -a, copying the symlink
+	for dir in /srcdest /startdir; do
+		cd $dir
+		for svndir in */.svn; do
+			rm ${svndir%/.svn}
+			cp -a ${dir}_host/${svndir%/.svn} .
+			chown -R nobody ${svndir%/.svn}
+		done
+	done
+
 	cd /startdir
 
 	# XXX: Keep PKGBUILD writable for pkgver()
