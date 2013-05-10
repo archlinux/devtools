@@ -30,7 +30,6 @@ case $scriptname in
 esac
 
 server='nymeria.archlinux.org'
-mirror="http://${server}"
 source_svn="svn+ssh://svn-${source_name}@${server}/srv/repos/svn-${source_name}/svn"
 target_svn="svn+ssh://svn-${target_name}@${server}/srv/repos/svn-${target_name}/svn"
 source_dbscripts="/srv/repos/svn-${source_name}/dbscripts"
@@ -55,10 +54,8 @@ for _arch in ${arch[@]}; do
 	fi
 	for _pkgname in ${pkgname[@]}; do
 		fullver=$(get_full_version $_pkgname)
-		# FIXME: this only works with .xz packages
-		ssh "${server}" "cd staging/${target_repo}
-			curl -O ${mirror}/${source_repo}/os/${repo_arch}/$_pkgname-$fullver-${_arch}.pkg.tar.xz
-			curl -O ${mirror}/${source_repo}/os/${repo_arch}/$_pkgname-$fullver-${_arch}.pkg.tar.xz.sig" || die
+		pkgpath="/srv/ftp/$source_repo/os/$repo_arch/$_pkgname-$fullver-${_arch}.pkg.tar.*"
+		ssh "$server" "cp $pkgpath staging/$target_repo" || die
 	done
 done
 
