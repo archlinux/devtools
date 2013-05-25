@@ -15,3 +15,4 @@ rebuildpkgs
 zsh_completion
 find-libdeps
 crossrepomove
+arch-nspawn
