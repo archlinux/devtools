@@ -13,9 +13,7 @@ BINPROGS = \
 	finddeps \
 	rebuildpkgs \
 	find-libdeps \
-	crossrepomove
-
-SBINPROGS = \
+	crossrepomove\
 	arch-nspawn \
 	mkarchroot \
 	makechrootpkg
@@ -69,7 +67,7 @@ BASHCOMPLETION_LINKS = \
 	archco \
 	communityco
 
-all: $(BINPROGS) $(SBINPROGS) bash_completion zsh_completion
+all: $(BINPROGS) bash_completion zsh_completion
 
 edit = sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g"
 
@@ -81,14 +79,12 @@ edit = sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g"
 	@chmod +x "$@"
 
 clean:
-	rm -f $(BINPROGS) $(SBINPROGS) bash_completion zsh_completion
+	rm -f $(BINPROGS) bash_completion zsh_completion
 
 install:
 	install -dm0755 $(DESTDIR)$(PREFIX)/bin
-	install -dm0755 $(DESTDIR)$(PREFIX)/sbin
 	install -dm0755 $(DESTDIR)$(PREFIX)/share/devtools
 	install -m0755 ${BINPROGS} $(DESTDIR)$(PREFIX)/bin
-	install -m0755 ${SBINPROGS} $(DESTDIR)$(PREFIX)/sbin
 	install -m0644 ${CONFIGFILES} $(DESTDIR)$(PREFIX)/share/devtools
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
@@ -101,7 +97,6 @@ install:
 
 uninstall:
 	for f in ${BINPROGS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$f; done
-	for f in ${SBINPROGS}; do rm -f $(DESTDIR)$(PREFIX)/sbin/$$f; done
 	for f in ${CONFIGFILES}; do rm -f $(DESTDIR)$(PREFIX)/share/devtools/$$f; done
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
