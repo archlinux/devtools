@@ -77,6 +77,7 @@ edit = sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g"
 	@m4 -P $@.in | $(edit) >$@
 	@chmod a-w "$@"
 	@chmod +x "$@"
+	@bash -O extglob -n "$@"
 
 clean:
 	rm -f $(BINPROGS) bash_completion zsh_completion
