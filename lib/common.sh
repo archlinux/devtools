@@ -82,7 +82,7 @@ trap_exit() {
 }
 
 die() {
-	error "$*"
+	(( $# )) && error "$@"
 	cleanup 1
 }
 
