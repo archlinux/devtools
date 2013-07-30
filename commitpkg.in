@@ -58,7 +58,7 @@ esac
 # check if all local source files are under version control
 for s in "${source[@]}"; do
 	if [[ $s != *://* ]] && ! svn status -v "$s@" | grep -q '^[ AMRX~]'; then
-		die "$s is not under version control"
+		die "%s is not under version control" "$s"
 	fi
 done
 
@@ -68,7 +68,7 @@ for i in 'changelog' 'install'; do
 		# evaluate any bash variables used
 		eval file=\"$(sed 's/^\(['\''"]\)\(.*\)\1$/\2/' <<< "$file")\"
 		if ! svn status -v "${file}" | grep -q '^[ AMRX~]'; then
-			die "${file} is not under version control"
+			die "%s is not under version control" "$file"
 		fi
 	done < <(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
 done
@@ -81,8 +81,8 @@ while getopts ':l:a:s:f' flag; do
 		s) server=$OPTARG ;;
 		l) rsyncopts+=("--bwlimit=$OPTARG") ;;
 		a) commit_arch=$OPTARG ;;
-		:) die "Option requires an argument -- '$OPTARG'" ;;
-		\?) die "Invalid option -- '$OPTARG'" ;;
+		:) die "Option requires an argument -- '%s'" "$OPTARG" ;;
+		\?) die "Invalid option -- '%s'" "$OPTARG" ;;
 	esac
 done
 shift $(( OPTIND - 1 ))
@@ -164,7 +164,7 @@ for _arch in ${arch[@]}; do
 			gpg --detach-sign --use-agent ${SIGNWITHKEY} "${pkgfile}" || die
 		fi
 		if ! gpg --verify "$sigfile" >/dev/null 2>&1; then
-			die "Signature ${pkgfile}.sig is incorrect!"
+			die "Signature %s.sig is incorrect!" "$pkgfile"
 		fi
 		uploads+=("$sigfile")
 	done

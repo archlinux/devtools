@@ -41,13 +41,13 @@ for _pkgname in "${pkgname[@]}"; do
 	pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm "$_pkgname")
 
 	if [[ $? -ne 0 ]]; then
-		die "Couldn't download previous package for $_pkgname."
+		die "Couldn't download previous package for %s." "$_pkgname"
 	fi
 
 	oldpkg=${pkgurl##*://*/}
 
 	if [[ ${oldpkg##*/} = ${pkgfile##*/} ]]; then
-		die "The built package ($_pkgname) is the one in the repo right now!"
+		die "The built package (%s) is the one in the repo right now!" "$_pkgname"
 	fi
 
 	if [[ ! -f $oldpkg ]]; then

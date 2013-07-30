@@ -15,7 +15,7 @@ case $scriptname in
 	communityco)
 		SVNURL="svn+ssh://svn-community@nymeria.archlinux.org/srv/repos/svn-community/svn";;
 	*)
-		die "Couldn't find svn url for $scriptname"
+		die "Couldn't find svn url for %s" "$scriptname"
 		;;
 esac
 

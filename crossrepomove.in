@@ -25,7 +25,7 @@ case $scriptname in
 		target_repo='extra'
 		;;
 	*)
-		die "Couldn't find configuration for $scriptname"
+		die "Couldn't find configuration for %s" "$scriptname"
 		;;
 esac
 

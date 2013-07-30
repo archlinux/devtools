@@ -81,8 +81,8 @@ done
 
 # Canonicalize chrootdir, getting rid of trailing /
 chrootdir=$(readlink -e "$passeddir")
-[[ ! -d $chrootdir ]] && die "No chroot dir defined, or invalid path '$passeddir'"
-[[ ! -d $chrootdir/root ]] && die "Missing chroot dir root directory. Try using: mkarchroot $chrootdir/root base-devel"
+[[ ! -d $chrootdir ]] && die "No chroot dir defined, or invalid path '%s'" "$passeddir"
+[[ ! -d $chrootdir/root ]] && die "Missing chroot dir root directory. Try using: mkarchroot %s/root base-devel" "$chrootdir"
 
 # Detect chrootdir filesystem type
 chroottype=$(stat -f -c %T "$chrootdir")
@@ -136,10 +136,10 @@ create_chroot() {
 		if [[ "$chroottype" == btrfs ]]; then
 			if [[ -d $copydir ]]; then
 				btrfs subvolume delete "$copydir" >/dev/null ||
-					die "Unable to delete subvolume $copydir"
+					die "Unable to delete subvolume %s" "$copydir"
 			fi
 			btrfs subvolume snapshot "$chrootdir/root" "$copydir" >/dev/null ||
-				die "Unable to create subvolume $copydir"
+				die "Unable to create subvolume %s" "$copydir"
 		else
 			mkdir -p "$copydir"
 			rsync -a --delete -q -W -x "$chrootdir/root/" "$copydir"
@@ -155,11 +155,11 @@ clean_temporary() {
 	stat_busy "Removing temporary copy [$copy]"
 	if [[ "$chroottype" == btrfs ]]; then
 		btrfs subvolume delete "$copydir" >/dev/null ||
-			die "Unable to delete subvolume $copydir"
+			die "Unable to delete subvolume %s" "$copydir"
 	else
 		# avoid change of filesystem in case of an umount failure
 		rm --recursive --force --one-file-system "$copydir" ||
-			die "Unable to delete $copydir"
+			die "Unable to delete %s" "$copydir"
 	fi
 
 	# remove lock file
@@ -362,7 +362,7 @@ if (( ret != 0 )); then
 	if $temp_chroot; then
 		die "Build failed"
 	else
-		die "Build failed, check $copydir/build"
+		die "Build failed, check %s/build" "$copydir"
 	fi
 else
 	true

@@ -8,8 +8,8 @@ FORCE=
 while getopts ':f' flag; do
 	case $flag in
 		f) FORCE=1 ;;
-		:) die "Option requires an argument -- '$OPTARG'" ;;
-		\?) die "Invalid option -- '$OPTARG'" ;;
+		:) die "Option requires an argument -- '%s'" "$OPTARG" ;;
+		\?) die "Invalid option -- '%s'" "$OPTARG" ;;
 	esac
 done
 shift $(( OPTIND - 1 ))
@@ -23,7 +23,7 @@ fi
 if [[ -z $FORCE ]]; then
 	for tag in "$@"; do
 		if ! in_array "$tag" "${_tags[@]}"; then
-			die 'archrelease: Invalid tag: "'$tag'" (use -f to force release)'
+			die "archrelease: Invalid tag: '%s' (use -f to force release)" "$tag"
 		fi
 	done
 fi

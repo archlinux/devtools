@@ -51,7 +51,7 @@ fi
 
 umask 0022
 
-[[ -e $working_dir ]] && die "Working directory '$working_dir' already exists"
+[[ -e $working_dir ]] && die "Working directory '%s' already exists" "$working_dir"
 
 mkdir -p "$working_dir"
 
@@ -60,7 +60,7 @@ lock 9 "${working_dir}.lock" "Locking chroot"
 if [[ $(stat -f -c %T "$working_dir") == btrfs ]]; then
 	rmdir "$working_dir"
 	if ! btrfs subvolume create "$working_dir"; then
-		die "Couldn't create subvolume for '$working_dir'"
+		die "Couldn't create subvolume for '%s'" "$working_dir"
 	fi
 	chmod 0755 "$working_dir"
 fi

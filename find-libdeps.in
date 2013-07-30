@@ -16,7 +16,7 @@ script_mode=${0##*/find-lib}
 
 case $script_mode in
 	deps|provides) true;;
-	*) die "Unknown mode $script_mode" ;;
+	*) die "Unknown mode %s" "$script_mode" ;;
 esac
 
 if [[ -z $1 ]]; then
