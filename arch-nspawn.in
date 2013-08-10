@@ -40,15 +40,15 @@ shift $(($OPTIND - 1))
 (( $EUID != 0 )) && die 'This script must be run as root.'
 (( $# < 1 )) && die 'You must specify a directory.'
 
-working_dir="$(readlink -f $1)"
+working_dir=$(readlink -f "$1")
 shift 1
 
 [[ -z $working_dir ]] && die 'Please specify a working directory.'
 
 if [[ -z $cache_dir ]]; then
-	cache_dirs=($(pacman -v $cache_conf 2>&1 | grep '^Cache Dirs:' | sed 's/Cache Dirs:\s*//g'))
+	cache_dirs=($(pacman -v 2>&1 | grep '^Cache Dirs:' | sed 's/Cache Dirs:\s*//g'))
 else
-	cache_dirs=(${cache_dir})
+	cache_dirs=("$cache_dir")
 fi
 
 host_mirror=$(pacman -Sddp extra/devtools 2>/dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#')
@@ -71,12 +71,12 @@ build_mount_args() {
 
 copy_hostconf () {
 	cp -a /etc/pacman.d/gnupg "$working_dir/etc/pacman.d"
-	echo "Server = $host_mirror" > $working_dir/etc/pacman.d/mirrorlist
+	echo "Server = $host_mirror" >"$working_dir/etc/pacman.d/mirrorlist"
 
-	[[ -n $pac_conf ]] && cp $pac_conf $working_dir/etc/pacman.conf
-	[[ -n $makepkg_conf ]] && cp $makepkg_conf $working_dir/etc/makepkg.conf
+	[[ -n $pac_conf ]] && cp $pac_conf "$working_dir/etc/pacman.conf"
+	[[ -n $makepkg_conf ]] && cp $makepkg_conf "$working_dir/etc/makepkg.conf"
 
-	sed -r "s|^#?\\s*CacheDir.+|CacheDir = $(echo -n ${cache_dirs[@]})|g" -i $working_dir/etc/pacman.conf
+	sed -r "s|^#?\\s*CacheDir.+|CacheDir = $(echo -n ${cache_dirs[@]})|g" -i "$working_dir/etc/pacman.conf"
 }
 # }}}
 
@@ -94,7 +94,7 @@ copy_hostconf
 
 eval $(grep '^CARCH=' "$working_dir/etc/makepkg.conf")
 
-machine_name="${working_dir//\//-}"
+machine_name="${working_dir//[![:alnum:]_-]/-}"
 machine_name="${machine_name#-}"
 
 exec ${CARCH:+setarch "$CARCH"} systemd-nspawn 2>/dev/null \
