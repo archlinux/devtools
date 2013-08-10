@@ -56,20 +56,16 @@ host_mirror=$(pacman -Sddp extra/devtools 2>/dev/null | sed -r 's#(.*/)extra/os/
 
 # {{{ functions
 build_mount_args() {
-	local p
 	declare -g mount_args=()
 
 	if [[ -n $host_mirror_path ]]; then
-		printf -v p '%q' "$host_mirror_path"
-		mount_args+=(--bind-ro="$p")
+		mount_args+=(--bind-ro="$host_mirror_path")
 	fi
 
-	printf -v p '%q' "${cache_dirs[0]}"
-	mount_args+=(--bind="$p")
+	mount_args+=(--bind="${cache_dirs[0]}")
 
 	for cache_dir in ${cache_dirs[@]:1}; do
-		printf -v p '%q' "$cache_dir"
-		mount_args+=(--bind-ro="$p")
+		mount_args+=(--bind-ro="$cache_dir")
 	done
 }
 
