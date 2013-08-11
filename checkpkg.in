@@ -18,7 +18,7 @@ if [[ ! -f PKGBUILD ]]; then
 	die 'This must be run in the directory of a built package.'
 fi
 
-. PKGBUILD
+. ./PKGBUILD
 if [[ $arch == 'any' ]]; then
 	CARCH='any'
 fi
