@@ -1,5 +1,7 @@
 #!/bin/bash
 
+shopt -s extglob
+
 m4_include(lib/common.sh)
 
 # Source makepkg.conf; fail if it is not found
@@ -25,15 +27,17 @@ fi
 
 STARTDIR=$(pwd)
 TEMPDIR=$(mktemp -d --tmpdir checkpkg-script.XXXX)
-cd "$TEMPDIR"
 
 for _pkgname in "${pkgname[@]}"; do
-	pkgfile=${_pkgname}-$(get_full_version $_pkgname)-${CARCH}${PKGEXT}
+  pkgfile=(${_pkgname}-$(get_full_version $_pkgname)-${CARCH}.pkg.tar?(.?z))
+	if (( ${#pkgfile[*]} != 1 )); then
+		die 'Ambiguous package name: %s\n' "${pkgfile[*]}"
+	fi
 
 	if [[ -f "$STARTDIR/$pkgfile" ]]; then
-		ln -s "$STARTDIR/$pkgfile" "$pkgfile"
+		ln -s "$STARTDIR/$pkgfile" "$TEMPDIR/$pkgfile"
 	elif [[ -f "$PKGDEST/$pkgfile" ]]; then
-		ln -s "$PKGDEST/$pkgfile" "$pkgfile"
+		ln -s "$PKGDEST/$pkgfile" "$TEMPDIR/$pkgfile"
 	else
 		die "File \"$pkgfile\" doesn't exist"
 	fi
@@ -58,23 +62,21 @@ for _pkgname in "${pkgname[@]}"; do
 		elif [[ -f "$STARTDIR/$oldpkg" ]]; then
 			ln -s "$STARTDIR/$oldpkg" "$oldpkg"
 		else
-		        curl -fsLC - --retry 3 --retry-delay 3 -o "$oldpkg" "$pkgurl"
+			curl -fsLC - --retry 3 --retry-delay 3 -o "$oldpkg" "$pkgurl"
 		fi
 	fi
 
-	bsdtar tf "$oldpkg" | sort > "filelist-$_pkgname-old"
-	bsdtar tf "$pkgfile" | sort > "filelist-$_pkgname"
+	bsdtar tf "$oldpkg" | sort > "$TEMPDIR/filelist-$_pkgname-old"
+	bsdtar tf "$pkgfile" | sort > "$TEMPDIR/filelist-$_pkgname"
 
-	sdiff -s "filelist-$_pkgname-old" "filelist-$_pkgname"
+	sdiff -s "$TEMPDIR/filelist-$_pkgname-old" "$TEMPDIR/filelist-$_pkgname"
 
-	if diff "filelist-$_pkgname-old" "filelist-$_pkgname" | grep '\.so' > /dev/null 2>&1; then
-		mkdir -p pkg
-		cd pkg
-		bsdtar xf ../"$pkgfile" > /dev/null
-		diff "../filelist-$_pkgname-old" "../filelist-$_pkgname" | awk '/>.*\.so/{$1 = ""; print $0}' | while read i; do
+	if diff "$TEMPDIR/filelist-$_pkgname"{-old,} | grep '\.so' &>/dev/null; then
+		mkdir -p "$TEMPDIR/pkg"
+		bsdtar -C "$TEMPDIR" xf ../"$pkgfile" #> /dev/null
+		diff "$TEMPDIR/filelist-$_pkgname-old" "$TEMPDIR/filelist-$_pkgname" | awk '/>.*\.so/{$1 = ""; print $0}' | while read i; do
 			echo "${i}: " "$(objdump -p "$i" | grep SONAME)"
 		done
-		cd ..
 	else
 		msg "No soname differences for $_pkgname."
 	fi
