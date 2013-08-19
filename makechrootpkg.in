@@ -24,6 +24,9 @@ passeddir=
 declare -a install_pkgs
 declare -i ret=0
 
+bindmounts_ro=()
+bindmounts_rw=()
+
 copy=$USER
 [[ -n $SUDO_USER ]] && copy=$SUDO_USER
 [[ -z "$copy" || $copy = root ]] && copy=copy
@@ -48,6 +51,8 @@ usage() {
 	echo 'Flags:'
 	echo '-h         This help'
 	echo '-c         Clean the chroot before building'
+	echo '-d <dir>   Bind directory into build chroot as read-write'
+	echo '-D <dir>   Bind directory into build chroot as read-only'
 	echo '-u         Update the working copy of the chroot before building'
 	echo '           This is useful for rebuilds without dirtying the pristine'
 	echo '           chroot'
@@ -61,10 +66,12 @@ usage() {
 	exit 1
 }
 
-while getopts 'hcur:I:l:nT' arg; do
+while getopts 'hcur:I:l:nTD:d:' arg; do
 	case "$arg" in
 		h) usage ;;
 		c) clean_first=true ;;
+		D) bindmounts_ro+=(--bind-ro="$OPTARG") ;;
+		d) bindmounts_rw+=(--bind="$OPTARG") ;;
 		u) update_first=true ;;
 		r) passeddir="$OPTARG" ;;
 		I) install_pkgs+=("$OPTARG") ;;
@@ -174,7 +181,9 @@ install_packages() {
 		pkgname="${install_pkg##*/}"
 		cp "$install_pkg" "$copydir/$pkgname"
 
-		arch-nspawn "$copydir" pacman -U /$pkgname --noconfirm
+		arch-nspawn "$copydir" \
+			"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
+			pacman -U /$pkgname --noconfirm
 		(( ret += !! $? ))
 
 		rm "$copydir/$pkgname"
@@ -338,7 +347,9 @@ load_vars /etc/makepkg.conf
 
 create_chroot
 
-$update_first && arch-nspawn "$copydir" pacman -Syu --noconfirm
+$update_first && arch-nspawn "$copydir" \
+		"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
+		pacman -Syu --noconfirm
 
 [[ -n ${install_pkgs[*]} ]] && install_packages
 
@@ -349,6 +360,7 @@ download_sources
 if arch-nspawn "$copydir" \
 	--bind-ro="$PWD:/startdir_host" \
 	--bind-ro="$SRCDEST:/srcdest_host" \
+	"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
 	/chrootbuild
 then
 	move_products
