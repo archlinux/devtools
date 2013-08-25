@@ -287,14 +287,16 @@ _chrootbuild() {
 	ln -sft /srcdest /srcdest_host/*
 	ln -sft /startdir /startdir_host/*
 
-	# XXX: Keep svn sources writable
+	# XXX: Keep bzr and svn sources writable
 	# Since makepkg 4.1.1 they get checked out via cp -a, copying the symlink
 	for dir in /srcdest /startdir; do
-		cd $dir
-		for svndir in */.svn; do
-			rm ${svndir%/.svn}
-			cp -a ${dir}_host/${svndir%/.svn} .
-			chown -R nobody ${svndir%/.svn}
+		for vcs in bzr svn; do
+			cd "$dir"
+			for vcsdir in */.$vcs; do
+				rm "${vcsdir%/.$vcs}"
+				cp -a "${dir}_host/${vcsdir%/.$vcs}" .
+				chown -R nobody "${vcsdir%/.$vcs}"
+			done
 		done
 	done
 
