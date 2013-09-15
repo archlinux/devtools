@@ -142,7 +142,7 @@ create_chroot() {
 		slock 8 "$chrootdir/root.lock" "Locking clean chroot"
 
 		stat_busy "Creating clean working copy [$copy]"
-		if [[ "$chroottype" == btrfs ]]; then
+		if [[ "$chroottype" == btrfs ]] && ! mountpoint -q "$copydir"; then
 			if [[ -d $copydir ]]; then
 				btrfs subvolume delete "$copydir" >/dev/null ||
 					die "Unable to delete subvolume %s" "$copydir"
