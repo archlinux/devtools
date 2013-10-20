@@ -104,11 +104,13 @@ fi
 makepkg_args="$makepkg_args ${*:$OPTIND}"
 
 # See if -R was passed to makepkg
-for arg in ${*:$OPTIND}; do
-	if [[ $arg = -R ]]; then
-		repack=true
-		break
-	fi
+for arg in "${@:OPTIND}"; do
+	case ${arg%%=*} in
+		-*R*|--repackage)
+			repack=true
+			break 2
+			;;
+	esac
 done
 
 if [[ -n $SUDO_USER ]]; then
