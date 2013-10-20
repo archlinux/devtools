@@ -1,6 +1,8 @@
 # Avoid any encoding problems
 export LANG=C
 
+shopt -s extglob
+
 # check if messages are to be printed using color
 unset ALL_OFF BOLD BLUE GREEN RED YELLOW
 if [[ -t 2 ]]; then
@@ -153,4 +155,71 @@ slock() {
 		flock -s $1
 		stat_done
 	fi
+}
+
+##
+# usage: pkgver_equal( $pkgver1, $pkgver2 )
+##
+pkgver_equal() {
+	local left right
+
+	if [[ $1 = *-* && $2 = *-* ]]; then
+		# if both versions have a pkgrel, then they must be an exact match
+		[[ $1 = "$2" ]]
+	else
+		# otherwise, trim any pkgrel and compare the bare version.
+		[[ ${1%%-*} = "${2%%-*}" ]]
+	fi
+}
+
+##
+#  usage: find_cached_package( $pkgname, $pkgver, $arch )
+#
+#    $pkgver can be supplied with or without a pkgrel appended.
+#    If not supplied, any pkgrel will be matched.
+##
+find_cached_package() {
+	local searchdirs=("$PWD" "$PKGDEST") results=()
+	local targetname=$1 targetver=$2 targetarch=$3
+	local dir pkg pkgbasename pkgparts name ver rel arch size results
+
+	for dir in "${searchdirs[@]}"; do
+		[[ -d $dir ]] || continue
+
+		for pkg in "$dir"/*.pkg.tar?(.?z); do
+			[[ -f $pkg ]] || continue
+
+			# split apart package filename into parts
+			pkgbasename=${pkg##*/}
+			pkgbasename=${pkgbasename%.pkg.tar?(.?z)}
+
+			arch=${pkgbasename##*-}
+			pkgbasename=${pkgbasename%-"$arch"}
+
+			rel=${pkgbasename##*-}
+			pkgbasename=${pkgbasename%-"$rel"}
+
+			ver=${pkgbasename##*-}
+			name=${pkgbasename%-"$ver"}
+
+			if [[ $targetname = "$name" && $targetarch = "$arch" ]] &&
+					pkgver_equal "$targetver" "$ver-$rel"; then
+				results+=("$pkg")
+			fi
+		done
+	done
+
+	case ${#results[*]} in
+		0)
+			return 1
+			;;
+		1)
+			printf '%s\n' "$results"
+			return 0
+			;;
+		*)
+			error 'Multiple packages found:'
+			printf '\t%s\n' "${results[@]}"
+			return 1
+	esac
 }

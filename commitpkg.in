@@ -2,22 +2,6 @@
 
 m4_include(lib/common.sh)
 
-getpkgfile() {
-	case $# in
-		0)
-			error 'No canonical package found!'
-			return 1
-			;;
-		[!1])
-			error 'Failed to canonicalize package name -- multiple packages found:'
-			msg2 '%s' "$@"
-			return 1
-			;;
-	esac
-
-	echo "$1"
-}
-
 # Source makepkg.conf; fail if it is not found
 if [[ -r '/etc/makepkg.conf' ]]; then
 	source '/etc/makepkg.conf'
@@ -99,9 +83,8 @@ for _arch in ${arch[@]}; do
 	for _pkgname in ${pkgname[@]}; do
 		fullver=$(get_full_version $_pkgname)
 
-		if pkgfile=$(shopt -s nullglob;
-				getpkgfile "${PKGDEST+$PKGDEST/}$_pkgname-$fullver-${_arch}".pkg.tar.?z); then
-			if grep -q "packager = Unknown Packager" <(bsdtar -xOqf $pkgfile .PKGINFO); then
+		if pkgfile=$(find_cached_package "$_pkgname" "$_arch" "$fullver"); then
+			if grep -q "packager = Unknown Packager" <(bsdtar -xOqf "$pkgfile" .PKGINFO); then
 				die "PACKAGER was not set when building package"
 			fi
 		fi
@@ -151,8 +134,7 @@ for _arch in ${arch[@]}; do
 	for _pkgname in ${pkgname[@]}; do
 		fullver=$(get_full_version $_pkgname)
 
-		if ! pkgfile=$(shopt -s nullglob;
-				getpkgfile "${PKGDEST+$PKGDEST/}$_pkgname-$fullver-${_arch}".pkg.tar.?z); then
+		if ! pkgfile=$(find_cached_package "$_pkgname" "$fullver" "${_arch}"); then
 			warning "Skipping $_pkgname-$fullver-$_arch: failed to locate package file"
 			skip_arches+=($_arch)
 			continue 2
