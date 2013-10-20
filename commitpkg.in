@@ -55,23 +55,27 @@ case "$cmd" in
 		;;
 esac
 
-# check if all local source files are under version control
+# find files which should be under source control
+needsversioning=()
 for s in "${source[@]}"; do
-	if [[ $s != *://* ]] && ! svn status -v "$s@" | grep -q '^[ AMRX~]'; then
-		die "%s is not under version control" "$s"
-	fi
+	[[ $s != *://* ]] && needsversioning+=("$s")
 done
-
-# check if changelog and install files are under version control
 for i in 'changelog' 'install'; do
 	while read -r file; do
 		# evaluate any bash variables used
 		eval file=\"$(sed 's/^\(['\''"]\)\(.*\)\1$/\2/' <<< "$file")\"
-		if ! svn status -v "${file}" | grep -q '^[ AMRX~]'; then
-			die "%s is not under version control" "$file"
-		fi
+		needsversioning+=("$file")
 	done < <(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
 done
+
+# assert that they really are controlled by SVN
+if (( ${#needsversioning[*]} )); then
+	# svn status's output is only two columns when the status is unknown
+	while read -r status filename; do
+		[[ $status = '?' ]] && unversioned+=("$filename")
+	done < <(svn status -v "${needsversioning[@]}")
+	(( ${#unversioned[*]} )) && die "%s is not under version control" "${unversioned[@]}"
+fi
 
 rsyncopts=(-e ssh -p --chmod=ug=rw,o=r -c -h -L --progress --partial -y)
 archreleaseopts=()
