@@ -58,15 +58,15 @@ for _pkgname in "${pkgname[@]}"; do
 		if [[ $pkgurl = file://* ]]; then
 			ln -s "${pkgurl#file://}" "${pkgurl##file://*/}"
 		elif [[ -f "$PKGDEST/$oldpkg" ]]; then
-			ln -s "$PKGDEST/$oldpkg" "$oldpkg"
+			ln -s "$PKGDEST/$oldpkg" "$TEMPDIR/$oldpkg"
 		elif [[ -f "$STARTDIR/$oldpkg" ]]; then
-			ln -s "$STARTDIR/$oldpkg" "$oldpkg"
+			ln -s "$STARTDIR/$oldpkg" "$TEMPDIR/$oldpkg"
 		else
-			curl -fsLC - --retry 3 --retry-delay 3 -o "$oldpkg" "$pkgurl"
+			curl -fsLC - --retry 3 --retry-delay 3 -o "$TEMPDIR/$oldpkg" "$pkgurl"
 		fi
 	fi
 
-	bsdtar tf "$oldpkg" | sort > "$TEMPDIR/filelist-$_pkgname-old"
+	bsdtar tf "$TEMPDIR/$oldpkg" | sort > "$TEMPDIR/filelist-$_pkgname-old"
 	bsdtar tf "$pkgfile" | sort > "$TEMPDIR/filelist-$_pkgname"
 
 	sdiff -s "$TEMPDIR/filelist-$_pkgname-old" "$TEMPDIR/filelist-$_pkgname"
