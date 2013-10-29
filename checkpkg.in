@@ -74,7 +74,7 @@ for _pkgname in "${pkgname[@]}"; do
 	if diff "$TEMPDIR/filelist-$_pkgname"{-old,} | grep '\.so' &>/dev/null; then
 		mkdir -p "$TEMPDIR/pkg"
 		bsdtar -x -C "$TEMPDIR" -f "$pkgfile" #> /dev/null
-		diff "$TEMPDIR/filelist-$_pkgname-old" "$TEMPDIR/filelist-$_pkgname" | awk '/>.*\.so/{$1 = ""; print $0}' | while read i; do
+		comm -13 <(sort "$TEMPDIR/filelist-$_pkgname-old") <(sort "$TEMPDIR/filelist-$_pkgname") | grep .so$ | while read i; do
 			echo "${i}: " "$(objdump -p "$TEMPDIR/$i" | grep SONAME)"
 		done
 	else
