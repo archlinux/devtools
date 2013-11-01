@@ -48,16 +48,14 @@ for _pkgname in "${pkgname[@]}"; do
 		die "The built package (%s) is the one in the repo right now!" "$_pkgname"
 	fi
 
-	if [[ ! -f $oldpkg ]]; then
-		if [[ $pkgurl = file://* ]]; then
-			ln -s "${pkgurl#file://}" "${pkgurl##file://*/}"
-		elif [[ -f "$PKGDEST/$oldpkg" ]]; then
-			ln -s "$PKGDEST/$oldpkg" "$TEMPDIR/$oldpkg"
-		elif [[ -f "$STARTDIR/$oldpkg" ]]; then
-			ln -s "$STARTDIR/$oldpkg" "$TEMPDIR/$oldpkg"
-		else
-			curl -fsLC - --retry 3 --retry-delay 3 -o "$TEMPDIR/$oldpkg" "$pkgurl"
-		fi
+	if [[ $pkgurl = file://* ]]; then
+		ln -s "${pkgurl#file://}" "$TEMPDIR/$oldpkg"
+	elif [[ -f "$PKGDEST/$oldpkg" ]]; then
+		ln -s "$PKGDEST/$oldpkg" "$TEMPDIR/$oldpkg"
+	elif [[ -f "$STARTDIR/$oldpkg" ]]; then
+		ln -s "$STARTDIR/$oldpkg" "$TEMPDIR/$oldpkg"
+	else
+		curl -fsLC - --retry 3 --retry-delay 3 -o "$TEMPDIR/$oldpkg" "$pkgurl"
 	fi
 
 	bsdtar tf "$TEMPDIR/$oldpkg" | sort > "$TEMPDIR/filelist-$_pkgname-old"
