@@ -181,13 +181,18 @@ pkgver_equal() {
 find_cached_package() {
 	local searchdirs=("$PWD" "$PKGDEST") results=()
 	local targetname=$1 targetver=$2 targetarch=$3
-	local dir pkg pkgbasename pkgparts name ver rel arch size results
+	local dir pkg pkgbasename pkgparts name ver rel arch size r results
 
 	for dir in "${searchdirs[@]}"; do
 		[[ -d $dir ]] || continue
 
 		for pkg in "$dir"/*.pkg.tar?(.?z); do
 			[[ -f $pkg ]] || continue
+
+			# avoid adding duplicates of the same inode
+			for r in "${results[@]}"; do
+				[[ $r -ef $pkg ]] && continue 2
+			done
 
 			# split apart package filename into parts
 			pkgbasename=${pkg##*/}
@@ -219,7 +224,7 @@ find_cached_package() {
 			;;
 		*)
 			error 'Multiple packages found:'
-			printf '\t%s\n' "${results[@]}"
+			printf '\t%s\n' "${results[@]}" >&2
 			return 1
 	esac
 }
