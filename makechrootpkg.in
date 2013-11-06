@@ -333,6 +333,7 @@ move_products() {
 	done
 
 	for l in "$copydir"/logdest/*; do
+		[[ $l == */logpipe.* ]] && continue
 		chown "$src_owner" "$l"
 		mv "$l" "$LOGDEST"
 	done
