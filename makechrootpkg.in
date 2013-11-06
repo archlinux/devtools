@@ -125,7 +125,7 @@ load_vars() {
 
 	[[ -f $makepkg_conf ]] || return 1
 
-	for var in {SRC,PKG,LOG}DEST MAKEFLAGS PACKAGER; do
+	for var in {SRC,SRCPKG,PKG,LOG}DEST MAKEFLAGS PACKAGER; do
 		[[ -z ${!var} ]] && eval $(grep "^${var}=" "$makepkg_conf")
 	done
 
@@ -214,6 +214,11 @@ prepare_chroot() {
 		echo 'PKGDEST="/pkgdest"' >> "$copydir/etc/makepkg.conf"
 	fi
 
+	mkdir -p "$copydir/srcpkgdest"
+	if ! grep -q 'SRCPKGDEST="/srcpkgdest"' "$copydir/etc/makepkg.conf"; then
+		echo 'SRCPKGDEST="/srcpkgdest"' >> "$copydir/etc/makepkg.conf"
+	fi
+
 	mkdir -p "$copydir/logdest"
 	if ! grep -q 'LOGDEST="/logdest"' "$copydir/etc/makepkg.conf"; then
 		echo 'LOGDEST="/logdest"' >> "$copydir/etc/makepkg.conf"
@@ -227,7 +232,7 @@ prepare_chroot() {
 		echo 'SRCDEST="/srcdest"' >> "$copydir/etc/makepkg.conf"
 	fi
 
-	chown -R nobody "$copydir"/{build,pkgdest,logdest,srcdest,startdir}
+	chown -R nobody "$copydir"/{build,pkgdest,srcpkgdest,logdest,srcdest,startdir}
 
 	if [[ -n $MAKEFLAGS ]]; then
 		sed -i '/^MAKEFLAGS=/d' "$copydir/etc/makepkg.conf"
@@ -337,6 +342,11 @@ move_products() {
 		chown "$src_owner" "$l"
 		mv "$l" "$LOGDEST"
 	done
+
+	for s in "$copydir"/srcpkgdest/*; do
+		chown "$src_owner" "$s"
+		mv "$s" "$SRCPKGDEST"
+	done
 }
 # }}}
 
@@ -346,9 +356,10 @@ load_vars "$USER_HOME/.makepkg.conf"
 load_vars /etc/makepkg.conf
 
 # Use PKGBUILD directory if these don't exist
-[[ -d $PKGDEST ]] || PKGDEST=$PWD
-[[ -d $SRCDEST ]] || SRCDEST=$PWD
-[[ -d $LOGDEST ]] || LOGDEST=$PWD
+[[ -d $PKGDEST ]]    || PKGDEST=$PWD
+[[ -d $SRCDEST ]]    || SRCDEST=$PWD
+[[ -d $SRCPKGDEST ]] || SRCPKGDEST=$PWD
+[[ -d $LOGDEST ]]    || LOGDEST=$PWD
 
 create_chroot
 
