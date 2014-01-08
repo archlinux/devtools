@@ -37,8 +37,8 @@ while getopts 'hC:M:c:' arg; do
 done
 shift $(($OPTIND - 1))
 
-(( $EUID != 0 )) && die 'This script must be run as root.'
 (( $# < 1 )) && die 'You must specify a directory.'
+check_root "$0" "$@"
 
 working_dir=$(readlink -f "$1")
 shift 1

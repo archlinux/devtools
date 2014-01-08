@@ -81,7 +81,7 @@ while getopts 'hcur:I:l:nTD:d:' arg; do
 	esac
 done
 
-(( EUID != 0 )) && die 'This script must be run as root.'
+check_root "$0" "$@"
 
 [[ ! -f PKGBUILD && -z "${install_pkgs[*]}" ]] && die 'This must be run in a directory containing a PKGBUILD.'
 

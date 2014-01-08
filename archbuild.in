@@ -40,9 +40,7 @@ done
 # Pass all arguments after -- right to makepkg
 makechrootpkg_args+=("${@:$OPTIND}")
 
-if (( EUID )); then
-	die 'This script must be run as root.'
-fi
+check_root "$0" "$@"
 
 if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 	msg "Creating chroot for [${repo}] (${arch})..."
