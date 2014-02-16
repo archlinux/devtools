@@ -65,7 +65,7 @@ setup_workdir() {
 
 cleanup() {
 	[[ -n $WORKDIR ]] && rm -rf "$WORKDIR"
-	[[ $1 ]] && exit $1
+	exit ${1:-0}
 }
 
 abort() {
