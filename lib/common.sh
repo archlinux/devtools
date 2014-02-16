@@ -69,8 +69,8 @@ cleanup() {
 }
 
 abort() {
-	msg 'Aborting...'
-	cleanup 0
+	error 'Aborting...'
+	cleanup 255
 }
 
 trap_abort() {
@@ -85,7 +85,7 @@ trap_exit() {
 
 die() {
 	(( $# )) && error "$@"
-	cleanup 1
+	cleanup 255
 }
 
 trap 'trap_abort' INT QUIT TERM HUP
