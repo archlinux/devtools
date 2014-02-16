@@ -114,7 +114,7 @@ get_full_version() {
 	pkgbase=${pkgbase:-${pkgname[0]}}
 	epoch=${epoch:-0}
 	if [[ -z $1 ]]; then
-		if [[ $epoch ]] && (( ! $epoch )); then
+		if (( ! epoch )); then
 			echo $pkgver-$pkgrel
 		else
 			echo $epoch:$pkgver-$pkgrel
