@@ -157,6 +157,9 @@ create_chroot() {
 		# Drop the read lock again
 		exec 8>&-
 	fi
+
+	# Update mtime
+	touch "$copydir"
 }
 
 clean_temporary() {
