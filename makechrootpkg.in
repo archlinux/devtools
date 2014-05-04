@@ -113,7 +113,7 @@ for arg in "${@:OPTIND}"; do
 done
 
 if [[ -n $SUDO_USER ]]; then
-	USER_HOME=$(eval echo ~$SUDO_USER)
+	eval "USER_HOME=~$SUDO_USER"
 else
 	USER_HOME=$HOME
 fi
