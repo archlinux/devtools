@@ -35,8 +35,8 @@ src_owner=${SUDO_USER:-$USER}
 usage() {
 	echo "Usage: ${0##*/} [options] -r <chrootdir> [--] [makepkg args]"
 	echo ' Run this script in a PKGBUILD dir to build a package inside a'
-	echo ' clean chroot. All unrecognized arguments passed to this script'
-	echo ' will be passed to makepkg.'
+	echo ' clean chroot. Arguments passed to this script after the'
+	echo ' end-of-options marker (--) will be passed to makepkg.'
 	echo ''
 	echo ' The chroot dir consists of the following directories:'
 	echo ' <chrootdir>/{root, copy} but only "root" is required'
@@ -78,7 +78,6 @@ while getopts 'hcur:I:l:nTD:d:' arg; do
 		l) copy="$OPTARG" ;;
 		n) run_namcap=true; makepkg_args="$makepkg_args -i" ;;
 		T) temp_chroot=true; copy+="-$$" ;;
-		*) makepkg_args="$makepkg_args -$arg $OPTARG" ;;
 	esac
 done
 
