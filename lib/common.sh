@@ -238,7 +238,6 @@ check_root() {
 	if type -P sudo >/dev/null; then
 		exec sudo -- "$@"
 	else
-		exec su root -c "$(printf '%q' "$@")"
+		exec su root -c "$(printf ' %q' "$@")"
 	fi
-	die 'This script must be run as root.'
 }
