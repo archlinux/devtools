@@ -15,7 +15,7 @@ CHROOT_VERSION='v3'
 working_dir=''
 
 usage() {
-	echo "Usage: ${0##*/} [options] working-dir [package-list | app]"
+	echo "Usage: ${0##*/} [options] working-dir package-list..."
 	echo ' options:'
 	echo '    -C <file>     Location of a pacman config file'
 	echo '    -M <file>     Location of a makepkg config file'
