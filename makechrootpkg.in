@@ -164,7 +164,7 @@ create_chroot() {
 
 clean_temporary() {
 	stat_busy "Removing temporary copy [$copy]"
-	if [[ "$chroottype" == btrfs ]]; then
+	if [[ "$chroottype" == btrfs ]] && ! mountpoint -q "$copydir"; then
 		btrfs subvolume delete "$copydir" >/dev/null ||
 			die "Unable to delete subvolume %s" "$copydir"
 	else
