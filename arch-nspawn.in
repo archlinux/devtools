@@ -84,7 +84,7 @@ umask 0022
 
 # Sanity check
 if [[ ! -f "$working_dir/.arch-chroot" ]]; then
-	die "'%s' does not appear to be a Arch chroot." "$working_dir"
+	die "'%s' does not appear to be an Arch chroot." "$working_dir"
 elif [[ $(cat "$working_dir/.arch-chroot") != $CHROOT_VERSION ]]; then
 	die "chroot '%s' is not at version %s. Please rebuild." "$working_dir" "$CHROOT_VERSION"
 fi
