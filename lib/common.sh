@@ -79,8 +79,9 @@ trap_abort() {
 }
 
 trap_exit() {
+	local r=$?
 	trap - EXIT INT QUIT TERM HUP
-	cleanup
+	cleanup $r
 }
 
 die() {
