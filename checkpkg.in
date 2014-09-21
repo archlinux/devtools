@@ -63,12 +63,11 @@ for _pkgname in "${pkgname[@]}"; do
 
 	sdiff -s "$TEMPDIR/filelist-$_pkgname-old" "$TEMPDIR/filelist-$_pkgname"
 
-	if diff "$TEMPDIR/filelist-$_pkgname"{-old,} | grep '\.so' &>/dev/null; then
-		mkdir -p "$TEMPDIR/pkg"
-		bsdtar -x -C "$TEMPDIR" -f "$pkgfile" #> /dev/null
-		comm -13 <(sort "$TEMPDIR/filelist-$_pkgname-old") <(sort "$TEMPDIR/filelist-$_pkgname") | grep .so$ | while read i; do
-			echo "${i}: " "$(objdump -p "$TEMPDIR/$i" | grep SONAME)"
-		done
+	find-libprovides "$TEMPDIR/$oldpkg" | sort > "$TEMPDIR/libraries-$_pkgname-old"
+	find-libprovides "$pkgfile" | sort > "$TEMPDIR/libraries-$_pkgname"
+	if ! diff_output="$(sdiff -s "$TEMPDIR/libraries-$_pkgname-old" "$TEMPDIR/libraries-$_pkgname")"; then
+		msg "Sonames differ in $_pkgname!"
+		echo "$diff_output"
 	else
 		msg "No soname differences for $_pkgname."
 	fi
