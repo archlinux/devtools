@@ -234,7 +234,13 @@ prepare_chroot() {
 		echo 'SRCDEST="/srcdest"' >> "$copydir/etc/makepkg.conf"
 	fi
 
-	chown -R nobody "$copydir"/{build,pkgdest,srcpkgdest,logdest,srcdest,startdir}
+	builduser_uid=${SUDO_UID:-$UID}
+
+	# We can't use useradd without chrooting, otherwise it invokes PAM modules
+	# which we might not be able to load (i.e. when building i686 packages on
+	# an x86_64 host).
+	printf 'builduser:x:%d:100:builduser:/:/usr/bin/nologin\n' "$builduser_uid" >>"$copydir/etc/passwd"
+	chown -R "$builduser_uid" "$copydir"/{build,pkgdest,srcpkgdest,logdest,srcdest,startdir}
 
 	if [[ -n $MAKEFLAGS ]]; then
 		sed -i '/^MAKEFLAGS=/d' "$copydir/etc/makepkg.conf"
@@ -246,12 +252,12 @@ prepare_chroot() {
 		echo "PACKAGER='${PACKAGER}'" >> "$copydir/etc/makepkg.conf"
 	fi
 
-	if [[ ! -f $copydir/etc/sudoers.d/nobody-pacman ]]; then
-		cat > "$copydir/etc/sudoers.d/nobody-pacman" <<EOF
+	if [[ ! -f $copydir/etc/sudoers.d/builduser-pacman ]]; then
+		cat > "$copydir/etc/sudoers.d/builduser-pacman" <<EOF
 Defaults env_keep += "HOME"
-nobody ALL = NOPASSWD: /usr/bin/pacman
+builduser ALL = NOPASSWD: /usr/bin/pacman
 EOF
-		chmod 440 "$copydir/etc/sudoers.d/nobody-pacman"
+		chmod 440 "$copydir/etc/sudoers.d/builduser-pacman"
 	fi
 
 	# This is a little gross, but this way the script is recreated every time in the
@@ -302,7 +308,7 @@ _chrootbuild() {
 			for vcsdir in */.$vcs; do
 				rm "${vcsdir%/.$vcs}"
 				cp -a "${dir}_host/${vcsdir%/.$vcs}" .
-				chown -R nobody "${vcsdir%/.$vcs}"
+				chown -R builduser "${vcsdir%/.$vcs}"
 			done
 		done
 	done
@@ -312,7 +318,7 @@ _chrootbuild() {
 	# XXX: Keep PKGBUILD writable for pkgver()
 	rm PKGBUILD*
 	cp /startdir_host/PKGBUILD* .
-	chown nobody PKGBUILD*
+	chown builduser PKGBUILD*
 
 	# Safety check
 	if [[ ! -w PKGBUILD ]]; then
@@ -320,13 +326,13 @@ _chrootbuild() {
 		exit 1
 	fi
 
-	sudo -u nobody makepkg $makepkg_args || exit 1
+	sudo -u builduser makepkg $makepkg_args || exit 1
 
 	if $run_namcap; then
 		pacman -S --needed --noconfirm namcap
 		for pkgfile in /startdir/PKGBUILD /pkgdest/*; do
 			echo "Checking ${pkgfile##*/}"
-			sudo -u nobody namcap "$pkgfile" 2>&1 | tee "/logdest/${pkgfile##*/}-namcap.log"
+			sudo -u builduser namcap "$pkgfile" 2>&1 | tee "/logdest/${pkgfile##*/}-namcap.log"
 		done
 	fi
 
