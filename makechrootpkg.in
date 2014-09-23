@@ -262,8 +262,19 @@ EOF
 
 	# This is a little gross, but this way the script is recreated every time in the
 	# working copy
-	printf $'#!/bin/bash\n%s\n_chrootbuild %q %q' "$(declare -f _chrootbuild)" \
-		"$makepkg_args" "$run_namcap" >"$copydir/chrootbuild"
+	{
+		printf $'#!/bin/bash\n%s\n_chrootbuild %q %q\n' "$(declare -f _chrootbuild)" \
+			"$makepkg_args" "$run_namcap"
+		if $run_namcap; then
+			cat <<'EOF'
+pacman -S --needed --noconfirm namcap
+for pkgfile in /startdir/PKGBUILD /pkgdest/*; do
+	echo "Checking ${pkgfile##*/}"
+	sudo -u builduser namcap "$pkgfile" 2>&1 | tee "/logdest/${pkgfile##*/}-namcap.log"
+done
+EOF
+		fi
+	} >"$copydir/chrootbuild"
 	chmod +x "$copydir/chrootbuild"
 }
 
@@ -290,7 +301,6 @@ _chrootbuild() {
 	# This function isn't run in makechrootpkg,
 	# so no global variables
 	local makepkg_args="$1"
-	local run_namcap="$2"
 
 	. /etc/profile
 	export HOME=/build
@@ -326,17 +336,7 @@ _chrootbuild() {
 		exit 1
 	fi
 
-	sudo -u builduser makepkg $makepkg_args || exit 1
-
-	if $run_namcap; then
-		pacman -S --needed --noconfirm namcap
-		for pkgfile in /startdir/PKGBUILD /pkgdest/*; do
-			echo "Checking ${pkgfile##*/}"
-			sudo -u builduser namcap "$pkgfile" 2>&1 | tee "/logdest/${pkgfile##*/}-namcap.log"
-		done
-	fi
-
-	exit 0
+	sudo -u builduser makepkg $makepkg_args
 }
 
 move_products() {
