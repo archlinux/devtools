@@ -70,7 +70,6 @@ orig_argv=("$@")
 
 while getopts 'hcur:I:l:nTD:d:' arg; do
 	case "$arg" in
-		h) usage ;;
 		c) clean_first=true ;;
 		D) bindmounts_ro+=(--bind-ro="$OPTARG") ;;
 		d) bindmounts_rw+=(--bind="$OPTARG") ;;
@@ -80,6 +79,7 @@ while getopts 'hcur:I:l:nTD:d:' arg; do
 		l) copy="$OPTARG" ;;
 		n) run_namcap=true; makepkg_args="$makepkg_args -i" ;;
 		T) temp_chroot=true; copy+="-$$" ;;
+		h|*) usage ;;
 	esac
 done
 
