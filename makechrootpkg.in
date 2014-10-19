@@ -66,6 +66,8 @@ usage() {
 	exit 1
 }
 
+orig_argv=("$@")
+
 while getopts 'hcur:I:l:nTD:d:' arg; do
 	case "$arg" in
 		h) usage ;;
@@ -81,9 +83,9 @@ while getopts 'hcur:I:l:nTD:d:' arg; do
 	esac
 done
 
-check_root "$0" "$@"
-
 [[ ! -f PKGBUILD && -z "${install_pkgs[*]}" ]] && die 'This must be run in a directory containing a PKGBUILD.'
+
+check_root "$0" "${orig_argv[@]}"
 
 # Canonicalize chrootdir, getting rid of trailing /
 chrootdir=$(readlink -e "$passeddir")

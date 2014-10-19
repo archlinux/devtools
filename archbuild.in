@@ -29,6 +29,8 @@ usage() {
 	exit 1
 }
 
+orig_argv=("$@")
+
 while getopts 'hcr:' arg; do
 	case "${arg}" in
 		c) clean_first=true ;;
@@ -37,10 +39,10 @@ while getopts 'hcr:' arg; do
 	esac
 done
 
+check_root "$0" "${orig_argv[@]}"
+
 # Pass all arguments after -- right to makepkg
 makechrootpkg_args+=("${@:$OPTIND}")
-
-check_root "$0" "$@"
 
 if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 	msg "Creating chroot for [${repo}] (${arch})..."

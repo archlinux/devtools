@@ -24,6 +24,8 @@ usage() {
 	exit 1
 }
 
+orig_argv=("$@")
+
 while getopts 'hC:M:c:' arg; do
 	case "$arg" in
 		C) pac_conf="$OPTARG" ;;
@@ -37,7 +39,7 @@ shift $(($OPTIND - 1))
 
 (( $# < 2 )) && die 'You must specify a directory and one or more packages.'
 
-check_root "$0" "$@"
+check_root "$0" "${orig_argv[@]}"
 
 working_dir="$(readlink -f $1)"
 shift 1
