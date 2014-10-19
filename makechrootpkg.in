@@ -12,7 +12,7 @@ m4_include(lib/common.sh)
 
 shopt -s nullglob
 
-makepkg_args='-s --noconfirm -L --holdver'
+makepkg_args=(-s --noconfirm -L --holdver)
 repack=false
 update_first=false
 clean_first=false
@@ -46,7 +46,7 @@ usage() {
 	echo 'command:'
 	echo '    mkarchroot <chrootdir>/root base-devel'
 	echo ''
-	echo "Default makepkg args: $makepkg_args"
+	echo "Default makepkg args: ${makepkg_args[*]}"
 	echo ''
 	echo 'Flags:'
 	echo '-h         This help'
@@ -77,7 +77,7 @@ while getopts 'hcur:I:l:nTD:d:' arg; do
 		r) passeddir="$OPTARG" ;;
 		I) install_pkgs+=("$OPTARG") ;;
 		l) copy="$OPTARG" ;;
-		n) run_namcap=true; makepkg_args="$makepkg_args -i" ;;
+		n) run_namcap=true; makepkg_args+=(-i) ;;
 		T) temp_chroot=true; copy+="-$$" ;;
 		h|*) usage ;;
 	esac
@@ -102,7 +102,7 @@ else
 fi
 
 # Pass all arguments after -- right to makepkg
-makepkg_args="$makepkg_args ${*:$OPTIND}"
+makepkg_args+=("${@:$OPTIND}")
 
 # See if -R was passed to makepkg
 for arg in "${@:OPTIND}"; do
@@ -265,8 +265,12 @@ EOF
 	# This is a little gross, but this way the script is recreated every time in the
 	# working copy
 	{
-		printf $'#!/bin/bash\n%s\n_chrootbuild %q %q || exit\n' "$(declare -f _chrootbuild)" \
-			"$makepkg_args" "$run_namcap"
+		printf '#!/bin/bash\n'
+		declare -f _chrootbuild
+		printf '_chrootbuild'
+		printf ' %q' "${makepkg_args[@]}"
+		printf ' || exit\n'
+
 		if $run_namcap; then
 			cat <<'EOF'
 pacman -S --needed --noconfirm namcap
@@ -302,7 +306,6 @@ download_sources() {
 _chrootbuild() {
 	# This function isn't run in makechrootpkg,
 	# so no global variables
-	local makepkg_args="$1"
 
 	. /etc/profile
 	export HOME=/build
@@ -338,7 +341,7 @@ _chrootbuild() {
 		exit 1
 	fi
 
-	sudo -u builduser makepkg $makepkg_args
+	sudo -u builduser makepkg "$@"
 }
 
 move_products() {
