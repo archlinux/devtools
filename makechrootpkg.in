@@ -265,7 +265,7 @@ EOF
 	# This is a little gross, but this way the script is recreated every time in the
 	# working copy
 	{
-		printf $'#!/bin/bash\n%s\n_chrootbuild %q %q\n' "$(declare -f _chrootbuild)" \
+		printf $'#!/bin/bash\n%s\n_chrootbuild %q %q || exit\n' "$(declare -f _chrootbuild)" \
 			"$makepkg_args" "$run_namcap"
 		if $run_namcap; then
 			cat <<'EOF'
