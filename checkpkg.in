@@ -63,8 +63,8 @@ for _pkgname in "${pkgname[@]}"; do
 
 	sdiff -s "$TEMPDIR/filelist-$_pkgname-old" "$TEMPDIR/filelist-$_pkgname"
 
-	find-libprovides "$TEMPDIR/$oldpkg" | sort > "$TEMPDIR/libraries-$_pkgname-old"
-	find-libprovides "$pkgfile" | sort > "$TEMPDIR/libraries-$_pkgname"
+	find-libprovides "$TEMPDIR/$oldpkg" 2>/dev/null | sort > "$TEMPDIR/libraries-$_pkgname-old"
+	find-libprovides "$pkgfile" 2>/dev/null | sort > "$TEMPDIR/libraries-$_pkgname"
 	if ! diff_output="$(sdiff -s "$TEMPDIR/libraries-$_pkgname-old" "$TEMPDIR/libraries-$_pkgname")"; then
 		msg "Sonames differ in $_pkgname!"
 		echo "$diff_output"
