@@ -32,11 +32,11 @@ else
 	setup_workdir
 
 	case ${script_mode} in
-		deps) bsdtar -C $WORKDIR -xf "$1";;
-		provides) bsdtar -C $WORKDIR -xf "$1" --include="*.so*";;
+		deps) bsdtar -C "$WORKDIR" -xf "$1";;
+		provides) bsdtar -C "$WORKDIR" -xf "$1" --include="*.so*";;
 	esac
 
-	pushd $WORKDIR >/dev/null
+	pushd "$WORKDIR" >/dev/null
 fi
 
 process_sofile() {
@@ -50,16 +50,16 @@ process_sofile() {
 	if ! in_array "${soname}=${soversion}-${soarch}" ${soobjects[@]}; then
 		# libfoo.so=1-64
 		echo "${soname}=${soversion}-${soarch}"
-		soobjects=(${soobjects[@]} "${soname}=${soversion}-${soarch}")
+		soobjects+=("${soname}=${soversion}-${soarch}")
 	fi
 }
 
 case $script_mode in
-	deps) find_args="-perm -u+x";;
-	provides) find_args="-name *.so*";;
+	deps) find_args=(-perm -u+x);;
+  provides) find_args=(-name '*.so*');;
 esac
 
-find . -type f $find_args | while read filename; do
+find . -type f "${find_args[@]}" | while read filename; do
 	if [[ $script_mode = "provides" ]]; then
 		# ignore if we don't have a shared object
 		if ! LC_ALL=C readelf -h "$filename" 2>/dev/null | grep -q '.*Type:.*DYN (Shared object file).*'; then
