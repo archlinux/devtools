@@ -156,7 +156,8 @@ prepare_chroot() {
 	# Read .makepkg.conf and gnupg pubring
 	if [[ -r $USER_HOME/.gnupg/pubring.kbx ]]; then
 		install -D "$USER_HOME/.gnupg/pubring.kbx" "$copydir/build/.gnupg/pubring.kbx"
-	elif [[ -r $USER_HOME/.gnupg/pubring.gpg ]]; then
+	fi
+	if [[ -r $USER_HOME/.gnupg/pubring.gpg ]]; then
 		install -D "$USER_HOME/.gnupg/pubring.gpg" "$copydir/build/.gnupg/pubring.gpg"
 	fi
 
