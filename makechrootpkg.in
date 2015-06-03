@@ -384,9 +384,9 @@ $update_first && arch-nspawn "$copydir" \
 
 [[ -n ${install_pkgs[*]} ]] && install_packages
 
-prepare_chroot
-
 download_sources
+
+prepare_chroot
 
 if arch-nspawn "$copydir" \
 	--bind-ro="$PWD:/startdir_host" \
