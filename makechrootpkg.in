@@ -189,7 +189,7 @@ prepare_chroot() {
 	# We can't use useradd without chrooting, otherwise it invokes PAM modules
 	# which we might not be able to load (i.e. when building i686 packages on
 	# an x86_64 host).
-	printf 'builduser:x:%d:100:builduser:/build:/usr/bin/nologin\n' "$builduser_uid" >>"$copydir/etc/passwd"
+	printf 'builduser:x:%d:100:builduser:/build:/bin/bash\n' "$builduser_uid" >>"$copydir/etc/passwd"
 	chown -R "$builduser_uid" "$copydir"/{build,pkgdest,srcpkgdest,logdest,srcdest,startdir}
 
 	if [[ -n $MAKEFLAGS ]]; then
