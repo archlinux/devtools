@@ -148,67 +148,38 @@ install_packages() {
 prepare_chroot() {
 	$repack || rm -rf "$copydir/build"
 
-	mkdir -p "$copydir/build"
-	if ! grep -q 'BUILDDIR="/build"' "$copydir/etc/makepkg.conf"; then
-		echo 'BUILDDIR="/build"' >> "$copydir/etc/makepkg.conf"
-	fi
-
-	# Read .makepkg.conf and gnupg pubring
-	if [[ -r $USER_HOME/.gnupg/pubring.kbx ]]; then
-		install -D "$USER_HOME/.gnupg/pubring.kbx" "$copydir/build/.gnupg/pubring.kbx"
-	fi
-	if [[ -r $USER_HOME/.gnupg/pubring.gpg ]]; then
-		install -D "$USER_HOME/.gnupg/pubring.gpg" "$copydir/build/.gnupg/pubring.gpg"
-	fi
-
-	mkdir -p "$copydir/pkgdest"
-	if ! grep -q 'PKGDEST="/pkgdest"' "$copydir/etc/makepkg.conf"; then
-		echo 'PKGDEST="/pkgdest"' >> "$copydir/etc/makepkg.conf"
-	fi
-
-	mkdir -p "$copydir/srcpkgdest"
-	if ! grep -q 'SRCPKGDEST="/srcpkgdest"' "$copydir/etc/makepkg.conf"; then
-		echo 'SRCPKGDEST="/srcpkgdest"' >> "$copydir/etc/makepkg.conf"
-	fi
-
-	mkdir -p "$copydir/logdest"
-	if ! grep -q 'LOGDEST="/logdest"' "$copydir/etc/makepkg.conf"; then
-		echo 'LOGDEST="/logdest"' >> "$copydir/etc/makepkg.conf"
-	fi
-
-	# These two get bind-mounted read-only
-	# XXX: makepkg dislikes having these dirs read-only, so separate them
-	mkdir -p "$copydir/startdir" "$copydir/startdir_host"
-	mkdir -p "$copydir/srcdest" "$copydir/srcdest_host"
-	if ! grep -q 'SRCDEST="/srcdest"' "$copydir/etc/makepkg.conf"; then
-		echo 'SRCDEST="/srcdest"' >> "$copydir/etc/makepkg.conf"
-	fi
-
-	builduser_uid=${SUDO_UID:-$UID}
+	local builduser_uid="${SUDO_UID:-$UID}"
+	local builduser_gid="$(id -g "$builduser_uid")"
+	local install="install -o $builduser_uid -g $builduser_gid"
+	local x
 
 	# We can't use useradd without chrooting, otherwise it invokes PAM modules
 	# which we might not be able to load (i.e. when building i686 packages on
 	# an x86_64 host).
-	printf 'builduser:x:%d:100:builduser:/build:/bin/bash\n' "$builduser_uid" >>"$copydir/etc/passwd"
-	chown -R "$builduser_uid" "$copydir"/{build,pkgdest,srcpkgdest,logdest,srcdest,startdir}
+	sed -e '/^builduser:/d' -i "$copydir"/etc/{passwd,group}
+	printf >>"$copydir/etc/group"  'builduser:x:%d:\n' $builduser_gid
+	printf >>"$copydir/etc/passwd" 'builduser:x:%d:%d:builduser:/build:/bin/bash\n' $builduser_uid $builduser_gid
 
-	if [[ -n $MAKEFLAGS ]]; then
-		sed -i '/^MAKEFLAGS=/d' "$copydir/etc/makepkg.conf"
-		echo "MAKEFLAGS='${MAKEFLAGS}'" >> "$copydir/etc/makepkg.conf"
-	fi
+	$install -d "$copydir"/{build,build/.gnupg,startdir,{pkg,srcpkg,src,log}dest}
 
-	if [[ -n $PACKAGER ]]; then
-		sed -i '/^PACKAGER=/d' "$copydir/etc/makepkg.conf"
-		echo "PACKAGER='${PACKAGER}'" >> "$copydir/etc/makepkg.conf"
-	fi
+	for x in .gnupg/pubring.{kbx,gpg}; do
+		[[ -r $USER_HOME/$x ]] || continue
+		$install -m 644 "$USER_HOME/$x" "$copydir/build/$x"
+	done
 
-	if [[ ! -f $copydir/etc/sudoers.d/builduser-pacman ]]; then
-		cat > "$copydir/etc/sudoers.d/builduser-pacman" <<EOF
+	sed -e '/^MAKEFLAGS=/d' -e '/^PACKAGER=/d' -i "$copydir/etc/makepkg.conf"
+	for x in BUILDDIR=/build PKGDEST=/pkgdest SRCPKGDEST=/srcpkgdest SRCDEST=/srcdest LOGDEST=/logdest \
+		"MAKEFLAGS='$MAKEFLAGS'" "PACKAGER='$PACKAGER'"
+	do
+		grep -q "^$x" "$copydir/etc/makepkg.conf" && continue
+		echo "$x" >>"$copydir/etc/makepkg.conf"
+	done
+
+	cat > "$copydir/etc/sudoers.d/builduser-pacman" <<EOF
 Defaults env_keep += "HOME"
 builduser ALL = NOPASSWD: /usr/bin/pacman
 EOF
-		chmod 440 "$copydir/etc/sudoers.d/builduser-pacman"
-	fi
+	chmod 440 "$copydir/etc/sudoers.d/builduser-pacman"
 
 	# This is a little gross, but this way the script is recreated every time in the
 	# working copy
@@ -220,16 +191,28 @@ EOF
 		printf ' || exit\n'
 
 		if $run_namcap; then
-			cat <<'EOF'
-pacman -S --needed --noconfirm namcap
-for pkgfile in /startdir/PKGBUILD /pkgdest/*; do
-	echo "Checking ${pkgfile##*/}"
-	sudo -u builduser namcap "$pkgfile" 2>&1 | tee "/logdest/${pkgfile##*/}-namcap.log"
-done
-EOF
+			declare -f _chrootnamcap
+			printf '_chrootnamcap || exit\n'
 		fi
 	} >"$copydir/chrootbuild"
 	chmod +x "$copydir/chrootbuild"
+}
+
+# These functions aren't run in makechrootpkg,
+# so no global variables
+_chrootbuild() {
+	. /etc/profile
+	export HOME=/build
+	cd /startdir
+	sudo -u builduser makepkg "$@"
+}
+
+_chrootnamcap() {
+	pacman -S --needed --noconfirm namcap
+	for pkgfile in /startdir/PKGBUILD /pkgdest/*; do
+		echo "Checking ${pkgfile##*/}"
+		sudo -u builduser namcap "$pkgfile" 2>&1 | tee "/logdest/${pkgfile##*/}-namcap.log"
+	done
 }
 
 download_sources() {
@@ -249,47 +232,6 @@ download_sources() {
 
 	# Clean up garbage from verifysource
 	rm -rf $builddir
-}
-
-_chrootbuild() {
-	# This function isn't run in makechrootpkg,
-	# so no global variables
-
-	. /etc/profile
-	export HOME=/build
-	shopt -s nullglob
-
-	# XXX: Workaround makepkg disliking read-only dirs
-	ln -sft /srcdest /srcdest_host/*
-	ln -sft /startdir /startdir_host/*
-
-	# XXX: Keep bzr and svn sources writable
-	# Since makepkg 4.1.1 they get checked out via cp -a, copying the symlink
-	for dir in /srcdest /startdir; do
-		for vcs in bzr svn; do
-			cd "$dir"
-			for vcsdir in */.$vcs; do
-				rm "${vcsdir%/.$vcs}"
-				cp -a "${dir}_host/${vcsdir%/.$vcs}" .
-				chown -R builduser "${vcsdir%/.$vcs}"
-			done
-		done
-	done
-
-	cd /startdir
-
-	# XXX: Keep PKGBUILD writable for pkgver()
-	rm PKGBUILD*
-	cp /startdir_host/PKGBUILD* .
-	chown builduser PKGBUILD*
-
-	# Safety check
-	if [[ ! -w PKGBUILD ]]; then
-		echo "Can't write to PKGBUILD!"
-		exit 1
-	fi
-
-	sudo -u builduser makepkg "$@"
 }
 
 move_products() {
@@ -389,8 +331,8 @@ download_sources
 prepare_chroot
 
 if arch-nspawn "$copydir" \
-	--bind-ro="$PWD:/startdir_host" \
-	--bind-ro="$SRCDEST:/srcdest_host" \
+	--bind="$PWD:/startdir" \
+	--bind="$SRCDEST:/srcdest" \
 	"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
 	/chrootbuild
 then
