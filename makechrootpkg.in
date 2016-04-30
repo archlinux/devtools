@@ -127,19 +127,16 @@ clean_temporary() {
 }
 
 install_packages() {
-	local pkgname
+	local -a pkgnames
+	local ret
 
-	for install_pkg in "${install_pkgs[@]}"; do
-		pkgname="${install_pkg##*/}"
-		cp "$install_pkg" "$copydir/$pkgname"
+	pkgnames=("${install_pkgs[@]##*/}")
 
-		arch-nspawn "$copydir" \
-			"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
-			pacman -U /$pkgname --noconfirm
-		(( ret += !! $? ))
-
-		rm "$copydir/$pkgname"
-	done
+	cp -- "${install_pkgs[@]}" "$copydir/root/"
+	arch-nspawn "$copydir" "${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
+		pacman -U --noconfirm -- "${pkgnames[@]/#//root/}"
+	ret=$?
+	rm -- "${pkgnames[@]/#/$copydir/root/}"
 
 	# If there is no PKGBUILD we are done
 	[[ -f PKGBUILD ]] || exit $ret
