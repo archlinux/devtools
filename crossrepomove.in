@@ -29,7 +29,7 @@ case $scriptname in
 		;;
 esac
 
-server='nymeria.archlinux.org'
+server='repos.archlinux.org'
 source_svn="svn+ssh://svn-${source_name}@${server}/srv/repos/svn-${source_name}/svn"
 target_svn="svn+ssh://svn-${target_name}@${server}/srv/repos/svn-${target_name}/svn"
 source_dbscripts="/srv/repos/svn-${source_name}/dbscripts"
