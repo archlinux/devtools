@@ -75,6 +75,8 @@ printf '%s.UTF-8 UTF-8\n' en_US de_DE > "$working_dir/etc/locale.gen"
 echo 'LANG=C' > "$working_dir/etc/locale.conf"
 echo "$CHROOT_VERSION" > "$working_dir/.arch-chroot"
 
+systemd-machine-id-setup --root="$working_dir"
+
 exec arch-nspawn \
 	${pac_conf:+-C "$pac_conf"} \
 	${makepkg_conf:+-M "$makepkg_conf"} \
