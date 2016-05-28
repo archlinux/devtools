@@ -92,7 +92,7 @@ for _arch in ${arch[@]}; do
 done
 
 if [[ -z $server ]]; then
-	server='nymeria.archlinux.org'
+	server='repos.archlinux.org'
 fi
 
 if [[ -n $(svn status -q) ]]; then

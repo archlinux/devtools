@@ -1,4 +1,4 @@
-V=20151129
+V=20160527.1
 
 PREFIX = /usr/local
 
@@ -112,6 +112,7 @@ dist:
 	gpg --detach-sign --use-agent devtools-$(V).tar.gz
 
 upload:
-	scp devtools-$(V).tar.gz devtools-$(V).tar.gz.sig nymeria.archlinux.org:/srv/ftp/other/devtools/
+	scp devtools-$(V).tar.gz devtools-$(V).tar.gz.sig repos.archlinux.org:/srv/ftp/other/devtools/
 
 .PHONY: all clean install uninstall dist upload
+
