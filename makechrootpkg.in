@@ -46,6 +46,10 @@ usage() {
 	echo 'command:'
 	echo '    mkarchroot <chrootdir>/root base-devel'
 	echo ''
+	echo 'This script reads {SRC,SRCPKG,PKG,LOG}DEST, MAKEFLAGS and PACKAGER'
+	echo 'from makepkg.conf(5), if those variables are not part of the'
+	echo 'environment.'
+	echo ''
 	echo "Default makepkg args: ${makepkg_args[*]}"
 	echo ''
 	echo 'Flags:'
