@@ -21,6 +21,7 @@ run_namcap=false
 temp_chroot=false
 chrootdir=
 passeddir=
+makepkg_user=
 declare -a install_pkgs
 declare -i ret=0
 
@@ -67,6 +68,7 @@ usage() {
 	echo "           Default: $copy"
 	echo '-n         Run namcap on the package'
 	echo '-T         Build in a temporary directory'
+	echo '-U         Run makepkg as a specified user'
 	exit 1
 }
 
@@ -218,13 +220,13 @@ download_sources() {
 	chmod 1777 "$builddir"
 
 	# Ensure sources are downloaded
-	if [[ -n $SUDO_USER ]]; then
-		sudo -u $SUDO_USER env SRCDEST="$SRCDEST" BUILDDIR="$builddir" \
+	makepkg_user=${makepkg_user:-$SUDO_USER}
+	if [[ -n $makepkg_user ]]; then
+		sudo -u "$makepkg_user" env SRCDEST="$SRCDEST" BUILDDIR="$builddir" \
 			makepkg --config="$copydir/etc/makepkg.conf" --verifysource -o
 	else
-		( export SRCDEST BUILDDIR="$builddir"
-			makepkg --asroot --config="$copydir/etc/makepkg.conf" --verifysource -o
-		)
+		error "Running makepkg as root is not allowed."
+		exit 1
 	fi
 	(( $? != 0 )) && die "Could not download sources."
 
@@ -258,7 +260,7 @@ move_products() {
 
 orig_argv=("$@")
 
-while getopts 'hcur:I:l:nTD:d:' arg; do
+while getopts 'hcur:I:l:nTD:d:U:' arg; do
 	case "$arg" in
 		c) clean_first=true ;;
 		D) bindmounts_ro+=(--bind-ro="$OPTARG") ;;
@@ -269,11 +271,13 @@ while getopts 'hcur:I:l:nTD:d:' arg; do
 		l) copy="$OPTARG" ;;
 		n) run_namcap=true; makepkg_args+=(-i) ;;
 		T) temp_chroot=true; copy+="-$$" ;;
+		U) makepkg_user="$OPTARG" ;;
 		h|*) usage ;;
 	esac
 done
 
 [[ ! -f PKGBUILD && -z "${install_pkgs[*]}" ]] && die 'This must be run in a directory containing a PKGBUILD.'
+[[ -n $makepkg_user && -z $(id -u "$makepkg_user") ]] && die 'Invalid makepkg user.'
 
 check_root "$0" "${orig_argv[@]}"
 
