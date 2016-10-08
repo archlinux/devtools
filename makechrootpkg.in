@@ -199,9 +199,7 @@ EOF
 # so no global variables
 _chrootbuild() {
 	. /etc/profile
-	export HOME=/build
-	cd /startdir
-	sudo -u builduser makepkg "$@"
+	sudo -iu builduser bash -c 'cd /startdir; makepkg "$@"' -bash "$@"
 }
 
 _chrootnamcap() {
