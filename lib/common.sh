@@ -162,8 +162,6 @@ slock() {
 # usage: pkgver_equal( $pkgver1, $pkgver2 )
 ##
 pkgver_equal() {
-	local left right
-
 	if [[ $1 = *-* && $2 = *-* ]]; then
 		# if both versions have a pkgrel, then they must be an exact match
 		[[ $1 = "$2" ]]
