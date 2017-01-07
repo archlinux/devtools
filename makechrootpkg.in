@@ -233,6 +233,12 @@ move_products() {
 	for pkgfile in "$copydir"/pkgdest/*; do
 		chown "$src_owner" "$pkgfile"
 		mv "$pkgfile" "$PKGDEST"
+
+		# Fix broken symlink because of temporary chroot PKGDEST /pkgdest
+		if [[ "$PWD" != "$PKGDEST" && -L "$PWD/${pkgfile##*/}" ]]; then
+			rm "$PWD/${pkgfile##*/}"
+			ln -s "$PKGDEST/${pkgfile##*/}" "$PWD/${pkgfile##*/}"
+		fi
 	done
 
 	for l in "$copydir"/logdest/*; do
