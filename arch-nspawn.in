@@ -10,7 +10,7 @@
 
 m4_include(lib/common.sh)
 
-CHROOT_VERSION='v3'
+CHROOT_VERSION='v4'
 
 working_dir=''
 
