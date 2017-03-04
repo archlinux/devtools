@@ -236,8 +236,7 @@ move_products() {
 
 		# Fix broken symlink because of temporary chroot PKGDEST /pkgdest
 		if [[ "$PWD" != "$PKGDEST" && -L "$PWD/${pkgfile##*/}" ]]; then
-			rm "$PWD/${pkgfile##*/}"
-			ln -s "$PKGDEST/${pkgfile##*/}" "$PWD/${pkgfile##*/}"
+			ln -sf "$PKGDEST/${pkgfile##*/}"
 		fi
 	done
 
