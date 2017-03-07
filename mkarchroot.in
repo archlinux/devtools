@@ -9,8 +9,7 @@
 # GNU General Public License for more details.
 
 m4_include(lib/common.sh)
-
-CHROOT_VERSION='v4'
+m4_include(lib/archroot.sh)
 
 working_dir=''
 
