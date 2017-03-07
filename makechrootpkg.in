@@ -96,7 +96,7 @@ create_chroot() {
 		slock 8 "$chrootdir/root.lock" "Locking clean chroot"
 
 		stat_busy "Creating clean working copy [$copy]"
-		if [[ "$chroottype" == btrfs ]] && ! mountpoint -q "$copydir"; then
+		if is_btrfs "$chrootdir" && ! mountpoint -q "$copydir"; then
 			if [[ -d $copydir ]]; then
 				btrfs subvolume delete "$copydir" >/dev/null ||
 					die "Unable to delete subvolume %s" "$copydir"
@@ -119,7 +119,7 @@ create_chroot() {
 
 clean_temporary() {
 	stat_busy "Removing temporary copy [$copy]"
-	if [[ "$chroottype" == btrfs ]] && ! mountpoint -q "$copydir"; then
+	if is_btrfs "$chrootdir" && ! mountpoint -q "$copydir"; then
 		btrfs subvolume delete "$copydir" >/dev/null ||
 			die "Unable to delete subvolume %s" "$copydir"
 	else
@@ -284,9 +284,6 @@ check_root
 chrootdir=$(readlink -e "$passeddir")
 [[ ! -d $chrootdir ]] && die "No chroot dir defined, or invalid path '%s'" "$passeddir"
 [[ ! -d $chrootdir/root ]] && die "Missing chroot dir root directory. Try using: mkarchroot %s/root base-devel" "$chrootdir"
-
-# Detect chrootdir filesystem type
-chroottype=$(stat -f -c %T "$chrootdir")
 
 if [[ ${copy:0:1} = / ]]; then
 	copydir=$copy

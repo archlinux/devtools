@@ -12,3 +12,11 @@ check_root() {
 		exec su root -c "$(printf ' %q' "${orig_argv[@]}")"
 	fi
 }
+
+##
+#  usage : is_btrfs( $path )
+# return : whether $path is on a btrfs
+##
+is_btrfs() {
+	[[ -e "$1" && "$(stat -f -c %T "$1")" == btrfs ]]
+}

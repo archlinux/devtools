@@ -57,7 +57,7 @@ mkdir -p "$working_dir"
 
 lock 9 "${working_dir}.lock" "Locking chroot"
 
-if [[ $(stat -f -c %T "$working_dir") == btrfs ]]; then
+if is_btrfs "$working_dir"; then
 	rmdir "$working_dir"
 	if ! btrfs subvolume create "$working_dir"; then
 		die "Couldn't create subvolume for '%s'" "$working_dir"
