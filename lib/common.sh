@@ -227,15 +227,3 @@ find_cached_package() {
 			return 1
 	esac
 }
-
-##
-#  usage : check_root ("$0" "$@")
-##
-check_root() {
-	(( EUID == 0 )) && return
-	if type -P sudo >/dev/null; then
-		exec sudo -- "$@"
-	else
-		exec su root -c "$(printf ' %q' "$@")"
-	fi
-}

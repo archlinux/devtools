@@ -9,6 +9,7 @@
 # GNU General Public License for more details.
 
 m4_include(lib/common.sh)
+m4_include(lib/archroot.sh)
 
 shopt -s nullglob
 
@@ -258,8 +259,6 @@ move_products() {
 }
 # }}}
 
-orig_argv=("$@")
-
 while getopts 'hcur:I:l:nTD:d:U:' arg; do
 	case "$arg" in
 		c) clean_first=true ;;
@@ -279,7 +278,7 @@ done
 [[ ! -f PKGBUILD && -z "${install_pkgs[*]}" ]] && die 'This must be run in a directory containing a PKGBUILD.'
 [[ -n $makepkg_user && -z $(id -u "$makepkg_user") ]] && die 'Invalid makepkg user.'
 
-check_root "$0" "${orig_argv[@]}"
+check_root
 
 # Canonicalize chrootdir, getting rid of trailing /
 chrootdir=$(readlink -e "$passeddir")
