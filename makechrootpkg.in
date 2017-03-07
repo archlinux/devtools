@@ -97,10 +97,8 @@ create_chroot() {
 
 		stat_busy "Creating clean working copy [$copy]"
 		if is_btrfs "$chrootdir" && ! mountpoint -q "$copydir"; then
-			if [[ -d $copydir ]]; then
-				btrfs subvolume delete "$copydir" >/dev/null ||
-					die "Unable to delete subvolume %s" "$copydir"
-			fi
+			subvolume_delete_recursive "$copydir" ||
+				die "Unable to delete subvolume %s" "$copydir"
 			btrfs subvolume snapshot "$chrootdir/root" "$copydir" >/dev/null ||
 				die "Unable to create subvolume %s" "$copydir"
 		else

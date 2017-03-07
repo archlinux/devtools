@@ -52,9 +52,7 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 
 		lock 9 "$copy.lock" "Locking chroot copy '$copy'"
 
-		if is_btrfs "${copy}"; then
-			{ type -P btrfs && btrfs subvolume delete "${copy}"; } &>/dev/null
-		fi
+		subvolume_delete_recursive "${copy}"
 		rm -rf --one-file-system "${copy}"
 	done
 	exec 9>&-
