@@ -108,7 +108,7 @@ create_chroot() {
 		stat_done
 
 		# Drop the read lock again
-		exec 8>&-
+		lock_close 8
 	fi
 
 	# Update mtime

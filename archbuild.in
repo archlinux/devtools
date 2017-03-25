@@ -55,7 +55,7 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 		subvolume_delete_recursive "${copy}"
 		rm -rf --one-file-system "${copy}"
 	done
-	exec 9>&-
+	lock_close 9
 
 	rm -rf --one-file-system "${chroots}/${repo}-${arch}"
 	mkdir -p "${chroots}/${repo}-${arch}"

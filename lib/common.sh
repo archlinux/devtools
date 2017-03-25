@@ -159,6 +159,14 @@ slock() {
 }
 
 ##
+#  usage : lock_close( $fd )
+##
+lock_close() {
+	local fd=$1
+	exec {fd}>&-
+}
+
+##
 # usage: pkgver_equal( $pkgver1, $pkgver2 )
 ##
 pkgver_equal() {
