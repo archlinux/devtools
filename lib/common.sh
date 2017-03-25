@@ -138,7 +138,11 @@ get_full_version() {
 #  usage : lock( $fd, $file, $message )
 ##
 lock() {
-	eval "exec $1>"'"$2"'
+	# Only reopen the FD if it wasn't handed to us
+	if ! [[ "/dev/fd/$1" -ef "$2" ]]; then
+		eval "exec $1>"'"$2"'
+	fi
+
 	if ! flock -n $1; then
 		stat_busy "$3"
 		flock $1
@@ -150,7 +154,11 @@ lock() {
 #  usage : slock( $fd, $file, $message )
 ##
 slock() {
-	eval "exec $1>"'"$2"'
+	# Only reopen the FD if it wasn't handed to us
+	if ! [[ "/dev/fd/$1" -ef "$2" ]]; then
+		eval "exec $1>"'"$2"'
+	fi
+
 	if ! flock -sn $1; then
 		stat_busy "$3"
 		flock -s $1
