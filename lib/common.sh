@@ -59,12 +59,18 @@ stat_done() {
 	printf "${BOLD}done${ALL_OFF}\n" >&2
 }
 
+_setup_workdir=false
 setup_workdir() {
 	[[ -z $WORKDIR ]] && WORKDIR=$(mktemp -d --tmpdir "${0##*/}.XXXXXXXXXX")
+	_setup_workdir=true
+	trap 'trap_abort' INT QUIT TERM HUP
+	trap 'trap_exit' EXIT
 }
 
 cleanup() {
-	[[ -n $WORKDIR ]] && rm -rf "$WORKDIR"
+	if [[ -n $WORKDIR ]] && $_setup_workdir; then
+		rm -rf "$WORKDIR"
+	fi
 	exit ${1:-0}
 }
 
@@ -88,9 +94,6 @@ die() {
 	(( $# )) && error "$@"
 	cleanup 255
 }
-
-trap 'trap_abort' INT QUIT TERM HUP
-trap 'trap_exit' EXIT
 
 ##
 #  usage : in_array( $needle, $haystack )
