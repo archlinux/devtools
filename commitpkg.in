@@ -47,7 +47,7 @@ done
 for i in 'changelog' 'install'; do
 	while read -r file; do
 		# evaluate any bash variables used
-		eval file=\"$(sed 's/^\(['\''"]\)\(.*\)\1$/\2/' <<< "$file")\"
+		eval file=\"$(sed "s/^\(['\"]\)\(.*\)\1\$/\2/" <<< "$file")\"
 		needsversioning+=("$file")
 	done < <(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
 done
