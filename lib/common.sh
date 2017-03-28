@@ -1,3 +1,5 @@
+#!/hint/bash
+
 # Avoid any encoding problems
 export LANG=C
 

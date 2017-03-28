@@ -1,3 +1,5 @@
+#!/hint/bash
+
 _devtools_compgen() {
   local i r
   COMPREPLY=($(compgen -W '$*' -- "$cur"))

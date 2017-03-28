@@ -1,3 +1,5 @@
+#!/hint/bash
+
 CHROOT_VERSION='v4'
 
 ##
