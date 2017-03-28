@@ -1,4 +1,6 @@
 #!/bin/bash
+# License: Unspecified
+#
 # This script rebuilds a list of packages in order
 # and reports anything that fails
 # 

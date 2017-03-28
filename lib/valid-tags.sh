@@ -1,4 +1,5 @@
 #!/hint/bash
+# License: Unspecified
 
 _arch=(
 	i686

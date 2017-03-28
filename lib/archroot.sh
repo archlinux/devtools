@@ -1,4 +1,5 @@
 #!/hint/bash
+# License: Unspecified
 
 CHROOT_VERSION='v4'
 

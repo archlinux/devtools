@@ -1,5 +1,7 @@
 #!/hint/bash
 
+# License: Unspecified
+
 # Avoid any encoding problems
 export LANG=C
 

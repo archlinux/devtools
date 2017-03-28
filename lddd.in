@@ -2,6 +2,7 @@
 #
 # lddd - find broken library links on your machine
 #
+# License: Unspecified
 
 m4_include(lib/common.sh)
 

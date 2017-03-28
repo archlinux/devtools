@@ -1,4 +1,5 @@
 #!/hint/bash
+# License: Unspecified
 
 _devtools_compgen() {
   local i r

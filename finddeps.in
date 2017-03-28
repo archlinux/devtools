@@ -2,6 +2,7 @@
 #
 # finddeps - find packages that depend on a given depname
 #
+# License: Unspecified
 
 m4_include(lib/common.sh)
 
