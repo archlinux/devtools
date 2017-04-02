@@ -231,7 +231,7 @@ download_sources() {
 	(( $? != 0 )) && die "Could not download sources."
 
 	# Clean up garbage from verifysource
-	rm -rf $builddir
+	rm -rf "$builddir"
 }
 
 move_products() {
