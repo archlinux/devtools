@@ -45,13 +45,13 @@ check_root
 makechrootpkg_args+=("${@:$OPTIND}")
 
 if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
-	msg "Creating chroot for [${repo}] (${arch})..."
+	msg "Creating chroot for [%s] (%s)..." "${repo}" "${arch}"
 
 	for copy in "${chroots}/${repo}-${arch}"/*; do
 		[[ -d $copy ]] || continue
-		msg2 "Deleting chroot copy '$(basename "${copy}")'..."
+		msg2 "Deleting chroot copy '%s'..." "$(basename "${copy}")"
 
-		lock 9 "$copy.lock" "Locking chroot copy '$copy'"
+		lock 9 "$copy.lock" "Locking chroot copy '%s'" "$copy"
 
 		subvolume_delete_recursive "${copy}"
 		rm -rf --one-file-system "${copy}"
@@ -74,5 +74,5 @@ else
                 pacman -Syu --noconfirm || abort
 fi
 
-msg "Building in chroot for [${repo}] (${arch})..."
+msg "Building in chroot for [%s] (%s)..." "${repo}" "${arch}"
 exec makechrootpkg -r "${chroots}/${repo}-${arch}" "${makechrootpkg_args[@]}"

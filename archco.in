@@ -6,7 +6,7 @@ m4_include(lib/common.sh)
 scriptname=${0##*/}
 
 if [[ -z $1 ]]; then
-	echo 'Usage: '$scriptname' <package name>...'
+	printf 'Usage: %s <package name>...\n' "$scriptname"
 	exit 1
 fi
 

@@ -70,8 +70,8 @@ for _pkgname in "${pkgname[@]}"; do
 		msg "Sonames differ in $_pkgname!"
 		echo "$diff_output"
 	else
-		msg "No soname differences for $_pkgname."
+		msg "No soname differences for %s." "$_pkgname"
 	fi
 done
 
-msg "Files saved to $TEMPDIR"
+msg "Files saved to %s" "$TEMPDIR"

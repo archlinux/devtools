@@ -56,7 +56,7 @@ error() {
 
 stat_busy() {
 	local mesg=$1; shift
-	printf "${GREEN}==>${ALL_OFF}${BOLD} ${mesg}...${ALL_OFF}" >&2
+	printf "${GREEN}==>${ALL_OFF}${BOLD} ${mesg}...${ALL_OFF}" "$@" >&2
 }
 
 stat_done() {
@@ -142,7 +142,7 @@ get_full_version() {
 }
 
 ##
-#  usage : lock( $fd, $file, $message )
+#  usage : lock( $fd, $file, $message, [ $message_arguments... ] )
 ##
 lock() {
 	# Only reopen the FD if it wasn't handed to us
@@ -152,14 +152,14 @@ lock() {
 	fi
 
 	if ! flock -n $1; then
-		stat_busy "$3"
+		stat_busy "${@:3}"
 		flock $1
 		stat_done
 	fi
 }
 
 ##
-#  usage : slock( $fd, $file, $message )
+#  usage : slock( $fd, $file, $message, [ $message_arguments... ] )
 ##
 slock() {
 	# Only reopen the FD if it wasn't handed to us
@@ -169,7 +169,7 @@ slock() {
 	fi
 
 	if ! flock -sn $1; then
-		stat_busy "$3"
+		stat_busy "${@:3}"
 		flock -s $1
 		stat_done
 	fi

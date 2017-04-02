@@ -59,7 +59,7 @@ done
 known_files=("${known_files[@]/%/@}")
 
 for tag in "$@"; do
-	stat_busy "Copying ${trunk} to ${tag}"
+	stat_busy "Copying %s to %s" "${trunk}" "${tag}"
 
 	if [[ -d repos/$tag ]]; then
 		declare -a trash

@@ -17,7 +17,7 @@ TEMPDIR=$(mktemp -d --tmpdir lddd-script.XXXX)
 msg 'Go out and drink some tea, this will take a while :) ...'
 #  Check ELF binaries in the PATH and specified dir trees.
 for tree in $PATH $libdirs $extras; do
-	msg2 "DIR $tree"
+	msg2 "DIR %s" "$tree"
 
 	#  Get list of files in tree.
 	files=$(find $tree -type f ! -name '*.a' ! -name '*.la' ! -name '*.py*' ! -name '*.txt' ! -name '*.h' ! -name '*.ttf' ! \
@@ -46,4 +46,4 @@ done
 # clean list
 sort -u $TEMPDIR/pacman.txt >> $TEMPDIR/possible-rebuilds.txt
 
-msg "Files saved to $TEMPDIR"
+msg "Files saved to %s" "$TEMPDIR"

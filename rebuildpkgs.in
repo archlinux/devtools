@@ -14,8 +14,8 @@
 m4_include(lib/common.sh)
 
 if (( $# < 1 )); then
-	echo "Usage: $(basename $0) <chrootdir> <packages to rebuild>"
-	echo "  example: $(basename $0) ~/chroot readline bash foo bar baz"
+	printf 'Usage: %s <chrootdir> <packages to rebuild>\n' "$(basename "$0")"
+	printf '  example: %s ~/chroot readline bash foo bar baz\n' "$(basename "$0")"
 	exit 1
 fi
 
@@ -51,7 +51,7 @@ pkgs="$@"
 
 SVNPATH='svn+ssh://repos.archlinux.org/srv/repos/svn-packages/svn'
 
-msg "Work will be done in $(pwd)/rebuilds"
+msg "Work will be done in %s" "$(pwd)/rebuilds"
 
 REBUILD_ROOT="$(pwd)/rebuilds"
 mkdir -p "$REBUILD_ROOT"
@@ -63,11 +63,11 @@ FAILED=""
 for pkg in $pkgs; do
 	cd "$REBUILD_ROOT/svn-packages"
 
-	msg2 "Building '$pkg'"
+	msg2 "Building '%s'" "$pkg"
 	/usr/bin/svn update "$pkg"
 	if [[ ! -d "$pkg/trunk" ]]; then
 		FAILED="$FAILED $pkg"
-		warning "$pkg does not exist in SVN"
+		warning "%s does not exist in SVN" "$pkg"
 		continue
 	fi
 	cd "$pkg/trunk/"
@@ -76,14 +76,14 @@ for pkg in $pkgs; do
 
 	if ! sudo makechrootpkg -u -d -r "$chrootdir" -- --noconfirm; then
 		FAILED="$FAILED $pkg"
-		error "$pkg Failed!"
+		error "%s Failed!" "$pkg"
 	else
 		pkgfile=$(pkg_from_pkgbuild)
 		if [[ -e $pkgfile ]]; then
-			msg2 "$pkg Complete"
+			msg2 "%s Complete" "$pkg"
 		else
 			FAILED="$FAILED $pkg"
-			error "$pkg Failed, no package built!"
+			error "%s Failed, no package built!" "$pkg"
 		fi
 	fi
 done
@@ -92,7 +92,7 @@ cd "$REBUILD_ROOT"
 if [[ -n $FAILED ]]; then
 	msg 'Packages failed:'
 	for pkg in $FAILED; do
-		msg2 "$pkg"
+		msg2 "%s" "$pkg"
 	done
 fi
 

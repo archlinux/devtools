@@ -6,7 +6,7 @@ m4_include(lib/common.sh)
 scriptname=${0##*/}
 
 if [[ -z $1 ]]; then
-	echo 'Usage: '$scriptname' [pkgbase]'
+	printf 'Usage: %s [pkgbase]\n' "$scriptname"
 	exit 1
 fi
 
@@ -40,13 +40,13 @@ setup_workdir
 
 pushd $WORKDIR >/dev/null
 
-msg "Downloading sources for ${pkgbase}"
+msg "Downloading sources for %s" "${pkgbase}"
 svn -q checkout -N "${target_svn}" target_checkout
 mkdir -p "target_checkout/${pkgbase}/repos"
 svn -q export "${source_svn}/${pkgbase}/trunk" "target_checkout/${pkgbase}/trunk" || die
 . "target_checkout/${pkgbase}/trunk/PKGBUILD"
 
-msg "Downloading packages for ${pkgbase}"
+msg "Downloading packages for %s" "${pkgbase}"
 for _arch in ${arch[@]}; do
 	if [[ "${_arch[*]}" == 'any' ]]; then
 		repo_arch='x86_64'
@@ -60,7 +60,7 @@ for _arch in ${arch[@]}; do
 	done
 done
 
-msg "Adding ${pkgbase} to ${target_repo}"
+msg "Adding %s to %s" "${pkgbase}" "${target_repo}"
 svn -q add "target_checkout/${pkgbase}"
 svn -q propset svn:keywords 'Id' "target_checkout/${pkgbase}/trunk/PKGBUILD"
 svn -q commit -m"${scriptname}: Moving ${pkgbase} from ${source_repo} to ${target_repo}" target_checkout
@@ -70,7 +70,7 @@ popd >/dev/null
 
 ssh "${server}" "${target_dbscripts}/db-update" || die
 
-msg "Removing ${pkgbase} from ${source_repo}"
+msg "Removing %s from %s" "${pkgbase}" "${source_repo}"
 for _arch in ${arch[@]}; do
 	ssh "${server}" "${source_dbscripts}/db-remove ${source_repo} ${_arch} ${pkgbase}"
 done

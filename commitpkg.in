@@ -136,7 +136,7 @@ for _arch in ${arch[@]}; do
 		fullver=$(get_full_version $_pkgname)
 
 		if ! pkgfile=$(find_cached_package "$_pkgname" "$fullver" "${_arch}"); then
-			warning "Skipping $_pkgname-$fullver-$_arch: failed to locate package file"
+			warning "Skipping %s: failed to locate package file" "$_pkgname-$fullver-$_arch"
 			skip_arches+=($_arch)
 			continue 2
 		fi
@@ -144,7 +144,7 @@ for _arch in ${arch[@]}; do
 
 		sigfile="${pkgfile}.sig"
 		if [[ ! -f $sigfile ]]; then
-			msg "Signing package ${pkgfile}..."
+			msg "Signing package %s..." "${pkgfile}"
 			if [[ -n $GPGKEY ]]; then
 				SIGNWITHKEY="-u ${GPGKEY}"
 			fi
@@ -184,7 +184,7 @@ fi
 if [[ "${arch[*]}" == 'any' ]]; then
 	if [[ -d ../repos/$repo-i686 && -d ../repos/$repo-x86_64 ]]; then
 		pushd ../repos/ >/dev/null
-		stat_busy "Removing $repo-i686 and $repo-x86_64"
+		stat_busy "Removing %s and %s" "$repo-i686" "$repo-x86_64"
 		svn rm -q $repo-i686
 		svn rm -q $repo-x86_64
 		svn commit -q -m "Removed $repo-i686 and $repo-x86_64 for $pkgname"
@@ -194,7 +194,7 @@ if [[ "${arch[*]}" == 'any' ]]; then
 else
 	if [[ -d ../repos/$repo-any ]]; then
 		pushd ../repos/ >/dev/null
-		stat_busy "Removing $repo-any"
+		stat_busy "Removing %s" "$repo-any"
 		svn rm -q $repo-any
 		svn commit -q -m "Removed $repo-any for $pkgname"
 		stat_done
