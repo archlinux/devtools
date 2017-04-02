@@ -190,9 +190,7 @@ EOF
 	{
 		printf '#!/bin/bash\n'
 		declare -f _chrootbuild
-		printf '_chrootbuild'
-		printf ' %q' "${makepkg_args[@]}"
-		printf ' || exit\n'
+		printf '_chrootbuild "$@" || exit\n'
 
 		if $run_namcap; then
 			declare -f _chrootnamcap
@@ -338,7 +336,7 @@ if arch-nspawn "$copydir" \
 	--bind="$PWD:/startdir" \
 	--bind="$SRCDEST:/srcdest" \
 	"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
-	/chrootbuild
+	/chrootbuild "${makepkg_args[@]}"
 then
 	move_products
 else
