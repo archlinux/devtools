@@ -1,4 +1,5 @@
 #!/hint/bash
+# This may be included with or without `set -euE`
 
 # License: Unspecified
 
@@ -8,7 +9,7 @@ export LANG=C
 shopt -s extglob
 
 # check if messages are to be printed using color
-unset ALL_OFF BOLD BLUE GREEN RED YELLOW
+declare ALL_OFF='' BOLD='' BLUE='' GREEN='' RED='' YELLOW=''
 if [[ -t 2 ]]; then
 	# prefer terminal safe colored and bold text when tput is supported
 	if tput setaf 0 &>/dev/null; then
@@ -65,14 +66,14 @@ stat_done() {
 
 _setup_workdir=false
 setup_workdir() {
-	[[ -z $WORKDIR ]] && WORKDIR=$(mktemp -d --tmpdir "${0##*/}.XXXXXXXXXX")
+	[[ -z ${WORKDIR:-} ]] && WORKDIR=$(mktemp -d --tmpdir "${0##*/}.XXXXXXXXXX")
 	_setup_workdir=true
 	trap 'trap_abort' INT QUIT TERM HUP
 	trap 'trap_exit' EXIT
 }
 
 cleanup() {
-	if [[ -n $WORKDIR ]] && $_setup_workdir; then
+	if [[ -n ${WORKDIR:-} ]] && $_setup_workdir; then
 		rm -rf "$WORKDIR"
 	fi
 	exit ${1:-0}
