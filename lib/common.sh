@@ -3,6 +3,9 @@
 
 # License: Unspecified
 
+[[ -z ${_INCLUDE_COMMON_SH:-} ]] || return 0
+_INCLUDE_COMMON_SH=true
+
 # Avoid any encoding problems
 export LANG=C
 
