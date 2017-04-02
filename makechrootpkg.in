@@ -20,7 +20,6 @@ makepkg_args=("${default_makepkg_args[@]}")
 repack=false
 update_first=false
 clean_first=false
-install_pkg=
 run_namcap=false
 temp_chroot=false
 chrootdir=
