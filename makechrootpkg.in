@@ -15,26 +15,28 @@ m4_include(lib/archroot.sh)
 
 shopt -s nullglob
 
-default_makepkg_args=(-s --noconfirm -L --holdver)
-makepkg_args=("${default_makepkg_args[@]}")
-repack=false
-update_first=false
-clean_first=false
-run_namcap=false
-temp_chroot=false
-chrootdir=
-passeddir=
-makepkg_user=
-declare -a install_pkgs
-declare -i ret=0
+init_variables() {
+	default_makepkg_args=(-s --noconfirm -L --holdver)
+	makepkg_args=("${default_makepkg_args[@]}")
+	repack=false
+	update_first=false
+	clean_first=false
+	run_namcap=false
+	temp_chroot=false
+	chrootdir=
+	passeddir=
+	makepkg_user=
+	declare -ga install_pkgs
+	declare -gi ret=0
 
-bindmounts_ro=()
-bindmounts_rw=()
+	bindmounts_ro=()
+	bindmounts_rw=()
 
-copy=$USER
-[[ -n ${SUDO_USER:-} ]] && copy=$SUDO_USER
-[[ -z "$copy" || $copy = root ]] && copy=copy
-src_owner=${SUDO_USER:-$USER}
+	copy=$USER
+	[[ -n ${SUDO_USER:-} ]] && copy=$SUDO_USER
+	[[ -z "$copy" || $copy = root ]] && copy=copy
+	src_owner=${SUDO_USER:-$USER}
+}
 
 usage() {
 	echo "Usage: ${0##*/} [options] -r <chrootdir> [--] [makepkg args]"
@@ -308,109 +310,115 @@ move_products() {
 }
 # }}}
 
-while getopts 'hcur:I:l:nTD:d:U:' arg; do
-	case "$arg" in
-		c) clean_first=true ;;
-		D) bindmounts_ro+=(--bind-ro="$OPTARG") ;;
-		d) bindmounts_rw+=(--bind="$OPTARG") ;;
-		u) update_first=true ;;
-		r) passeddir="$OPTARG" ;;
-		I) install_pkgs+=("$OPTARG") ;;
-		l) copy="$OPTARG" ;;
-		n) run_namcap=true; makepkg_args+=(-i) ;;
-		T) temp_chroot=true; copy+="-$$" ;;
-		U) makepkg_user="$OPTARG" ;;
-		h|*) usage ;;
-	esac
-done
+main() {
+	init_variables
 
-[[ ! -f PKGBUILD && -z "${install_pkgs[*]}" ]] && die 'This must be run in a directory containing a PKGBUILD.'
-[[ -n $makepkg_user && -z $(id -u "$makepkg_user") ]] && die 'Invalid makepkg user.'
+	while getopts 'hcur:I:l:nTD:d:U:' arg; do
+		case "$arg" in
+			c) clean_first=true ;;
+			D) bindmounts_ro+=(--bind-ro="$OPTARG") ;;
+			d) bindmounts_rw+=(--bind="$OPTARG") ;;
+			u) update_first=true ;;
+			r) passeddir="$OPTARG" ;;
+			I) install_pkgs+=("$OPTARG") ;;
+			l) copy="$OPTARG" ;;
+			n) run_namcap=true; makepkg_args+=(-i) ;;
+			T) temp_chroot=true; copy+="-$$" ;;
+			U) makepkg_user="$OPTARG" ;;
+			h|*) usage ;;
+		esac
+	done
 
-check_root
+	[[ ! -f PKGBUILD && -z "${install_pkgs[*]}" ]] && die 'This must be run in a directory containing a PKGBUILD.'
+	[[ -n $makepkg_user && -z $(id -u "$makepkg_user") ]] && die 'Invalid makepkg user.'
 
-# Canonicalize chrootdir, getting rid of trailing /
-chrootdir=$(readlink -e "$passeddir")
-[[ ! -d $chrootdir ]] && die "No chroot dir defined, or invalid path '%s'" "$passeddir"
-[[ ! -d $chrootdir/root ]] && die "Missing chroot dir root directory. Try using: mkarchroot %s/root base-devel" "$chrootdir"
+	check_root
 
-if [[ ${copy:0:1} = / ]]; then
-	copydir=$copy
-else
-	copydir="$chrootdir/$copy"
-fi
+	# Canonicalize chrootdir, getting rid of trailing /
+	chrootdir=$(readlink -e "$passeddir")
+	[[ ! -d $chrootdir ]] && die "No chroot dir defined, or invalid path '%s'" "$passeddir"
+	[[ ! -d $chrootdir/root ]] && die "Missing chroot dir root directory. Try using: mkarchroot %s/root base-devel" "$chrootdir"
 
-# Pass all arguments after -- right to makepkg
-makepkg_args+=("${@:$OPTIND}")
-
-# See if -R was passed to makepkg
-for arg in "${@:OPTIND}"; do
-	case ${arg%%=*} in
-		-*R*|--repackage)
-			repack=true
-			break 2
-			;;
-	esac
-done
-
-if [[ -n $SUDO_USER ]]; then
-	eval "USER_HOME=~$SUDO_USER"
-else
-	USER_HOME=$HOME
-fi
-
-umask 0022
-
-load_vars "${XDG_CONFIG_HOME:-$USER_HOME/.config}/pacman/makepkg.conf" || load_vars "$USER_HOME/.makepkg.conf"
-load_vars /etc/makepkg.conf
-
-# Use PKGBUILD directory if these don't exist
-[[ -d $PKGDEST ]]    || PKGDEST=$PWD
-[[ -d $SRCDEST ]]    || SRCDEST=$PWD
-[[ -d $SRCPKGDEST ]] || SRCPKGDEST=$PWD
-[[ -d $LOGDEST ]]    || LOGDEST=$PWD
-
-# Lock the chroot we want to use. We'll keep this lock until we exit.
-lock 9 "$copydir.lock" "Locking chroot copy [%s]" "$copy"
-
-if [[ ! -d $copydir ]] || $clean_first; then
-	sync_chroot "$chrootdir" "$copy"
-fi
-
-$update_first && arch-nspawn "$copydir" \
-		"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
-		pacman -Syu --noconfirm
-
-if [[ -n ${install_pkgs[*]:-} ]]; then
-	install_packages "$copydir" "${install_pkgs[@]}"
-	ret=$?
-	# If there is no PKGBUILD we have done
-	[[ -f PKGBUILD ]] || return $ret
-fi
-
-download_sources "$copydir" "$src_owner"
-
-prepare_chroot "$copydir" "$USER_HOME" "$repack"
-
-if arch-nspawn "$copydir" \
-	--bind="$PWD:/startdir" \
-	--bind="$SRCDEST:/srcdest" \
-	"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
-	/chrootbuild "${makepkg_args[@]}"
-then
-	move_products "$copydir" "$src_owner"
-else
-	(( ret += 1 ))
-fi
-
-$temp_chroot && delete_chroot "$copydir" "$copy"
-
-if (( ret != 0 )); then
-	if $temp_chroot; then
-		die "Build failed"
+	if [[ ${copy:0:1} = / ]]; then
+		copydir=$copy
 	else
-		die "Build failed, check %s/build" "$copydir"
+		copydir="$chrootdir/$copy"
 	fi
-else
-	true
-fi
+
+	# Pass all arguments after -- right to makepkg
+	makepkg_args+=("${@:$OPTIND}")
+
+	# See if -R was passed to makepkg
+	for arg in "${@:OPTIND}"; do
+		case ${arg%%=*} in
+			-*R*|--repackage)
+				repack=true
+				break 2
+				;;
+		esac
+	done
+
+	if [[ -n $SUDO_USER ]]; then
+		eval "USER_HOME=~$SUDO_USER"
+	else
+		USER_HOME=$HOME
+	fi
+
+	umask 0022
+
+	load_vars "${XDG_CONFIG_HOME:-$USER_HOME/.config}/pacman/makepkg.conf" || load_vars "$USER_HOME/.makepkg.conf"
+	load_vars /etc/makepkg.conf
+
+	# Use PKGBUILD directory if these don't exist
+	[[ -d $PKGDEST ]]    || PKGDEST=$PWD
+	[[ -d $SRCDEST ]]    || SRCDEST=$PWD
+	[[ -d $SRCPKGDEST ]] || SRCPKGDEST=$PWD
+	[[ -d $LOGDEST ]]    || LOGDEST=$PWD
+
+	# Lock the chroot we want to use. We'll keep this lock until we exit.
+	lock 9 "$copydir.lock" "Locking chroot copy [%s]" "$copy"
+
+	if [[ ! -d $copydir ]] || $clean_first; then
+		sync_chroot "$chrootdir" "$copy"
+	fi
+
+	$update_first && arch-nspawn "$copydir" \
+			"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
+			pacman -Syu --noconfirm
+
+	if [[ -n ${install_pkgs[*]:-} ]]; then
+		install_packages "$copydir" "${install_pkgs[@]}"
+		ret=$?
+		# If there is no PKGBUILD we have done
+		[[ -f PKGBUILD ]] || return $ret
+	fi
+
+	download_sources "$copydir" "$src_owner"
+
+	prepare_chroot "$copydir" "$USER_HOME" "$repack"
+
+	if arch-nspawn "$copydir" \
+		--bind="$PWD:/startdir" \
+		--bind="$SRCDEST:/srcdest" \
+		"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
+		/chrootbuild "${makepkg_args[@]}"
+	then
+		move_products "$copydir" "$src_owner"
+	else
+		(( ret += 1 ))
+	fi
+
+	$temp_chroot && delete_chroot "$copydir" "$copy"
+
+	if (( ret != 0 )); then
+		if $temp_chroot; then
+			die "Build failed"
+		else
+			die "Build failed, check %s/build" "$copydir"
+		fi
+	else
+		true
+	fi
+}
+
+main "$@"
