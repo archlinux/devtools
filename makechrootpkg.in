@@ -112,27 +112,25 @@ sync_chroot() {
 		return 1
 	fi
 
-	if true; then # indent for rebasing/merging purposes
-		# Get a read lock on the root chroot to make
-		# sure we don't clone a half-updated chroot
-		slock 8 "$chrootdir/root.lock" \
-			"Locking clean chroot [%s]" "$chrootdir/root"
+	# Get a read lock on the root chroot to make
+	# sure we don't clone a half-updated chroot
+	slock 8 "$chrootdir/root.lock" \
+		"Locking clean chroot [%s]" "$chrootdir/root"
 
-		stat_busy "Synchronizing chroot copy [%s] -> [%s]" "$chrootdir/root" "$copydir"
-		if is_btrfs "$chrootdir" && ! mountpoint -q "$copydir"; then
-			subvolume_delete_recursive "$copydir" ||
-				die "Unable to delete subvolume %s" "$copydir"
-			btrfs subvolume snapshot "$chrootdir/root" "$copydir" >/dev/null ||
-				die "Unable to create subvolume %s" "$copydir"
-		else
-			mkdir -p "$copydir"
-			rsync -a --delete -q -W -x "$chrootdir/root/" "$copydir"
-		fi
-		stat_done
-
-		# Drop the read lock again
-		lock_close 8
+	stat_busy "Synchronizing chroot copy [%s] -> [%s]" "$chrootdir/root" "$copydir"
+	if is_btrfs "$chrootdir" && ! mountpoint -q "$copydir"; then
+		subvolume_delete_recursive "$copydir" ||
+			die "Unable to delete subvolume %s" "$copydir"
+		btrfs subvolume snapshot "$chrootdir/root" "$copydir" >/dev/null ||
+			die "Unable to create subvolume %s" "$copydir"
+	else
+		mkdir -p "$copydir"
+		rsync -a --delete -q -W -x "$chrootdir/root/" "$copydir"
 	fi
+	stat_done
+
+	# Drop the read lock again
+	lock_close 8
 
 	# Update mtime
 	touch "$copydir"
