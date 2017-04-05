@@ -15,6 +15,8 @@ m4_include(lib/archroot.sh)
 
 working_dir=''
 
+files=()
+
 usage() {
 	echo "Usage: ${0##*/} [options] working-dir [systemd-nspawn arguments]"
 	echo "A wrapper around systemd-nspawn. Provides support for pacman."
@@ -23,15 +25,17 @@ usage() {
 	echo '    -C <file>     Location of a pacman config file'
 	echo '    -M <file>     Location of a makepkg config file'
 	echo '    -c <dir>      Set pacman cache'
+	echo '    -f <file>     Copy file from the host to the chroot'
 	echo '    -h            This message'
 	exit 1
 }
 
-while getopts 'hC:M:c:' arg; do
+while getopts 'hC:M:c:f:' arg; do
 	case "$arg" in
 		C) pac_conf="$OPTARG" ;;
 		M) makepkg_conf="$OPTARG" ;;
 		c) cache_dir="$OPTARG" ;;
+		f) files+=("$OPTARG") ;;
 		h|?) usage ;;
 		*) error "invalid argument '%s'" "$arg"; usage ;;
 	esac
@@ -76,6 +80,12 @@ copy_hostconf () {
 
 	[[ -n $pac_conf ]] && cp $pac_conf "$working_dir/etc/pacman.conf"
 	[[ -n $makepkg_conf ]] && cp $makepkg_conf "$working_dir/etc/makepkg.conf"
+
+	local file
+	for file in "${files[@]}"; do
+		mkdir -p "$(dirname "$working_dir$file")"
+		cp -T "$file" "$working_dir$file"
+	done
 
 	sed -r "s|^#?\\s*CacheDir.+|CacheDir = $(echo -n ${cache_dirs[@]})|g" -i "$working_dir/etc/pacman.conf"
 }

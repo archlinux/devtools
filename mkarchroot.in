@@ -15,21 +15,25 @@ m4_include(lib/archroot.sh)
 
 working_dir=''
 
+files=()
+
 usage() {
 	echo "Usage: ${0##*/} [options] working-dir package-list..."
 	echo ' options:'
 	echo '    -C <file>     Location of a pacman config file'
 	echo '    -M <file>     Location of a makepkg config file'
 	echo '    -c <dir>      Set pacman cache'
+	echo '    -f <file>     Copy file from the host to the chroot'
 	echo '    -h            This message'
 	exit 1
 }
 
-while getopts 'hC:M:c:' arg; do
+while getopts 'hC:M:c:f:' arg; do
 	case "$arg" in
 		C) pac_conf="$OPTARG" ;;
 		M) makepkg_conf="$OPTARG" ;;
 		c) cache_dir="$OPTARG" ;;
+		f) files+=("$OPTARG") ;;
 		h|?) usage ;;
 		*) error "invalid argument '%s'" "$arg"; usage ;;
 	esac
@@ -66,6 +70,11 @@ if is_btrfs "$working_dir"; then
 	fi
 	chmod 0755 "$working_dir"
 fi
+
+for file in "${files[@]}"; do
+	mkdir -p "$(dirname "$working_dir$file")"
+	cp "$file" "$working_dir$file"
+done
 
 pacstrap -GMcd ${pac_conf:+-C "$pac_conf"} "$working_dir" \
   "${cache_dirs[@]/#/--cachedir=}" "$@" || die 'Failed to install all packages'
