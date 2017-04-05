@@ -78,6 +78,11 @@ for file in "${files[@]}"; do
 	cp "$file" "$working_dir$file"
 done
 
+_env=()
+while read -r varname; do
+	_env+=("$varname=${!varname}")
+done < <(declare -x | sed -r 's/^declare -x ([^=]*)=.*/\1/' | grep -i '_proxy$')
+env -i "${_env[@]}" \
 pacstrap -GMcd ${pac_conf:+-C "$pac_conf"} "$working_dir" \
   "${cache_dirs[@]/#/--cachedir=}" "$@" || die 'Failed to install all packages'
 
