@@ -26,16 +26,18 @@ usage() {
 	echo '    -M <file>     Location of a makepkg config file'
 	echo '    -c <dir>      Set pacman cache'
 	echo '    -f <file>     Copy file from the host to the chroot'
+	echo '    -s            Do not run setarch'
 	echo '    -h            This message'
 	exit 1
 }
 
-while getopts 'hC:M:c:f:' arg; do
+while getopts 'hC:M:c:f:s' arg; do
 	case "$arg" in
 		C) pac_conf="$OPTARG" ;;
 		M) makepkg_conf="$OPTARG" ;;
 		c) cache_dir="$OPTARG" ;;
 		f) files+=("$OPTARG") ;;
+		s) nosetarch=1 ;;
 		h|?) usage ;;
 		*) error "invalid argument '%s'" "$arg"; usage ;;
 	esac
@@ -104,6 +106,8 @@ build_mount_args
 copy_hostconf
 
 eval $(grep '^CARCH=' "$working_dir/etc/makepkg.conf")
+
+[[ -z $nosetarch ]] || unset CARCH
 
 exec ${CARCH:+setarch "$CARCH"} systemd-nspawn -q \
 	-D "$working_dir" \
