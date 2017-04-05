@@ -26,6 +26,13 @@ else
 	die '/etc/makepkg.conf not found!'
 fi
 
+# Source user-specific makepkg.conf overrides
+if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf" ]]; then
+	source "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf"
+elif [[ -r "$HOME/.makepkg.conf" ]]; then
+	source "$HOME/.makepkg.conf"
+fi
+
 bump_pkgrel() {
 	# Get the current pkgrel from SVN and update the working copy with it
 	# This prevents us from incrementing out of control :)
