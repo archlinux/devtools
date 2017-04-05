@@ -32,7 +32,7 @@ bindmounts_ro=()
 bindmounts_rw=()
 
 copy=$USER
-[[ -n $SUDO_USER ]] && copy=$SUDO_USER
+[[ -n ${SUDO_USER:-} ]] && copy=$SUDO_USER
 [[ -z "$copy" || $copy = root ]] && copy=copy
 src_owner=${SUDO_USER:-$USER}
 
@@ -90,7 +90,7 @@ load_vars() {
 	[[ -f $makepkg_conf ]] || return 1
 
 	for var in {SRC,SRCPKG,PKG,LOG}DEST MAKEFLAGS PACKAGER; do
-		[[ -z ${!var} ]] && eval $(grep "^${var}=" "$makepkg_conf")
+		[[ -z ${!var:-} ]] && eval $(grep "^${var}=" "$makepkg_conf")
 	done
 
 	return 0
@@ -209,7 +209,7 @@ prepare_chroot() {
 
 	sed -e '/^MAKEFLAGS=/d' -e '/^PACKAGER=/d' -i "$copydir/etc/makepkg.conf"
 	for x in BUILDDIR=/build PKGDEST=/pkgdest SRCPKGDEST=/srcpkgdest SRCDEST=/srcdest LOGDEST=/logdest \
-		"MAKEFLAGS='$MAKEFLAGS'" "PACKAGER='$PACKAGER'"
+		"MAKEFLAGS='${MAKEFLAGS:-}'" "PACKAGER='${PACKAGER:-}'"
 	do
 		grep -q "^$x" "$copydir/etc/makepkg.conf" && continue
 		echo "$x" >>"$copydir/etc/makepkg.conf"
@@ -382,7 +382,7 @@ $update_first && arch-nspawn "$copydir" \
 		"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
 		pacman -Syu --noconfirm
 
-if [[ -n ${install_pkgs[*]} ]]; then
+if [[ -n ${install_pkgs[*]:-} ]]; then
 	install_packages "$copydir" "${install_pkgs[@]}"
 	ret=$?
 	# If there is no PKGBUILD we have done
