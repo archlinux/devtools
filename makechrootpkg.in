@@ -143,7 +143,7 @@ delete_chroot() {
 
 	stat_busy "Removing chroot copy [%s]" "$copy"
 	if is_btrfs "$chrootdir" && ! mountpoint -q "$copydir"; then
-		btrfs subvolume delete "$copydir" >/dev/null ||
+		subvolume_delete_recursive "$copydir" ||
 			die "Unable to delete subvolume %s" "$copydir"
 	else
 		# avoid change of filesystem in case of an umount failure
