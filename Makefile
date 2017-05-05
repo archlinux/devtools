@@ -114,5 +114,8 @@ dist:
 upload:
 	scp devtools-$(V).tar.gz devtools-$(V).tar.gz.sig repos.archlinux.org:/srv/ftp/other/devtools/
 
-.PHONY: all clean install uninstall dist upload
+check: $(BINPROGS) bash_completion makepkg-x86_64.conf
+	shellcheck $^
+
+.PHONY: all clean install uninstall dist upload check
 .DELETE_ON_ERROR:
