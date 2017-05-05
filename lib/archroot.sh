@@ -25,6 +25,15 @@ is_btrfs() {
 }
 
 ##
+#  usage : is_subvolume( $path )
+# return : whether $path is a the root of a btrfs subvolume (including
+#          the top-level subvolume).
+##
+is_subvolume() {
+	[[ -e "$1" && "$(stat -f -c %T "$1")" == btrfs && "$(stat -c %i "$1")" == 256 ]]
+}
+
+##
 #  usage : subvolume_delete_recursive( $path )
 #
 #    Find all btrfs subvolumes under and including $path and delete them.
@@ -32,7 +41,7 @@ is_btrfs() {
 subvolume_delete_recursive() {
 	local subvol
 
-	is_btrfs "$1" || return 0
+	is_subvolume "$1" || return 0
 
 	while IFS= read -d $'\0' -r subvol; do
 		if ! btrfs subvolume delete "$subvol" &>/dev/null; then

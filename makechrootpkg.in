@@ -144,7 +144,7 @@ delete_chroot() {
 	local copy=${1:-$2}
 
 	stat_busy "Removing chroot copy [%s]" "$copy"
-	if is_btrfs "$chrootdir" && ! mountpoint -q "$copydir"; then
+	if is_subvolume "$copydir" && ! mountpoint -q "$copydir"; then
 		subvolume_delete_recursive "$copydir" ||
 			die "Unable to delete subvolume %s" "$copydir"
 	else
