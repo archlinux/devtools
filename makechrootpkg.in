@@ -98,31 +98,37 @@ load_vars() {
 	return 0
 }
 
-# Usage: sync_chroot $chrootdir $copydir [$copy]
+# Usage: sync_chroot $rootdir $copydir [$copy]
 sync_chroot() {
-	local chrootdir=$1
+	local rootdir=$1
 	local copydir=$2
 	local copy=${3:-$2}
 
-	if [[ "$chrootdir/root" -ef "$copydir" ]]; then
+	if [[ "$rootdir" -ef "$copydir" ]]; then
 		error 'Cannot sync copy with itself: %s' "$copydir"
 		return 1
 	fi
 
 	# Get a read lock on the root chroot to make
 	# sure we don't clone a half-updated chroot
-	slock 8 "$chrootdir/root.lock" \
-		"Locking clean chroot [%s]" "$chrootdir/root"
+	slock 8 "$rootdir.lock" \
+		"Locking clean chroot [%s]" "$rootdir"
 
-	stat_busy "Synchronizing chroot copy [%s] -> [%s]" "$chrootdir/root" "$copy"
-	if is_btrfs "$chrootdir" && ! mountpoint -q "$copydir"; then
-		subvolume_delete_recursive "$copydir" ||
-			die "Unable to delete subvolume %s" "$copydir"
-		btrfs subvolume snapshot "$chrootdir/root" "$copydir" >/dev/null ||
+	stat_busy "Synchronizing chroot copy [%s] -> [%s]" "$rootdir" "$copy"
+	if is_subvolume "$rootdir" && is_same_fs "$rootdir" "$(dirname -- "$copydir")" && ! mountpoint -q "$copydir"; then
+		if is_subvolume "$copydir"; then
+			subvolume_delete_recursive "$copydir" ||
+				die "Unable to delete subvolume %s" "$copydir"
+		else
+			# avoid change of filesystem in case of an umount failure
+			rm --recursive --force --one-file-system "$copydir" ||
+				die "Unable to delete %s" "$copydir"
+		fi
+		btrfs subvolume snapshot "$rootdir" "$copydir" >/dev/null ||
 			die "Unable to create subvolume %s" "$copydir"
 	else
 		mkdir -p "$copydir"
-		rsync -a --delete -q -W -x "$chrootdir/root/" "$copydir"
+		rsync -a --delete -q -W -x "$rootdir/" "$copydir"
 	fi
 	stat_done
 
@@ -374,7 +380,7 @@ main() {
 	lock 9 "$copydir.lock" "Locking chroot copy [%s]" "$copy"
 
 	if [[ ! -d $copydir ]] || $clean_first; then
-		sync_chroot "$chrootdir" "$copydir" "$copy"
+		sync_chroot "$chrootdir/root" "$copydir" "$copy"
 	fi
 
 	$update_first && arch-nspawn "$copydir" \
