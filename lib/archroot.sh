@@ -52,11 +52,14 @@ subvolume_delete_recursive() {
 	is_subvolume "$1" || return 0
 
 	while IFS= read -d $'\0' -r subvol; do
-		if ! btrfs subvolume delete "$subvol" &>/dev/null; then
-			error "Unable to delete subvolume %s" "$subvol"
+		if ! subvolume_delete_recursive "$subvol"; then
 			return 1
 		fi
-	done < <(find "$1" -xdev -depth -inum 256 -print0)
+	done < <(find "$1" -mindepth 1 -xdev -depth -inum 256 -print0)
+	if ! btrfs subvolume delete "$1" &>/dev/null; then
+		error "Unable to delete subvolume %s" "$subvol"
+		return 1
+	fi
 
 	return 0
 }
