@@ -13,4 +13,4 @@ fi
 #
 #popd
 
-rm -rf $1
+rm -rf "$1"

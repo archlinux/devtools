@@ -28,7 +28,7 @@ if [[ -z $1 ]]; then
 fi
 
 if [[ -d $1 ]]; then
-	pushd $1 >/dev/null
+	pushd "$1" >/dev/null
 else
 	setup_workdir
 
@@ -48,7 +48,7 @@ process_sofile() {
 	if [[ "$soversion" = "$sofile" ]] && ((IGNORE_INTERNAL)); then
 		continue
 	fi
-	if ! in_array "${soname}=${soversion}-${soarch}" ${soobjects[@]}; then
+	if ! in_array "${soname}=${soversion}-${soarch}" "${soobjects[@]}"; then
 		# libfoo.so=1-64
 		echo "${soname}=${soversion}-${soarch}"
 		soobjects+=("${soname}=${soversion}-${soarch}")

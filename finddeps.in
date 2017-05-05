@@ -24,17 +24,17 @@ find . -type d | while read d; do
 		for dep in "${depends[@]}"; do
 			# lose the version comparator, if any
 			depname=${dep%%[<>=]*}
-			[[ $depname = $match ]] && echo "$d (depends)"
+			[[ $depname = "$match" ]] && echo "$d (depends)"
 		done
 		for dep in "${makedepends[@]}"; do
 			# lose the version comparator, if any
 			depname=${dep%%[<>=]*}
-			[[ $depname = $match ]] && echo "$d (makedepends)"
+			[[ $depname = "$match" ]] && echo "$d (makedepends)"
 		done
 		for dep in "${optdepends[@]/:*}"; do
 			# lose the version comaparator, if any
 			depname=${dep%%[<>=]*}
-			[[ $depname = $match ]] && echo "$d (optdepends)"
+			[[ $depname = "$match" ]] && echo "$d (optdepends)"
 		done
 	fi
 done

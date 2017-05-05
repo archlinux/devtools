@@ -74,7 +74,7 @@ for tag in "$@"; do
 	fi
 
 	# copy all files at once from trunk to the subdirectory in repos/
-	svn copy -q -r HEAD ${known_files[@]/#/$trunk/} "repos/$tag/"
+	svn copy -q -r HEAD "${known_files[@]/#/$trunk/}" "repos/$tag/"
 
 	stat_done
 done

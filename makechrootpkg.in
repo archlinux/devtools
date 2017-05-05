@@ -92,7 +92,7 @@ load_vars() {
 	[[ -f $makepkg_conf ]] || return 1
 
 	for var in {SRC,SRCPKG,PKG,LOG}DEST MAKEFLAGS PACKAGER; do
-		[[ -z ${!var:-} ]] && eval $(grep "^${var}=" "$makepkg_conf")
+		[[ -z ${!var:-} ]] && eval "$(grep "^${var}=" "$makepkg_conf")"
 	done
 
 	return 0
@@ -200,8 +200,8 @@ prepare_chroot() {
 	# which we might not be able to load (i.e. when building i686 packages on
 	# an x86_64 host).
 	sed -e '/^builduser:/d' -i "$copydir"/etc/{passwd,group}
-	printf >>"$copydir/etc/group"  'builduser:x:%d:\n' $builduser_gid
-	printf >>"$copydir/etc/passwd" 'builduser:x:%d:%d:builduser:/build:/bin/bash\n' $builduser_uid $builduser_gid
+	printf >>"$copydir/etc/group"  'builduser:x:%d:\n' "$builduser_gid"
+	printf >>"$copydir/etc/passwd" 'builduser:x:%d:%d:builduser:/build:/bin/bash\n' "$builduser_uid" "$builduser_gid"
 
 	$install -d "$copydir"/{build,build/.gnupg,startdir,{pkg,srcpkg,src,log}dest}
 

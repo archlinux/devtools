@@ -79,7 +79,7 @@ cleanup() {
 	if [[ -n ${WORKDIR:-} ]] && $_setup_workdir; then
 		rm -rf "$WORKDIR"
 	fi
-	exit ${1:-0}
+	exit "${1:-0}"
 }
 
 abort() {
@@ -112,7 +112,7 @@ in_array() {
 	local needle=$1; shift
 	local item
 	for item in "$@"; do
-		[[ $item = $needle ]] && return 0 # Found
+		[[ $item = "$needle" ]] && return 0 # Found
 	done
 	return 1 # Not Found
 }
@@ -134,7 +134,7 @@ get_full_version() {
 	else
 		for i in pkgver pkgrel epoch; do
 			local indirect="${i}_override"
-			eval $(declare -f package_$1 | sed -n "s/\(^[[:space:]]*$i=\)/${i}_override=/p")
+			eval "$(declare -f "package_$1" | sed -n "s/\(^[[:space:]]*$i=\)/${i}_override=/p")"
 			[[ -z ${!indirect} ]] && eval ${indirect}=\"${!i}\"
 		done
 		if (( ! epoch_override )); then
@@ -155,9 +155,9 @@ lock() {
 		eval "exec $1>"'"$2"'
 	fi
 
-	if ! flock -n $1; then
+	if ! flock -n "$1"; then
 		stat_busy "${@:3}"
-		flock $1
+		flock "$1"
 		stat_done
 	fi
 }
@@ -172,9 +172,9 @@ slock() {
 		eval "exec $1>"'"$2"'
 	fi
 
-	if ! flock -sn $1; then
+	if ! flock -sn "$1"; then
 		stat_busy "${@:3}"
-		flock -s $1
+		flock -s "$1"
 		stat_done
 	fi
 }
@@ -184,6 +184,8 @@ slock() {
 ##
 lock_close() {
 	local fd=$1
+	# https://github.com/koalaman/shellcheck/issues/862
+	# shellcheck disable=2034
 	exec {fd}>&-
 }
 

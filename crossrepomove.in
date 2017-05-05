@@ -38,7 +38,7 @@ target_dbscripts="/srv/repos/svn-${target_name}/dbscripts"
 
 setup_workdir
 
-pushd $WORKDIR >/dev/null
+pushd "$WORKDIR" >/dev/null
 
 msg "Downloading sources for %s" "${pkgbase}"
 svn -q checkout -N "${target_svn}" target_checkout
@@ -47,14 +47,14 @@ svn -q export "${source_svn}/${pkgbase}/trunk" "target_checkout/${pkgbase}/trunk
 . "target_checkout/${pkgbase}/trunk/PKGBUILD"
 
 msg "Downloading packages for %s" "${pkgbase}"
-for _arch in ${arch[@]}; do
+for _arch in "${arch[@]}"; do
 	if [[ "${_arch[*]}" == 'any' ]]; then
 		repo_arch='x86_64'
 	else
 		repo_arch=${_arch}
 	fi
-	for _pkgname in ${pkgname[@]}; do
-		fullver=$(get_full_version $_pkgname)
+	for _pkgname in "${pkgname[@]}"; do
+		fullver=$(get_full_version "$_pkgname")
 		pkgpath="/srv/ftp/$source_repo/os/$repo_arch/$_pkgname-$fullver-${_arch}.pkg.tar.*"
 		ssh "$server" "cp $pkgpath staging/$target_repo" || die
 	done
@@ -71,7 +71,7 @@ popd >/dev/null
 ssh "${server}" "${target_dbscripts}/db-update" || die
 
 msg "Removing %s from %s" "${pkgbase}" "${source_repo}"
-for _arch in ${arch[@]}; do
+for _arch in "${arch[@]}"; do
 	ssh "${server}" "${source_dbscripts}/db-remove ${source_repo} ${_arch} ${pkgbase}"
 done
 svn -q checkout -N "${source_svn}" source_checkout

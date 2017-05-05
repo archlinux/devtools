@@ -71,7 +71,7 @@ build_mount_args() {
 
 	mount_args+=("--bind=${cache_dirs[0]}")
 
-	for cache_dir in ${cache_dirs[@]:1}; do
+	for cache_dir in "${cache_dirs[@]:1}"; do
 		mount_args+=("--bind-ro=$cache_dir")
 	done
 }
@@ -80,8 +80,8 @@ copy_hostconf () {
 	cp -a /etc/pacman.d/gnupg "$working_dir/etc/pacman.d"
 	echo "Server = $host_mirror" >"$working_dir/etc/pacman.d/mirrorlist"
 
-	[[ -n $pac_conf ]] && cp $pac_conf "$working_dir/etc/pacman.conf"
-	[[ -n $makepkg_conf ]] && cp $makepkg_conf "$working_dir/etc/makepkg.conf"
+	[[ -n $pac_conf ]] && cp "$pac_conf" "$working_dir/etc/pacman.conf"
+	[[ -n $makepkg_conf ]] && cp "$makepkg_conf" "$working_dir/etc/makepkg.conf"
 
 	local file
 	for file in "${files[@]}"; do
@@ -89,7 +89,7 @@ copy_hostconf () {
 		cp -T "$file" "$working_dir$file"
 	done
 
-	sed -r "s|^#?\\s*CacheDir.+|CacheDir = $(echo -n ${cache_dirs[@]})|g" -i "$working_dir/etc/pacman.conf"
+	sed -r "s|^#?\\s*CacheDir.+|CacheDir = $(echo -n "${cache_dirs[@]}")|g" -i "$working_dir/etc/pacman.conf"
 }
 # }}}
 
@@ -98,14 +98,14 @@ umask 0022
 # Sanity check
 if [[ ! -f "$working_dir/.arch-chroot" ]]; then
 	die "'%s' does not appear to be an Arch chroot." "$working_dir"
-elif [[ $(cat "$working_dir/.arch-chroot") != $CHROOT_VERSION ]]; then
+elif [[ $(cat "$working_dir/.arch-chroot") != "$CHROOT_VERSION" ]]; then
 	die "chroot '%s' is not at version %s. Please rebuild." "$working_dir" "$CHROOT_VERSION"
 fi
 
 build_mount_args
 copy_hostconf
 
-eval $(grep '^CARCH=' "$working_dir/etc/makepkg.conf")
+eval "$(grep '^CARCH=' "$working_dir/etc/makepkg.conf")"
 
 [[ -z $nosetarch ]] || unset CARCH
 

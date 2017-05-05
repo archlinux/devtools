@@ -5,8 +5,8 @@ _devtools_compgen() {
   local i r
   COMPREPLY=($(compgen -W '$*' -- "$cur"))
   for ((i=1; i < ${#COMP_WORDS[@]}-1; i++)); do
-    for r in ${!COMPREPLY[@]}; do
-      if [[ ${COMP_WORDS[i]} = ${COMPREPLY[r]} ]]; then
+    for r in "${!COMPREPLY[@]}"; do
+      if [[ ${COMP_WORDS[i]} = "${COMPREPLY[r]}" ]]; then
         unset 'COMPREPLY[r]'; break
       fi
     done

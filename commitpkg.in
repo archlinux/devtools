@@ -50,7 +50,7 @@ done
 for i in 'changelog' 'install'; do
 	while read -r file; do
 		# evaluate any bash variables used
-		eval file=\"$(sed "s/^\(['\"]\)\(.*\)\1\$/\2/" <<< "$file")\"
+		eval "file=\"$(sed "s/^\(['\"]\)\(.*\)\1\$/\2/" <<< "$file")\""
 		needsversioning+=("$file")
 	done < <(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
 done
@@ -79,12 +79,12 @@ done
 shift $(( OPTIND - 1 ))
 
 # check packages have the packager field set
-for _arch in ${arch[@]}; do
+for _arch in "${arch[@]}"; do
 	if [[ -n $commit_arch && ${_arch} != "$commit_arch" ]]; then
 		continue
 	fi
-	for _pkgname in ${pkgname[@]}; do
-		fullver=$(get_full_version $_pkgname)
+	for _pkgname in "${pkgname[@]}"; do
+		fullver=$(get_full_version "$_pkgname")
 
 		if pkgfile=$(find_cached_package "$_pkgname" "$_arch" "$fullver"); then
 			if grep -q "packager = Unknown Packager" <(bsdtar -xOqf "$pkgfile" .PKGINFO); then
@@ -128,18 +128,18 @@ declare -a uploads
 declare -a commit_arches
 declare -a skip_arches
 
-for _arch in ${arch[@]}; do
+for _arch in "${arch[@]}"; do
 	if [[ -n $commit_arch && ${_arch} != "$commit_arch" ]]; then
-		skip_arches+=($_arch)
+		skip_arches+=("$_arch")
 		continue
 	fi
 
-	for _pkgname in ${pkgname[@]}; do
-		fullver=$(get_full_version $_pkgname)
+	for _pkgname in "${pkgname[@]}"; do
+		fullver=$(get_full_version "$_pkgname")
 
 		if ! pkgfile=$(find_cached_package "$_pkgname" "$fullver" "${_arch}"); then
 			warning "Skipping %s: failed to locate package file" "$_pkgname-$fullver-$_arch"
-			skip_arches+=($_arch)
+			skip_arches+=("$_arch")
 			continue 2
 		fi
 		uploads+=("$pkgfile")
@@ -159,9 +159,9 @@ for _arch in ${arch[@]}; do
 	done
 done
 
-for _arch in ${arch[@]}; do
-	if ! in_array $_arch ${skip_arches[@]}; then
-		commit_arches+=($_arch)
+for _arch in "${arch[@]}"; do
+	if ! in_array "$_arch" "${skip_arches[@]}"; then
+		commit_arches+=("$_arch")
 	fi
 done
 
@@ -187,8 +187,8 @@ if [[ "${arch[*]}" == 'any' ]]; then
 	if [[ -d ../repos/$repo-i686 && -d ../repos/$repo-x86_64 ]]; then
 		pushd ../repos/ >/dev/null
 		stat_busy "Removing %s and %s" "$repo-i686" "$repo-x86_64"
-		svn rm -q $repo-i686
-		svn rm -q $repo-x86_64
+		svn rm -q "$repo-i686"
+		svn rm -q "$repo-x86_64"
 		svn commit -q -m "Removed $repo-i686 and $repo-x86_64 for $pkgname"
 		stat_done
 		popd >/dev/null
@@ -197,7 +197,7 @@ else
 	if [[ -d ../repos/$repo-any ]]; then
 		pushd ../repos/ >/dev/null
 		stat_busy "Removing %s" "$repo-any"
-		svn rm -q $repo-any
+		svn rm -q "$repo-any"
 		svn commit -q -m "Removed $repo-any for $pkgname"
 		stat_done
 		popd >/dev/null
