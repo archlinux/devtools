@@ -115,4 +115,4 @@ upload:
 	scp devtools-$(V).tar.gz devtools-$(V).tar.gz.sig repos.archlinux.org:/srv/ftp/other/devtools/
 
 .PHONY: all clean install uninstall dist upload
-
+.DELETE_ON_ERROR:
