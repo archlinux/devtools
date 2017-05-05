@@ -38,7 +38,7 @@ trunk=${PWD##*/}
 # Normally this should be trunk, but it may be something
 # such as 'gnome-unstable'
 IFS='/' read -r -d '' -a parts <<< "$PWD"
-if [[ "${parts[@]:(-2):1}" == "repos" ]]; then
+if [[ "${parts[*]:(-2):1}" == "repos" ]]; then
 	die 'archrelease: Should not be in repos dir (try from trunk/)'
 fi
 unset parts
@@ -67,7 +67,7 @@ for tag in "$@"; do
 		while read -r file; do
 			trash+=("repos/$tag/$file")
 		done < <(svn ls "repos/$tag")
-		[[ $trash ]] && svn rm -q "${trash[@]/%/@}"
+		[[ ${#trash[@]} == 0 ]] || svn rm -q "${trash[@]/%/@}"
 	else
 		mkdir -p "repos/$tag"
 		svn add --parents -q "repos/$tag"

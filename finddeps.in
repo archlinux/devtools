@@ -17,7 +17,7 @@ if [[ -z $match ]]; then
 	exit 1
 fi
 
-find . -type d | while read d; do
+find . -type d | while read -r d; do
 	if [[ -f "$d/PKGBUILD" ]]; then
 		pkgname=() depends=() makedepends=() optdepends=()
 		. "$d/PKGBUILD"

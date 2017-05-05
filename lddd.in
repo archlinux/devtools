@@ -40,9 +40,9 @@ for tree in $PATH $libdirs $extras; do
 done
 grep '^/' "$TEMPDIR/raw.txt" | sed -e 's/://g' >> "$TEMPDIR/affected-files.txt"
 # invoke pacman
-for i in $(cat $TEMPDIR/affected-files.txt); do
+while read -r i; do
 	pacman -Qo "$i" | awk '{print $4,$5}' >> "$TEMPDIR/pacman.txt"
-done
+done < "$TEMPDIR/affected-files.txt"
 # clean list
 sort -u "$TEMPDIR/pacman.txt" >> "$TEMPDIR/possible-rebuilds.txt"
 

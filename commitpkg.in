@@ -148,9 +148,9 @@ for _arch in "${arch[@]}"; do
 		if [[ ! -f $sigfile ]]; then
 			msg "Signing package %s..." "${pkgfile}"
 			if [[ -n $GPGKEY ]]; then
-				SIGNWITHKEY="-u ${GPGKEY}"
+				SIGNWITHKEY=(-u "${GPGKEY}")
 			fi
-			gpg --detach-sign --use-agent --no-armor ${SIGNWITHKEY} "${pkgfile}" || die
+			gpg --detach-sign --use-agent --no-armor "${SIGNWITHKEY[@]}" "${pkgfile}" || die
 		fi
 		if ! gpg --verify "$sigfile" >/dev/null 2>&1; then
 			die "Signature %s.sig is incorrect!" "$pkgfile"

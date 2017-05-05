@@ -60,7 +60,7 @@ case $script_mode in
   provides) find_args=(-name '*.so*');;
 esac
 
-find . -type f "${find_args[@]}" | while read filename; do
+find . -type f "${find_args[@]}" | while read -r filename; do
 	if [[ $script_mode = "provides" ]]; then
 		# ignore if we don't have a shared object
 		if ! LC_ALL=C readelf -h "$filename" 2>/dev/null | grep -q '.*Type:.*DYN (Shared object file).*'; then

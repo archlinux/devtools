@@ -123,24 +123,27 @@ in_array() {
 ##
 get_full_version() {
 	# set defaults if they weren't specified in buildfile
-	pkgbase=${pkgbase:-${pkgname[0]}}
-	epoch=${epoch:-0}
+	local pkgbase=${pkgbase:-${pkgname[0]}}
+	local epoch=${epoch:-0}
+	local pkgver=${pkgver}
+	local pkgrel=${pkgrel}
 	if [[ -z $1 ]]; then
 		if (( ! epoch )); then
-			echo $pkgver-$pkgrel
+			printf '%s\n' "$pkgver-$pkgrel"
 		else
-			echo $epoch:$pkgver-$pkgrel
+			printf '%s\n' "$epoch:$pkgver-$pkgrel"
 		fi
 	else
+		local pkgver_override='' pkgrel_override='' epoch_override=''
 		for i in pkgver pkgrel epoch; do
 			local indirect="${i}_override"
 			eval "$(declare -f "package_$1" | sed -n "s/\(^[[:space:]]*$i=\)/${i}_override=/p")"
 			[[ -z ${!indirect} ]] && eval ${indirect}=\"${!i}\"
 		done
 		if (( ! epoch_override )); then
-			echo $pkgver_override-$pkgrel_override
+			printf '%s\n' "$pkgver_override-$pkgrel_override"
 		else
-			echo $epoch_override:$pkgver_override-$pkgrel_override
+			printf '%s\n' "$epoch_override:$pkgver_override-$pkgrel_override"
 		fi
 	fi
 }

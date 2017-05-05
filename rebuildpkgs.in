@@ -40,7 +40,7 @@ bump_pkgrel() {
 	oldrel=$(grep 'pkgrel=' $pbuild | cut -d= -f2)
 
 	#remove decimals
-	rel=$(echo $oldrel | cut -d. -f1)
+	rel=${oldrel%%.*}
 
 	newrel=$((rel + 1))
 
@@ -54,7 +54,7 @@ pkg_from_pkgbuild() {
 }
 
 chrootdir="$1"; shift
-pkgs="$@"
+pkgs=("$@")
 
 SVNPATH='svn+ssh://repos.archlinux.org/srv/repos/svn-packages/svn'
 
@@ -67,7 +67,7 @@ cd "$REBUILD_ROOT"
 /usr/bin/svn co -N $SVNPATH
 
 FAILED=""
-for pkg in $pkgs; do
+for pkg in "${pkgs[@]}"; do
 	cd "$REBUILD_ROOT/svn-packages"
 
 	msg2 "Building '%s'" "$pkg"
