@@ -15,7 +15,7 @@ _devtools_compgen() {
 
 _archco_pkg() {
   _devtools_compgen "$(
-      \pacman -$1
+      command pacman "-$1"
   )"
 }
 

@@ -45,7 +45,7 @@ process_sofile() {
 	soname="${sofile%.so?(+(.+([0-9])))}".so
 	# extract the major version: 1
 	soversion="${sofile##*\.so\.}"
-	if [[ "$soversion" = "$sofile" ]] && (($IGNORE_INTERNAL)); then
+	if [[ "$soversion" = "$sofile" ]] && ((IGNORE_INTERNAL)); then
 		continue
 	fi
 	if ! in_array "${soname}=${soversion}-${soarch}" ${soobjects[@]}; then

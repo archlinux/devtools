@@ -190,8 +190,9 @@ prepare_chroot() {
 
 	$repack || rm -rf "$copydir/build"
 
-	local builduser_uid="${SUDO_UID:-$UID}"
-	local builduser_gid="$(id -g "$builduser_uid")"
+	local builduser_uid builduser_gid
+	builduser_uid="${SUDO_UID:-$UID}"
+	builduser_gid="$(id -g "$builduser_uid")"
 	local install="install -o $builduser_uid -g $builduser_gid"
 	local x
 
@@ -264,18 +265,19 @@ download_sources() {
 	local copydir=$1
 	local makepkg_user=$2
 
-	local builddir="$(mktemp -d)"
+	local builddir
+	builddir="$(mktemp -d)"
 	chmod 1777 "$builddir"
 
 	# Ensure sources are downloaded
 	if [[ "$(id -u "$makepkg_user")" != 0 ]]; then
 		sudo -u "$makepkg_user" env SRCDEST="$SRCDEST" BUILDDIR="$builddir" \
-			makepkg --config="$copydir/etc/makepkg.conf" --verifysource -o
+			makepkg --config="$copydir/etc/makepkg.conf" --verifysource -o ||
+			die "Could not download sources."
 	else
 		error "Running makepkg as root is not allowed."
 		exit 1
 	fi
-	(( $? != 0 )) && die "Could not download sources."
 
 	# Clean up garbage from verifysource
 	rm -rf "$builddir"
@@ -320,8 +322,8 @@ main() {
 	while getopts 'hcur:I:l:nTD:d:U:' arg; do
 		case "$arg" in
 			c) clean_first=true ;;
-			D) bindmounts_ro+=(--bind-ro="$OPTARG") ;;
-			d) bindmounts_rw+=(--bind="$OPTARG") ;;
+			D) bindmounts_ro+=("--bind-ro=$OPTARG") ;;
+			d) bindmounts_rw+=("--bind=$OPTARG") ;;
 			u) update_first=true ;;
 			r) passeddir="$OPTARG" ;;
 			I) install_pkgs+=("$OPTARG") ;;

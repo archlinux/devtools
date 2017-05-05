@@ -24,7 +24,7 @@ if [[ ! -f PKGBUILD ]]; then
 fi
 
 . ./PKGBUILD
-if [[ $arch == 'any' ]]; then
+if [[ ${arch[0]} == 'any' ]]; then
 	CARCH='any'
 fi
 
@@ -39,11 +39,8 @@ for _pkgname in "${pkgname[@]}"; do
 
 	ln -s "$pkgfile" "$TEMPDIR"
 
-	pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm "$_pkgname")
-
-	if [[ $? -ne 0 ]]; then
+	pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm "$_pkgname") ||
 		die "Couldn't download previous package for %s." "$_pkgname"
-	fi
 
 	oldpkg=${pkgurl##*://*/}
 

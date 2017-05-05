@@ -64,7 +64,7 @@ if (( ${#needsversioning[*]} )); then
 	(( ${#unversioned[*]} )) && die "%s is not under version control" "${unversioned[@]}"
 fi
 
-rsyncopts=(-e ssh -p --chmod=ug=rw,o=r -c -h -L --progress --partial -y)
+rsyncopts=(-e ssh -p '--chmod=ug=rw,o=r' -c -h -L --progress --partial -y)
 archreleaseopts=()
 while getopts ':l:a:s:f' flag; do
 	case $flag in

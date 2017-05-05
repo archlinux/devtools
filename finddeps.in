@@ -19,7 +19,7 @@ fi
 
 find . -type d | while read d; do
 	if [[ -f "$d/PKGBUILD" ]]; then
-		unset pkgname depends makedepends optdepends
+		pkgname=() depends=() makedepends=() optdepends=()
 		. "$d/PKGBUILD"
 		for dep in "${depends[@]}"; do
 			# lose the version comparator, if any

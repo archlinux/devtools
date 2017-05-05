@@ -137,7 +137,7 @@ get_full_version() {
 			eval $(declare -f package_$1 | sed -n "s/\(^[[:space:]]*$i=\)/${i}_override=/p")
 			[[ -z ${!indirect} ]] && eval ${indirect}=\"${!i}\"
 		done
-		if (( ! $epoch_override )); then
+		if (( ! epoch_override )); then
 			echo $pkgver_override-$pkgrel_override
 		else
 			echo $epoch_override:$pkgver_override-$pkgrel_override
@@ -247,7 +247,7 @@ find_cached_package() {
 			return 1
 			;;
 		1)
-			printf '%s\n' "$results"
+			printf '%s\n' "${results[0]}"
 			return 0
 			;;
 		*)

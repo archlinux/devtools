@@ -42,7 +42,7 @@ bump_pkgrel() {
 	#remove decimals
 	rel=$(echo $oldrel | cut -d. -f1)
 
-	newrel=$(($rel + 1))
+	newrel=$((rel + 1))
 
 	sed -i "s/pkgrel=$oldrel/pkgrel=$newrel/" PKGBUILD
 }
