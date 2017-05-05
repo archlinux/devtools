@@ -252,20 +252,19 @@ _chrootnamcap() {
 	done
 }
 
-# Usage: download_sources $copydir $src_owner
+# Usage: download_sources $copydir $makepkg_user
 # Globals:
 #  - SRCDEST
 #  - USER
 download_sources() {
 	local copydir=$1
-	local src_owner=$2
+	local makepkg_user=$2
 
 	local builddir="$(mktemp -d)"
 	chmod 1777 "$builddir"
 
 	# Ensure sources are downloaded
-	makepkg_user=${makepkg_user:-$SUDO_USER}
-	if [[ -n $makepkg_user ]]; then
+	if [[ "$(id -u "$makepkg_user")" != 0 ]]; then
 		sudo -u "$makepkg_user" env SRCDEST="$SRCDEST" BUILDDIR="$builddir" \
 			makepkg --config="$copydir/etc/makepkg.conf" --verifysource -o
 	else
@@ -332,6 +331,7 @@ main() {
 
 	[[ ! -f PKGBUILD && -z "${install_pkgs[*]}" ]] && die 'This must be run in a directory containing a PKGBUILD.'
 	[[ -n $makepkg_user && -z $(id -u "$makepkg_user") ]] && die 'Invalid makepkg user.'
+	makepkg_user=${makepkg_user:-${SUDO_USER:-$USER}}
 
 	check_root
 
@@ -394,7 +394,7 @@ main() {
 		[[ -f PKGBUILD ]] || return $ret
 	fi
 
-	download_sources "$copydir" "$src_owner"
+	download_sources "$copydir" "$makepkg_user"
 
 	prepare_chroot "$copydir" "$USER_HOME" "$repack"
 
