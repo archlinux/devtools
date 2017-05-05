@@ -241,6 +241,7 @@ EOF
 # These functions aren't run in makechrootpkg,
 # so no global variables
 _chrootbuild() {
+	# shellcheck source=/dev/null
 	. /etc/profile
 	# Beware, there are some stupid arbitrary rules on how you can
 	# use "$" in arguments to commands with "sudo -i".  ${foo} or

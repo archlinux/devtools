@@ -58,7 +58,9 @@ else
 	cache_dirs=("$cache_dir")
 fi
 
+# shellcheck disable=2016
 host_mirror=$(pacman --cachedir /doesnt/exist -Sddp extra/devtools 2>/dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#')
+# shellcheck disable=2016
 [[ $host_mirror == *file://* ]] && host_mirror_path=$(echo "$host_mirror" | sed -r 's#file://(/.*)/\$repo/os/\$arch#\1#g')
 
 # {{{ functions

@@ -1,0 +1,48 @@
+#!/hint/bash
+# shellcheck disable=2034
+
+# This is an example PKGBUILD file, so that shellcheck can know what
+# variables to expect be set after including a PKGBUILD.
+
+# Maintainer: Your Name <youremail@domain.com>
+pkgname=NAME
+pkgver=VERSION
+pkgrel=1
+epoch=
+pkgdesc=""
+arch=()
+url=""
+license=('GPL')
+groups=()
+depends=()
+makedepends=()
+checkdepends=()
+optdepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=()
+install=
+changelog=
+source=("$pkgname-$pkgver.tar.gz"
+        "$pkgname-$pkgver.patch")
+noextract=()
+md5sums=()
+validpgpkeys=()
+
+prepare() {
+	:
+}
+
+build() {
+	:
+}
+
+check() {
+	:
+}
+
+package() {
+	:
+}

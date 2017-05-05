@@ -1,6 +1,8 @@
 #!/hint/bash
 # License: Unspecified
+:
 
+# shellcheck disable=2034
 CHROOT_VERSION='v4'
 
 ##

@@ -1,12 +1,15 @@
 #!/hint/bash
 # License: Unspecified
+:
 
+# shellcheck disable=2034
 _arch=(
 	i686
 	x86_64
 	any
 )
 
+# shellcheck disable=2034
 _tags=(
 	core-i686 core-x86_64 core-any
 	extra-i686 extra-x86_64 extra-any

@@ -44,6 +44,7 @@ msg "Downloading sources for %s" "${pkgbase}"
 svn -q checkout -N "${target_svn}" target_checkout
 mkdir -p "target_checkout/${pkgbase}/repos"
 svn -q export "${source_svn}/${pkgbase}/trunk" "target_checkout/${pkgbase}/trunk" || die
+# shellcheck source=PKGBUILD.proto
 . "target_checkout/${pkgbase}/trunk/PKGBUILD"
 
 msg "Downloading packages for %s" "${pkgbase}"
@@ -56,6 +57,7 @@ for _arch in "${arch[@]}"; do
 	for _pkgname in "${pkgname[@]}"; do
 		fullver=$(get_full_version "$_pkgname")
 		pkgpath="/srv/ftp/$source_repo/os/$repo_arch/$_pkgname-$fullver-${_arch}.pkg.tar.*"
+		# shellcheck disable=2029
 		ssh "$server" "cp $pkgpath staging/$target_repo" || die
 	done
 done
@@ -68,10 +70,12 @@ pushd "target_checkout/${pkgbase}/trunk" >/dev/null
 archrelease "${arch[@]/#/$target_repo-}" || die
 popd >/dev/null
 
+# shellcheck disable=2029
 ssh "${server}" "${target_dbscripts}/db-update" || die
 
 msg "Removing %s from %s" "${pkgbase}" "${source_repo}"
 for _arch in "${arch[@]}"; do
+	# shellcheck disable=2029
 	ssh "${server}" "${source_dbscripts}/db-remove ${source_repo} ${_arch} ${pkgbase}"
 done
 svn -q checkout -N "${source_svn}" source_checkout

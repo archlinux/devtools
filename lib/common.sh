@@ -35,35 +35,42 @@ readonly ALL_OFF BOLD BLUE GREEN RED YELLOW
 
 plain() {
 	local mesg=$1; shift
+	# shellcheck disable=2059
 	printf "${BOLD}    ${mesg}${ALL_OFF}\n" "$@" >&2
 }
 
 msg() {
 	local mesg=$1; shift
+	# shellcheck disable=2059
 	printf "${GREEN}==>${ALL_OFF}${BOLD} ${mesg}${ALL_OFF}\n" "$@" >&2
 }
 
 msg2() {
 	local mesg=$1; shift
+	# shellcheck disable=2059
 	printf "${BLUE}  ->${ALL_OFF}${BOLD} ${mesg}${ALL_OFF}\n" "$@" >&2
 }
 
 warning() {
 	local mesg=$1; shift
+	# shellcheck disable=2059
 	printf "${YELLOW}==> WARNING:${ALL_OFF}${BOLD} ${mesg}${ALL_OFF}\n" "$@" >&2
 }
 
 error() {
 	local mesg=$1; shift
+	# shellcheck disable=2059
 	printf "${RED}==> ERROR:${ALL_OFF}${BOLD} ${mesg}${ALL_OFF}\n" "$@" >&2
 }
 
 stat_busy() {
 	local mesg=$1; shift
+	# shellcheck disable=2059
 	printf "${GREEN}==>${ALL_OFF}${BOLD} ${mesg}...${ALL_OFF}" "$@" >&2
 }
 
 stat_done() {
+	# shellcheck disable=2059
 	printf "${BOLD}done${ALL_OFF}\n" >&2
 }
 

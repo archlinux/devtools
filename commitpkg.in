@@ -5,6 +5,7 @@ m4_include(lib/common.sh)
 
 # Source makepkg.conf; fail if it is not found
 if [[ -r '/etc/makepkg.conf' ]]; then
+	# shellcheck source=makepkg-x86_64.conf
 	source '/etc/makepkg.conf'
 else
 	die '/etc/makepkg.conf not found!'
@@ -12,8 +13,10 @@ fi
 
 # Source user-specific makepkg.conf overrides
 if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf" ]]; then
+	# shellcheck source=/dev/null
 	source "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf"
 elif [[ -r "$HOME/.makepkg.conf" ]]; then
+	# shellcheck source=/dev/null
 	source "$HOME/.makepkg.conf"
 fi
 
@@ -23,6 +26,8 @@ if [[ ! -f PKGBUILD ]]; then
 	die 'No PKGBUILD file'
 fi
 
+source=()
+# shellcheck source=PKGBUILD.proto
 . ./PKGBUILD
 pkgbase=${pkgbase:-$pkgname}
 
