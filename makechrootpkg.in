@@ -98,16 +98,11 @@ load_vars() {
 	return 0
 }
 
-# Usage: sync_chroot $CHROOTDIR/$CHROOT <$CHROOTCOPY|$copydir>
+# Usage: sync_chroot $chrootdir $copydir [$copy]
 sync_chroot() {
 	local chrootdir=$1
-	local copy=$2
-	local copydir=''
-	if [[ ${copy:0:1} = / ]]; then
-		copydir=$copy
-	else
-		copydir="$chrootdir/$copy"
-	fi
+	local copydir=$2
+	local copy=${3:-$2}
 
 	if [[ "$chrootdir/root" -ef "$copydir" ]]; then
 		error 'Cannot sync copy with itself: %s' "$copydir"
@@ -119,7 +114,7 @@ sync_chroot() {
 	slock 8 "$chrootdir/root.lock" \
 		"Locking clean chroot [%s]" "$chrootdir/root"
 
-	stat_busy "Synchronizing chroot copy [%s] -> [%s]" "$chrootdir/root" "$copydir"
+	stat_busy "Synchronizing chroot copy [%s] -> [%s]" "$chrootdir/root" "$copy"
 	if is_btrfs "$chrootdir" && ! mountpoint -q "$copydir"; then
 		subvolume_delete_recursive "$copydir" ||
 			die "Unable to delete subvolume %s" "$copydir"
@@ -379,7 +374,7 @@ main() {
 	lock 9 "$copydir.lock" "Locking chroot copy [%s]" "$copy"
 
 	if [[ ! -d $copydir ]] || $clean_first; then
-		sync_chroot "$chrootdir" "$copy"
+		sync_chroot "$chrootdir" "$copydir" "$copy"
 	fi
 
 	$update_first && arch-nspawn "$copydir" \
