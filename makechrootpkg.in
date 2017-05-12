@@ -313,6 +313,11 @@ move_products() {
 	for s in "$copydir"/srcpkgdest/*; do
 		chown "$src_owner" "$s"
 		mv "$s" "$SRCPKGDEST"
+
+		# Fix broken symlink because of temporary chroot SRCPKGDEST /srcpkgdest
+		if [[ "$PWD" != "$SRCPKGDEST" && -L "$PWD/${s##*/}" ]]; then
+			ln -sf "$SRCPKGDEST/${s##*/}"
+		fi
 	done
 }
 # }}}
