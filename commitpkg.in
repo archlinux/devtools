@@ -189,12 +189,11 @@ if [[ ${#uploads[*]} -gt 0 ]]; then
 fi
 
 if [[ "${arch[*]}" == 'any' ]]; then
-	if [[ -d ../repos/$repo-i686 && -d ../repos/$repo-x86_64 ]]; then
+	if [[ -d ../repos/$repo-x86_64 ]]; then
 		pushd ../repos/ >/dev/null
-		stat_busy "Removing %s and %s" "$repo-i686" "$repo-x86_64"
-		svn rm -q "$repo-i686"
+		stat_busy "Removing %s" "$repo-x86_64"
 		svn rm -q "$repo-x86_64"
-		svn commit -q -m "Removed $repo-i686 and $repo-x86_64 for $pkgname"
+		svn commit -q -m "Removed $repo-x86_64 for $pkgname"
 		stat_done
 		popd >/dev/null
 	fi
