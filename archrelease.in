@@ -57,6 +57,7 @@ done
 
 # gracefully handle files containing an "@" character
 known_files=("${known_files[@]/%/@}")
+
 # update repo directory first to avoid a commit failure
 svn up repos
 
