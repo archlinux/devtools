@@ -16,7 +16,7 @@ m4_include(lib/archroot.sh)
 shopt -s nullglob
 
 init_variables() {
-	default_makepkg_args=(--syncdeps --noconfirm --log --holdver)
+	default_makepkg_args=(--syncdeps --noconfirm --log --holdver --skipinteg)
 	makepkg_args=("${default_makepkg_args[@]}")
 	repack=false
 	update_first=false
