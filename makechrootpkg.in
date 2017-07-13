@@ -271,14 +271,9 @@ download_sources() {
 	chmod 1777 "$builddir"
 
 	# Ensure sources are downloaded
-	if [[ "$(id -u "$makepkg_user")" != 0 ]]; then
-		sudo -u "$makepkg_user" env SRCDEST="$SRCDEST" BUILDDIR="$builddir" \
-			makepkg --config="$copydir/etc/makepkg.conf" --verifysource -o ||
-			die "Could not download sources."
-	else
-		error "Running makepkg as root is not allowed."
-		exit 1
-	fi
+	sudo -u "$makepkg_user" env SRCDEST="$SRCDEST" BUILDDIR="$builddir" \
+		makepkg --config="$copydir/etc/makepkg.conf" --verifysource -o ||
+		die "Could not download sources."
 
 	# Clean up garbage from verifysource
 	rm -rf "$builddir"
@@ -404,6 +399,11 @@ main() {
 		ret=$?
 		# If there is no PKGBUILD we have done
 		[[ -f PKGBUILD ]] || return $ret
+	fi
+
+	if [[ "$(id -u "$makepkg_user")" == 0 ]]; then
+		error "Running makepkg as root is not allowed."
+		exit 1
 	fi
 
 	download_sources "$copydir" "$makepkg_user"
