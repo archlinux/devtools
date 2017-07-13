@@ -16,7 +16,7 @@ m4_include(lib/archroot.sh)
 shopt -s nullglob
 
 init_variables() {
-	default_makepkg_args=(-s --noconfirm -L --holdver)
+	default_makepkg_args=(--syncdeps --noconfirm --log --holdver)
 	makepkg_args=("${default_makepkg_args[@]}")
 	repack=false
 	update_first=false
@@ -329,7 +329,7 @@ main() {
 			r) passeddir="$OPTARG" ;;
 			I) install_pkgs+=("$OPTARG") ;;
 			l) copy="$OPTARG" ;;
-			n) run_namcap=true; makepkg_args+=(-i) ;;
+			n) run_namcap=true; makepkg_args+=(--install) ;;
 			T) temp_chroot=true; copy+="-$$" ;;
 			U) makepkg_user="$OPTARG" ;;
 			h|*) usage ;;
