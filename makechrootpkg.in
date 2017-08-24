@@ -356,13 +356,13 @@ main() {
 	# Pass all arguments after -- right to makepkg
 	makepkg_args+=("${@:$OPTIND}")
 
-	# See if -R was passed to makepkg
-	for arg in "${@:OPTIND}"; do
+	# See if -R or -e was passed to makepkg
+	for arg in "${makepkg_args[@]}"; do
 		case ${arg%%=*} in
-			-*R*|--repackage|--noextract)
-				keepbuilddir=true
-				break 2
-				;;
+			--repackage|--noextract) keepbuilddir=true; break ;;
+			--repackage|--noextract) keepbuilddir=true; break ;;
+			--*) ;;
+			-*R*|-*e*) keepbuilddir=true; break ;;
 		esac
 	done
 
