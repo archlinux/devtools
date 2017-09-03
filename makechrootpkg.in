@@ -165,7 +165,7 @@ prepare_chroot() {
 	local keepbuilddir=$3
 	local run_namcap=$4
 
-	$keepbuilddir || rm -rf "$copydir/build"
+	[[ $keepbuilddir = true ]] || rm -rf "$copydir/build"
 
 	local builduser_uid builduser_gid
 	builduser_uid="${SUDO_UID:-$UID}"
@@ -208,7 +208,7 @@ EOF
 		declare -p SOURCE_DATE_EPOCH 2>/dev/null
 		printf '_chrootbuild "$@" || exit\n'
 
-		if $run_namcap; then
+		if [[ $run_namcap = true ]]; then
 			declare -f _chrootnamcap
 			printf '_chrootnamcap || exit\n'
 		fi
