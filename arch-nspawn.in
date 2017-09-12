@@ -116,4 +116,4 @@ exec ${CARCH:+setarch "$CARCH"} systemd-nspawn -q \
 	-E "PATH=/usr/local/sbin:/usr/local/bin:/usr/bin" \
 	--register=no --keep-unit --as-pid2 \
 	"${mount_args[@]}" \
-	/bin/bash -c 'exec </dev/console -- "$@"' bash "${1:-/bin/bash}" "${@:2}"
+	"$@"
