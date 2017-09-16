@@ -245,7 +245,6 @@ _chrootnamcap() {
 # Usage: download_sources $copydir $makepkg_user
 # Globals:
 #  - SRCDEST
-#  - USER
 download_sources() {
 	local copydir=$1
 	local makepkg_user=$2
@@ -267,6 +266,7 @@ download_sources() {
 # Globals:
 #  - PKGDEST
 #  - LOGDEST
+#  - SRCPKGDEST
 move_products() {
 	local copydir=$1
 	local src_owner=$2
