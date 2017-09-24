@@ -6,62 +6,21 @@
 [[ -z ${_INCLUDE_COMMON_SH:-} ]] || return 0
 _INCLUDE_COMMON_SH=true
 
+# shellcheck disable=1091
+. /usr/share/makepkg/util.sh
+
 # Avoid any encoding problems
 export LANG=C
 
 shopt -s extglob
 
 # check if messages are to be printed using color
-declare ALL_OFF='' BOLD='' BLUE='' GREEN='' RED='' YELLOW=''
 if [[ -t 2 ]]; then
-	# prefer terminal safe colored and bold text when tput is supported
-	if tput setaf 0 &>/dev/null; then
-		ALL_OFF="$(tput sgr0)"
-		BOLD="$(tput bold)"
-		BLUE="${BOLD}$(tput setaf 4)"
-		GREEN="${BOLD}$(tput setaf 2)"
-		RED="${BOLD}$(tput setaf 1)"
-		YELLOW="${BOLD}$(tput setaf 3)"
-	else
-		ALL_OFF="\e[1;0m"
-		BOLD="\e[1;1m"
-		BLUE="${BOLD}\e[1;34m"
-		GREEN="${BOLD}\e[1;32m"
-		RED="${BOLD}\e[1;31m"
-		YELLOW="${BOLD}\e[1;33m"
-	fi
+	colorize
+else
+	# shellcheck disable=2034
+	declare -gr ALL_OFF='' BOLD='' BLUE='' GREEN='' RED='' YELLOW=''
 fi
-readonly ALL_OFF BOLD BLUE GREEN RED YELLOW
-
-plain() {
-	local mesg=$1; shift
-	# shellcheck disable=2059
-	printf "${BOLD}    ${mesg}${ALL_OFF}\n" "$@" >&2
-}
-
-msg() {
-	local mesg=$1; shift
-	# shellcheck disable=2059
-	printf "${GREEN}==>${ALL_OFF}${BOLD} ${mesg}${ALL_OFF}\n" "$@" >&2
-}
-
-msg2() {
-	local mesg=$1; shift
-	# shellcheck disable=2059
-	printf "${BLUE}  ->${ALL_OFF}${BOLD} ${mesg}${ALL_OFF}\n" "$@" >&2
-}
-
-warning() {
-	local mesg=$1; shift
-	# shellcheck disable=2059
-	printf "${YELLOW}==> WARNING:${ALL_OFF}${BOLD} ${mesg}${ALL_OFF}\n" "$@" >&2
-}
-
-error() {
-	local mesg=$1; shift
-	# shellcheck disable=2059
-	printf "${RED}==> ERROR:${ALL_OFF}${BOLD} ${mesg}${ALL_OFF}\n" "$@" >&2
-}
 
 stat_busy() {
 	local mesg=$1; shift
@@ -108,51 +67,6 @@ trap_exit() {
 die() {
 	(( $# )) && error "$@"
 	cleanup 255
-}
-
-##
-#  usage : in_array( $needle, $haystack )
-# return : 0 - found
-#          1 - not found
-##
-in_array() {
-	local needle=$1; shift
-	local item
-	for item in "$@"; do
-		[[ $item = "$needle" ]] && return 0 # Found
-	done
-	return 1 # Not Found
-}
-
-##
-#  usage : get_full_version( [$pkgname] )
-# return : full version spec, including epoch (if necessary), pkgver, pkgrel
-##
-get_full_version() {
-	# set defaults if they weren't specified in buildfile
-	local pkgbase=${pkgbase:-${pkgname[0]}}
-	local epoch=${epoch:-0}
-	local pkgver=${pkgver}
-	local pkgrel=${pkgrel}
-	if [[ -z $1 ]]; then
-		if (( ! epoch )); then
-			printf '%s\n' "$pkgver-$pkgrel"
-		else
-			printf '%s\n' "$epoch:$pkgver-$pkgrel"
-		fi
-	else
-		local pkgver_override='' pkgrel_override='' epoch_override=''
-		for i in pkgver pkgrel epoch; do
-			local indirect="${i}_override"
-			eval "$(declare -f "package_$1" | sed -n "s/\(^[[:space:]]*$i=\)/${i}_override=/p")"
-			[[ -z ${!indirect} ]] && eval ${indirect}=\"${!i}\"
-		done
-		if (( ! epoch_override )); then
-			printf '%s\n' "$pkgver_override-$pkgrel_override"
-		else
-			printf '%s\n' "$epoch_override:$pkgver_override-$pkgrel_override"
-		fi
-	fi
 }
 
 ##
