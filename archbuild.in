@@ -39,7 +39,7 @@ while getopts 'hcr:' arg; do
 	esac
 done
 
-check_root
+check_root SOURCE_DATE_EPOCH
 
 # Pass all arguments after -- right to makepkg
 makechrootpkg_args+=("${@:$OPTIND}")
@@ -72,6 +72,11 @@ else
 		-M "@pkgdatadir@/makepkg-${arch}.conf" \
 		"${chroots}/${repo}-${arch}/root" \
                 pacman -Syu --noconfirm || abort
+fi
+
+# Always build official packages reproducibly
+if [[ ! -v SOURCE_DATE_EPOCH ]]; then
+	export SOURCE_DATE_EPOCH=$(date +%s)
 fi
 
 msg "Building in chroot for [%s] (%s)..." "${repo}" "${arch}"
