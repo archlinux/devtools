@@ -55,7 +55,7 @@ shift 1
 pacconf_cmd=$(command -v pacman-conf || command -v pacconf)
 
 if (( ${#cache_dirs[@]} == 0 )); then
-	mapfile -t cache_dirs < <($pacconf_cmd CacheDir)
+	mapfile -t cache_dirs < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" CacheDir)
 fi
 
 # shellcheck disable=2016
