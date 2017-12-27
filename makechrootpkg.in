@@ -219,9 +219,6 @@ EOF
 # These functions aren't run in makechrootpkg,
 # so no global variables
 _chrootbuild() {
-	# Work around nspawn not giving us a ctty
-	exec </dev/console
-
 	# No coredumps
 	ulimit -c 0
 
