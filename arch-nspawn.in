@@ -107,7 +107,7 @@ fi
 build_mount_args
 copy_hostconf
 
-eval "$(grep '^CARCH=' "$working_dir/etc/makepkg.conf")"
+eval "$(grep -a '^CARCH=' "$working_dir/etc/makepkg.conf")"
 
 [[ -z $nosetarch ]] || unset CARCH
 
