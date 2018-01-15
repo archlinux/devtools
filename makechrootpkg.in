@@ -205,7 +205,7 @@ EOF
 	{
 		printf '#!/bin/bash\n'
 		declare -f _chrootbuild
-		declare -p SOURCE_DATE_EPOCH 2>/dev/null
+		declare -p SOURCE_DATE_EPOCH 2>/dev/null || true
 		printf '_chrootbuild "$@" || exit\n'
 
 		if [[ $run_namcap = true ]]; then
