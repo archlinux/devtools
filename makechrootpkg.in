@@ -252,7 +252,8 @@ download_sources() {
 	chmod 1777 "$builddir"
 
 	# Ensure sources are downloaded
-	sudo -u "$makepkg_user" env SRCDEST="$SRCDEST" BUILDDIR="$builddir" \
+	sudo -u "$makepkg_user" --preserve-env=GNUPGHOME \
+		env SRCDEST="$SRCDEST" BUILDDIR="$builddir" \
 		makepkg --config="$copydir/etc/makepkg.conf" --verifysource -o ||
 		die "Could not download sources."
 
@@ -341,7 +342,7 @@ main() {
 	[[ -n $makepkg_user && -z $(id -u "$makepkg_user") ]] && die 'Invalid makepkg user.'
 	makepkg_user=${makepkg_user:-${SUDO_USER:-$USER}}
 
-	check_root SOURCE_DATE_EPOCH
+	check_root SOURCE_DATE_EPOCH,GNUPGHOME
 
 	# Canonicalize chrootdir, getting rid of trailing /
 	chrootdir=$(readlink -e "$passeddir")
