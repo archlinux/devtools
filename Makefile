@@ -31,7 +31,6 @@ CONFIGFILES = \
 
 COMMITPKG_LINKS = \
 	extrapkg \
-	corepkg \
 	testingpkg \
 	stagingpkg \
 	communitypkg \
