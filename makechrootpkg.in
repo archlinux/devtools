@@ -176,9 +176,10 @@ prepare_chroot() {
 	# We can't use useradd without chrooting, otherwise it invokes PAM modules
 	# which we might not be able to load (i.e. when building i686 packages on
 	# an x86_64 host).
-	sed -e '/^builduser:/d' -i "$copydir"/etc/{passwd,group}
+	sed -e '/^builduser:/d' -i "$copydir"/etc/{passwd,shadow,group}
 	printf >>"$copydir/etc/group"  'builduser:x:%d:\n' "$builduser_gid"
 	printf >>"$copydir/etc/passwd" 'builduser:x:%d:%d:builduser:/build:/bin/bash\n' "$builduser_uid" "$builduser_gid"
+	printf >>"$copydir/etc/shadow" 'builduser:!!:%d::::::\n' "$(( $(date -u +%s) / 86400 ))"
 
 	$install -d "$copydir"/{build,build/.gnupg,startdir,{pkg,srcpkg,src,log}dest}
 
