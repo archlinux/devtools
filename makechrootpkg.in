@@ -245,7 +245,7 @@ download_sources() {
 
 	local builddir
 	builddir="$(mktemp -d)"
-	chown "$makepkg_user:$makepkg_user" "$builddir"
+	chown "$makepkg_user:" "$builddir"
 
 	# Ensure sources are downloaded
 	sudo -u "$makepkg_user" --preserve-env=GNUPGHOME \
