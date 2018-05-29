@@ -226,6 +226,13 @@ _chrootbuild() {
 	# ${1} is OK, but $foo or $1 isn't.
 	# https://bugzilla.sudo.ws/show_bug.cgi?id=765
 	sudo --preserve-env=SOURCE_DATE_EPOCH -iu builduser bash -c 'cd /startdir; makepkg "$@"' -bash "$@"
+	ret=$?
+	case $ret in
+		0|14)
+			return 0;;
+		*)
+			return $ret;;
+	esac
 }
 
 _chrootnamcap() {
