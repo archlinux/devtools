@@ -35,7 +35,7 @@ while getopts 'hC:M:c:f:s' arg; do
 	case "$arg" in
 		C) pac_conf="$OPTARG" ;;
 		M) makepkg_conf="$OPTARG" ;;
-		c) cache_dir="$OPTARG" ;;
+		c) cache_dirs+=("$OPTARG") ;;
 		f) files+=("$OPTARG") ;;
 		s) nosetarch=1 ;;
 		h|?) usage ;;
@@ -52,13 +52,12 @@ shift 1
 
 [[ -z $working_dir ]] && die 'Please specify a working directory.'
 
-if [[ -z $cache_dir ]]; then
-	cache_dirs=($(pacman -v 2>&1 | grep '^Cache Dirs:' | sed 's/Cache Dirs:\s*//g'))
-else
-	cache_dirs=("$cache_dir")
+pacconf_cmd=$(command -v pacman-conf || command -v pacconf)
+
+if (( ${#cache_dirs[@]} == 0 )); then
+	mapfile -t cache_dirs < <($pacconf_cmd CacheDir)
 fi
 
-pacconf_cmd=$(command -v pacman-conf || command -v pacconf)
 # shellcheck disable=2016
 host_mirrors=($($pacconf_cmd --repo extra Server 2> /dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#'))
 # shellcheck disable=2016

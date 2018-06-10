@@ -16,6 +16,7 @@ m4_include(lib/archroot.sh)
 working_dir=''
 
 files=()
+nspawn_args=()
 
 usage() {
 	echo "Usage: ${0##*/} [options] working-dir package-list..."
@@ -33,12 +34,14 @@ while getopts 'hC:M:c:f:s' arg; do
 	case "$arg" in
 		C) pac_conf="$OPTARG" ;;
 		M) makepkg_conf="$OPTARG" ;;
-		c) cache_dir="$OPTARG" ;;
+		c) cache_dirs+=("$OPTARG") ;;
 		f) files+=("$OPTARG") ;;
 		s) nosetarch=1 ;;
 		h|?) usage ;;
 		*) error "invalid argument '%s'" "$arg"; usage ;;
 	esac
+    nspawn_args+=("-$arg")
+    [[ -v OPTARG ]] && nspawn_args+=("$OPTARG")
 done
 shift $((OPTIND - 1))
 
@@ -51,10 +54,10 @@ shift 1
 
 [[ -z $working_dir ]] && die 'Please specify a working directory.'
 
-if [[ -z $cache_dir ]]; then
-	cache_dirs=($(pacman -v "$cache_conf" 2>&1 | grep '^Cache Dirs:' | sed 's/Cache Dirs:\s*//g'))
-else
-	cache_dirs=(${cache_dir})
+pacconf_cmd=$(command -v pacman-conf || command -v pacconf)
+
+if (( ${#cache_dirs[@]} == 0 )); then
+	mapfile -t cache_dirs < <($pacconf_cmd CacheDir)
 fi
 
 umask 0022
@@ -93,8 +96,5 @@ echo "$CHROOT_VERSION" > "$working_dir/.arch-chroot"
 systemd-machine-id-setup --root="$working_dir"
 
 exec arch-nspawn \
-	${nosetarch:+-s} \
-	${pac_conf:+-C "$pac_conf"} \
-	${makepkg_conf:+-M "$makepkg_conf"} \
-	${cache_dir:+-c "$cache_dir"} \
+	"${nspawn_args[@]}" \
 	"$working_dir" locale-gen
