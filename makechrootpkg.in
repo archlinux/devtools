@@ -250,18 +250,14 @@ download_sources() {
 	local copydir=$1
 	local makepkg_user=$2
 
-	local builddir
-	builddir="$(mktemp -d)"
-	chown "$makepkg_user:" "$builddir"
+	setup_workdir
+	chown "$makepkg_user:" "$WORKDIR"
 
 	# Ensure sources are downloaded
 	sudo -u "$makepkg_user" --preserve-env=GNUPGHOME \
-		env SRCDEST="$SRCDEST" BUILDDIR="$builddir" \
+		env SRCDEST="$SRCDEST" BUILDDIR="$WORKDIR" \
 		makepkg --config="$copydir/etc/makepkg.conf" --verifysource -o ||
 		die "Could not download sources."
-
-	# Clean up garbage from verifysource
-	rm -rf "$builddir"
 }
 
 # Usage: move_products $copydir $owner
