@@ -1,0 +1,25 @@
+lddd(1)
+=======
+
+Name
+----
+lddd - Find broken library links on your system
+
+Synopsis
+--------
+lddd
+
+Description
+-----------
+
+Scans '$PATH', '/lib', '/usr/lib', '/usr/local/lib' and
+'/etc/ld.so.conf.d/*.conf' directories for ELF files with references to missing
+shared libraries, and suggests which packages might need to be rebuilt. The
+collected data is written to a temporary directory created by mktemp.
+
+See Also
+--------
+
+linkman:ldd[1]
+
+include::footer.asciidoc[]

@@ -1,0 +1,28 @@
+
+Bugs
+----
+Bugs can be reported on the bug tracker 'https://bugs.archlinux.org' in the Arch
+Linux category and title prefixed with [devtools] or via
+mailto:arch-projects@archlinux.org[].
+
+
+Authors
+-------
+
+Maintainers:
+
+* Aaron Griffin <aaronmgriffin@gmail.com>
+* Allan McRae <allan@archlinux.org>
+* Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+* Dan McGee <dan@archlinux.org>
+* Dave Reisner <dreisner@archlinux.org>
+* Evangelos Foutras <evangelos@foutrelis.com>
+* Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+* Levente Polyak <anthraxx@archlinux.org>
+* Pierre Schmitz <pierre@archlinux.de>
+* Sébastien Luttringer <seblu@seblu.net> 
+* Sven-Hendrik Haase <svenstaro@gmail.com>
+* Thomas Bächler <thomas@archlinux.org>
+
+For additional contributors, use `git shortlog -s` on the devtools.git
+repository.

@@ -16,3 +16,4 @@ zsh_completion
 find-libdeps
 crossrepomove
 arch-nspawn
+doc/*.1

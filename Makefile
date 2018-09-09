@@ -1,6 +1,7 @@
 V=20180531
 
 PREFIX = /usr/local
+MANDIR = $(PREFIX)/share/man
 
 BINPROGS = \
 	checkpkg \
@@ -60,7 +61,13 @@ BASHCOMPLETION_LINKS = \
 	archco \
 	communityco
 
-all: $(BINPROGS) bash_completion zsh_completion
+
+MANS = \
+	doc/lddd.1
+
+
+all: $(BINPROGS) bash_completion zsh_completion man
+man: $(MANS)
 
 edit = sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g"
 
@@ -72,8 +79,13 @@ edit = sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g"
 	@chmod +x "$@"
 	@bash -O extglob -n "$@"
 
+$(MANS): doc/asciidoc.conf doc/footer.asciidoc
+
+doc/%: doc/%.asciidoc
+	a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage -D doc $<
+
 clean:
-	rm -f $(BINPROGS) bash_completion zsh_completion
+	rm -f $(BINPROGS) bash_completion zsh_completion $(MANS)
 
 install:
 	install -dm0755 $(DESTDIR)$(PREFIX)/bin
@@ -88,6 +100,9 @@ install:
 	for l in ${BASHCOMPLETION_LINKS}; do ln -sf devtools $(DESTDIR)/usr/share/bash-completion/completions/$$l; done
 	install -Dm0644 zsh_completion $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	ln -sf archco $(DESTDIR)$(PREFIX)/bin/communityco
+	for manfile in $(MANS); do \
+		install -Dm644 $$manfile -t $(DESTDIR)$(MANDIR)/man$${manfile##*.}; \
+	done;
 
 uninstall:
 	for f in ${BINPROGS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$f; done
@@ -99,6 +114,9 @@ uninstall:
 	rm $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	rm -f $(DESTDIR)$(PREFIX)/bin/communityco
 	rm -f $(DESTDIR)$(PREFIX)/bin/find-libprovides
+	for manfile in $(MANS); do \
+		rm -f $(DESTDIR)$(MANDIR)/man$${manfile##*.}/$${manfile#doc/}; \
+	done;
 
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip -9 > devtools-$(V).tar.gz
