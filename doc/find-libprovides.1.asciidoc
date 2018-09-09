@@ -1,0 +1,24 @@
+find-libdeps(1)
+===============
+
+Name
+----
+find-libdeps - Find soname dependencies for a package
+
+Synopsis
+--------
+find-libdeps [options] [package]
+
+Description
+-----------
+
+Finds soname dependencies of a package and prints out a list in the following
+format '<soname>=<soversion>-<soarch>'.
+
+Options
+-------
+
+*--ignore-internal*::
+	Ignore internal libraries
+
+include::footer.asciidoc[]
