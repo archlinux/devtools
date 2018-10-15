@@ -79,7 +79,7 @@ MANS = \
 all: $(BINPROGS) bash_completion zsh_completion man
 man: $(MANS)
 
-edit = sed -e "s|@pkgdatadir[@]|$(DESTDIR)$(PREFIX)/share/devtools|g"
+edit = sed -e "s|@pkgdatadir[@]|$(PREFIX)/share/devtools|g"
 
 %: %.in Makefile lib/common.sh
 	@echo "GEN $@"
