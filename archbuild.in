@@ -39,7 +39,7 @@ while getopts 'hcr:' arg; do
 	esac
 done
 
-check_root SOURCE_DATE_EPOCH
+check_root SOURCE_DATE_EPOCH,SRCDEST,SRCPKGDEST,PKGDEST,LOGDEST,MAKEFLAGS,PACKAGER,GNUPGHOME
 
 # Pass all arguments after -- right to makepkg
 makechrootpkg_args+=("${@:$OPTIND}")
