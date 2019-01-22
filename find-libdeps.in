@@ -46,7 +46,7 @@ process_sofile() {
 	# extract the major version: 1
 	soversion="${sofile##*\.so\.}"
 	if [[ "$soversion" = "$sofile" ]] && ((IGNORE_INTERNAL)); then
-		continue
+		return
 	fi
 	if ! in_array "${soname}=${soversion}-${soarch}" "${soobjects[@]}"; then
 		# libfoo.so=1-64
