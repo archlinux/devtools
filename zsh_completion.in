@@ -1,4 +1,4 @@
-#compdef archbuild archco arch-nspawn archrelease archrm commitpkg finddeps makechrootpkg mkarchroot rebuildpkgs extrapkg=commitpkg corepkg=commitpkg testingpkg=commitpkg stagingpkg=commitpkg communitypkg=commitpkg community-testingpkg=commitpkg community-stagingpkg=commitpkg multilibpkg=commitpkg multilib-testingpkg=commitpkg extra-x86_64-build=archbuild testing-x86_64-build=archbuild staging-x86_64-build=archbuild multilib-build=archbuild multilib-testing-build=archbuild multilib-staging-build=archbuild kde-unstable-x86_64-build=archbuild gnome-unstable-x86_64-build=archbuild communityco=archco
+#compdef archbuild archco arch-nspawn archrelease commitpkg finddeps makechrootpkg mkarchroot rebuildpkgs extrapkg=commitpkg corepkg=commitpkg testingpkg=commitpkg stagingpkg=commitpkg communitypkg=commitpkg community-testingpkg=commitpkg community-stagingpkg=commitpkg multilibpkg=commitpkg multilib-testingpkg=commitpkg extra-x86_64-build=archbuild testing-x86_64-build=archbuild staging-x86_64-build=archbuild multilib-build=archbuild multilib-testing-build=archbuild multilib-staging-build=archbuild kde-unstable-x86_64-build=archbuild gnome-unstable-x86_64-build=archbuild communityco=archco
 # License: Unspecified
 
 m4_include(lib/valid-tags.sh)
@@ -21,10 +21,6 @@ _arch_nspawn_args=(
 
 _archrelease_args=(
 	"*:arch:($_tags[*])"
-)
-
-_archrm_args=(
-	'1:path:_files -/'
 )
 
 _commitpkg_args=(
