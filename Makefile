@@ -8,7 +8,6 @@ BINPROGS = \
 	commitpkg \
 	archco \
 	archrelease \
-	archrm \
 	archbuild \
 	lddd \
 	finddeps \
