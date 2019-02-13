@@ -17,16 +17,17 @@ shopt -s nullglob
 
 default_makepkg_args=(--syncdeps --noconfirm --log --holdver --skipinteg)
 makepkg_args=("${default_makepkg_args[@]}")
-keepbuilddir=false
-update_first=false
-clean_first=false
-run_namcap=false
-temp_chroot=false
 chrootdir=
 passeddir=
 makepkg_user=
 declare -a install_pkgs
 declare -i ret=0
+
+keepbuilddir=0
+update_first=0
+clean_first=0
+run_namcap=0
+temp_chroot=0
 
 bindmounts_ro=()
 bindmounts_rw=()
@@ -167,7 +168,7 @@ install_packages() {
 }
 
 prepare_chroot() {
-	[[ $keepbuilddir = true ]] || rm -rf "$copydir/build"
+	(( keepbuilddir )) || rm -rf "$copydir/build"
 
 	local builduser_uid builduser_gid
 	builduser_uid="${SUDO_UID:-$UID}"
@@ -206,7 +207,7 @@ EOF
 		declare -p SOURCE_DATE_EPOCH 2>/dev/null || true
 		printf '_chrootbuild "$@" || exit\n'
 
-		if [[ $run_namcap = true ]]; then
+		if (( run_namcap )); then
 			declare -f _chrootnamcap
 			printf '_chrootnamcap || exit\n'
 		fi
@@ -289,15 +290,15 @@ move_products() {
 
 while getopts 'hcur:I:l:nTD:d:U:' arg; do
 	case "$arg" in
-		c) clean_first=true ;;
+		c) clean_first=1 ;;
 		D) bindmounts_ro+=("--bind-ro=$OPTARG") ;;
 		d) bindmounts_rw+=("--bind=$OPTARG") ;;
-		u) update_first=true ;;
+		u) update_first=1 ;;
 		r) passeddir="$OPTARG" ;;
 		I) install_pkgs+=("$OPTARG") ;;
 		l) copy="$OPTARG" ;;
-		n) run_namcap=true; makepkg_args+=(--install) ;;
-		T) temp_chroot=true; copy+="-$$" ;;
+		n) run_namcap=1; makepkg_args+=(--install) ;;
+		T) temp_chroot=1; copy+="-$$" ;;
 		U) makepkg_user="$OPTARG" ;;
 		h|*) usage ;;
 	esac
@@ -326,10 +327,10 @@ makepkg_args+=("${@:$OPTIND}")
 # See if -R or -e was passed to makepkg
 for arg in "${makepkg_args[@]}"; do
 	case ${arg%%=*} in
-		--repackage|--noextract) keepbuilddir=true; break ;;
-		--repackage|--noextract) keepbuilddir=true; break ;;
+		--repackage|--noextract) keepbuilddir=1; break ;;
+		--repackage|--noextract) keepbuilddir=1; break ;;
 		--*) ;;
-		-*R*|-*e*) keepbuilddir=true; break ;;
+		-*R*|-*e*) keepbuilddir=1; break ;;
 	esac
 done
 
@@ -353,11 +354,11 @@ load_vars /etc/makepkg.conf
 # Lock the chroot we want to use. We'll keep this lock until we exit.
 lock 9 "$copydir.lock" "Locking chroot copy [%s]" "$copy"
 
-if [[ ! -d $copydir ]] || $clean_first; then
+if [[ ! -d $copydir ]] || (( clean_first )); then
 	sync_chroot "$chrootdir" "$copydir" "$copy"
 fi
 
-$update_first && arch-nspawn "$copydir" \
+(( update_first )) && arch-nspawn "$copydir" \
 		"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
 		pacman -Syu --noconfirm
 
@@ -388,10 +389,10 @@ else
 	(( ret += 1 ))
 fi
 
-$temp_chroot && delete_chroot "$copydir" "$copy"
+(( temp_chroot )) && delete_chroot "$copydir" "$copy"
 
 if (( ret != 0 )); then
-	if $temp_chroot; then
+	if (( temp_chroot )); then
 		die "Build failed"
 	else
 		die "Build failed, check %s/build" "$copydir"
