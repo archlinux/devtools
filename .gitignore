@@ -9,6 +9,7 @@ commitpkg
 finddeps
 lddd
 makechrootpkg
+makerepropkg
 mkarchroot
 rebuildpkgs
 zsh_completion

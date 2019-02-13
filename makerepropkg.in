@@ -1,0 +1,190 @@
+#!/bin/bash
+#   makerepropkg - rebuild a package to see if it is reproducible
+#
+#   Copyright (c) 2019 by Eli Schwartz <eschwartz@archlinux.org>
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+m4_include(lib/common.sh)
+m4_include(lib/archroot.sh)
+
+source /usr/share/makepkg/util/config.sh
+source /usr/share/makepkg/util/message.sh
+
+declare -A buildinfo
+declare -a buildenv buildopts installed installpkgs
+
+archiveurl='https://archive.archlinux.org/packages'
+buildroot=/var/lib/archbuild/reproducible
+chroot=testenv
+
+parse_buildinfo() {
+    local line var val
+
+    while read -r line; do
+        var="${line%% = *}"
+        val="${line#* = }"
+        case ${var} in
+            buildenv)
+                buildenv+=("${val}")
+                ;;
+            options)
+                buildopts+=("${val}")
+                ;;
+            installed)
+                installed+=("${val}")
+                ;;
+            *)
+                buildinfo["${var}"]="${val}"
+                ;;
+        esac
+    done
+}
+
+get_pkgfile() {
+    local cdir=${cache_dirs[0]}
+    local pkgfilebase=${1}
+    local pkgname=${pkgfilebase%-*-*-*}
+    local pkgfile ext
+
+    for ext in .xz .zstd ''; do
+        pkgfile=${pkgfilebase}.pkg.tar${ext}
+
+        for c in "${cache_dirs[@]}"; do
+            if [[ -f ${c}/${pkgfile} ]]; then
+                cdir=${c}
+                break
+            fi
+        done
+
+        for f in "${pkgfile}" "${pkgfile}.sig"; do
+            if [[ ! -f "${cdir}/${f}" ]]; then
+                msg2 "retrieving '%s'..." "${f}" >&2
+                curl -Llf -# -o "${cdir}/${f}" "${archiveurl}/${pkgname:0:1}/${pkgname}/${f}" || continue 2
+            fi
+        done
+        printf '%s\n' "file://${cdir}/${pkgfile}"
+        return 0
+    done
+
+    return 1
+}
+
+usage() {
+    cat << __EOF__
+usage: ${BASH_SOURCE[0]##*/} [options] <package_file>
+
+Run this script in a PKGBUILD dir to build a package inside a
+clean chroot while attempting to reproduce it. The package file
+will be used to derive metadata needed for reproducing the
+package, including the .PKGINFO as well as the buildinfo.
+
+For more details see https://reproducible-builds.org/
+
+OPTIONS
+    -c <dir>      Set pacman cache
+    -M <file>     Location of a makepkg config file
+    -h            Show this usage message
+__EOF__
+}
+
+while getopts 'M:c:h' arg; do
+        case "$arg" in
+                M) archroot_args+=(-M "$OPTARG") ;;
+                c) cache_dirs+=("$OPTARG") ;;
+                h) usage; exit 0 ;;
+                *|?) usage; exit 1 ;;
+        esac
+done
+shift $((OPTIND - 1))
+
+check_root
+
+if [[ -n $1 ]]; then
+    pkgfile="$1"
+    if ! bsdtar -tqf "${pkgfile}" .BUILDINFO >/dev/null 2>&1; then
+        error "file is not a valid pacman package: '%s'" "${pkgfile}"
+        exit 1
+    fi
+else
+    error "no package file specified. Try '${BASH_SOURCE[0]##*/} -h' for more information. "
+    exit 1
+fi
+
+if (( ${#cache_dirs[@]} == 0 )); then
+	mapfile -t cache_dirs < <(pacman-conf CacheDir)
+fi
+
+ORIG_HOME=${HOME}
+IFS=: read -r _ _ _ _ _ HOME _ < <(getent passwd "${SUDO_USER:-$USER}")
+load_makepkg_config
+HOME=${ORIG_HOME}
+[[ -d ${SRCDEST} ]] || SRCDEST=${PWD}
+
+parse_buildinfo < <(bsdtar -xOqf "${pkgfile}" .BUILDINFO)
+export SOURCE_DATE_EPOCH="${buildinfo[builddate]}"
+PACKAGER="${buildinfo[packager]}"
+BUILDDIR="${buildinfo[builddir]}"
+
+# nuke and restore reproducible testenv
+for copy in "${buildroot}"/*/; do
+    [[ -d ${copy} ]] || continue
+    subvolume_delete_recursive "${copy}"
+done
+rm -rf --one-file-system "${buildroot}"
+(umask 0022; mkdir -p "${buildroot}")
+
+for fname in "${installed[@]}"; do
+    if ! allpkgfiles+=("$(get_pkgfile "${fname}")"); then
+        error "failed to retrieve ${fname}"
+        exit 1
+    fi
+done
+printf '%s\n' "${allpkgfiles[@]}" | mkarchroot -U "${archroot_args[@]}" "${buildroot}"/root - || exit 1
+
+
+# use makechrootpkg to prep the build directory
+makechrootpkg -r "${buildroot}" -l "${chroot}" -- --packagelist || exit 1
+
+# set detected makepkg.conf options
+{
+    for var in PACKAGER BUILDDIR; do
+        printf '%s=%s\n' "${var}" "${!var@Q}"
+    done
+    printf 'OPTIONS=(%s)\n' "${buildopts[*]@Q}"
+    printf 'BUILDENV=(%s)\n' "${buildenv[*]@Q}"
+} >> "${buildroot}/${chroot}"/etc/makepkg.conf >> "${buildroot}/${chroot}"/etc/makepkg.conf
+install -d -o "${SUDO_UID:-$UID}" -g "$(id -g "${SUDO_UID:-$UID}")" "${buildroot}/${chroot}/${BUILDDIR}"
+
+# kick off the build
+arch-nspawn "${buildroot}/${chroot}" \
+    --bind="${PWD}:/startdir" \
+    --bind="${SRCDEST}:/srcdest" \
+    /chrootbuild -C --noconfirm --log --holdver --skipinteg
+
+if (( $? == 0 )); then
+    msg2 "built succeeded! built packages can be found in ${buildroot}/${chroot}/pkgdest"
+    msg "comparing artifacts..."
+    if cmp -s "${pkgfile}" "${buildroot}/${chroot}/pkgdest/${pkgfile##*/}"; then
+        msg2 "Package successfully reproduced!"
+        exit 0
+    else
+        warning "Package is not reproducible. :("
+        sha256sum "${pkgfile}" "${buildroot}/${chroot}/pkgdest/${pkgfile##*/}"
+    fi
+fi
+
+# the package either failed to build, or was unreproducible
+exit 1
