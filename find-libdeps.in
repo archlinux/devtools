@@ -13,7 +13,7 @@ if [[ $1 = "--ignore-internal" ]]; then
 	shift
 fi
 
-script_mode=${0##*/find-lib}
+script_mode=${BASH_SOURCE[0]##*/find-lib}
 
 case $script_mode in
 	deps|provides) true;;

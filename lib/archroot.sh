@@ -8,7 +8,7 @@ CHROOT_VERSION='v4'
 ##
 #  usage : check_root $keepenv
 ##
-orig_argv=("$0" "$@")
+orig_argv=("${BASH_SOURCE[0]}" "$@")
 check_root() {
 	local keepenv=$1
 

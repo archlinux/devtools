@@ -3,7 +3,7 @@
 #
 # This script rebuilds a list of packages in order
 # and reports anything that fails
-# 
+#
 # Due to sudo usage, it is recommended to allow makechrootpkg
 # to be run with NOPASSWD in your sudoers file
 #
@@ -14,8 +14,8 @@
 m4_include(lib/common.sh)
 
 if (( $# < 1 )); then
-	printf 'Usage: %s <chrootdir> <packages to rebuild>\n' "$(basename "$0")"
-	printf '  example: %s ~/chroot readline bash foo bar baz\n' "$(basename "$0")"
+	printf 'Usage: %s <chrootdir> <packages to rebuild>\n' "$(basename "${BASH_SOURCE[0]}")"
+	printf '  example: %s ~/chroot readline bash foo bar baz\n' "$(basename "${BASH_SOURCE[0]}")"
 	exit 1
 fi
 
