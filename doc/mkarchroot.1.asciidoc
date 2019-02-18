@@ -1,0 +1,46 @@
+mkarchroot(1)
+==============
+
+Name
+----
+mkarchroot - Creates an arch chroot in a specified location with a specified set of packages
+
+Synopsis
+--------
+mkarchroot [options] [location] [packages]
+
+Description
+-----------
+
+'mkarchroot' is a script to create an Arch Linux chroot at a specified location
+with specified packages. Typically used by 'makechrootpkg' to create build
+chroots. Apart from installing specified packages the chroot is created with an
+en_US.UTF-8 and de_DE.UTF-8 locale and a generated machine-id.
+
+Options
+-------
+
+*-C* <file>::
+	Location of a pacman config file.
+
+*-M* <file>::
+	Location of a makepkg config file.
+
+*-c* <dir>::
+	Set pacman cache.
+
+*-f* <file>::
+	Copy file from the host to the chroot.
+
+*-s*::
+	Do not run setarch.
+
+*-h*::
+	Output command line options.
+
+See Also
+--------
+
+linkman:pacman[1]
+
+include::footer.asciidoc[]

@@ -65,7 +65,8 @@ BASHCOMPLETION_LINKS = \
 MANS = \
 	doc/lddd.1 \
 	doc/checkpkg.1 \
-	doc/sogrep.1
+	doc/sogrep.1 \
++	doc/mkarchroot.1
 
 
 all: $(BINPROGS) bash_completion zsh_completion man
