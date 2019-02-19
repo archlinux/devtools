@@ -64,7 +64,6 @@ done
 
 msg "Adding %s to %s" "${pkgbase}" "${target_repo}"
 svn -q add "target_checkout/${pkgbase}"
-svn -q propset svn:keywords 'Id' "target_checkout/${pkgbase}/trunk/PKGBUILD"
 svn -q commit -m"${scriptname}: Moving ${pkgbase} from ${source_repo} to ${target_repo}" target_checkout
 pushd "target_checkout/${pkgbase}/trunk" >/dev/null
 archrelease "${arch[@]/#/$target_repo-}" || die
