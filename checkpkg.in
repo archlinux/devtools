@@ -36,6 +36,8 @@ STARTDIR=$(pwd)
 TEMPDIR=$(mktemp -d --tmpdir checkpkg-script.XXXX)
 
 for _pkgname in "${pkgname[@]}"; do
+	comparepkg=$_pkgname
+	pkgurl=
 	target_pkgver=$(get_full_version "$_pkgname")
 	if ! pkgfile=$(find_cached_package "$_pkgname" "$target_pkgver" "$CARCH"); then
 		die 'tarball not found for package: %s' "${_pkgname}-$target_pkgver"
@@ -43,16 +45,29 @@ for _pkgname in "${pkgname[@]}"; do
 
 	ln -s "$pkgfile" "$TEMPDIR"
 
-	pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm "$_pkgname") ||
-		die "Couldn't download previous package for %s." "$_pkgname"
+	if (( $# )); then
+		case $1 in
+			/*|*/*)
+				pkgurl=file://$(readlink -m "$1") ;;
+			*.pkg.tar*)
+				pkgurl=$1 ;;
+			'')
+				;;
+			*)
+				comparepkg=$1 ;;
+		esac
+		shift
+	fi
+	[[ -n $pkgurl ]] || pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm "$comparepkg") ||
+		die "Couldn't download previous package for %s." "$comparepkg"
 
-	oldpkg=${pkgurl##*://*/}
+	oldpkg=${pkgurl##*/}
 
-	if [[ ${oldpkg##*/} = "${pkgfile##*/}" ]]; then
+	if [[ ${oldpkg} = "${pkgfile##*/}" ]]; then
 		die "The built package (%s) is the one in the repo right now!" "$_pkgname"
 	fi
 
-	if [[ $pkgurl = file://* ]]; then
+	if [[ $pkgurl = file://* || ( $pkgurl = /* && -f $pkgurl ) ]]; then
 		ln -s "${pkgurl#file://}" "$TEMPDIR/$oldpkg"
 	elif [[ -f "$PKGDEST/$oldpkg" ]]; then
 		ln -s "$PKGDEST/$oldpkg" "$TEMPDIR/$oldpkg"
