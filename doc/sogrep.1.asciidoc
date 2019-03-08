@@ -1,0 +1,31 @@
+sogrep(1)
+=========
+
+Name
+----
+sogrep - Find packages using a linked to a given shared library
+
+Synopsis
+--------
+sogrep [options] repo libname
+
+Description
+-----------
+
+Check the soname links database for pacman repositories containing packages
+linked to a given shared library. If the repository specified is "all", then
+all repositories will be searched, otherwise only the named repository will be
+searched.
+
+If the links database does not exist, it will be downloaded first.
+
+Options
+-------
+
+*-r, --refresh*::
+	Refresh the links databases
+
+*-h, --help*::
+	Show a help text
+
+include::footer.asciidoc[]

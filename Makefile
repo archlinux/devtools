@@ -16,7 +16,8 @@ BINPROGS = \
 	crossrepomove\
 	arch-nspawn \
 	mkarchroot \
-	makechrootpkg
+	makechrootpkg \
+	sogrep
 
 CONFIGFILES = \
 	makepkg-x86_64.conf \
@@ -63,7 +64,8 @@ BASHCOMPLETION_LINKS = \
 
 MANS = \
 	doc/lddd.1 \
-	doc/checkpkg.1
+	doc/checkpkg.1 \
+	doc/sogrep.1
 
 
 all: $(BINPROGS) bash_completion zsh_completion man

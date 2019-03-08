@@ -20,7 +20,7 @@ Maintainers:
 * Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
 * Levente Polyak <anthraxx@archlinux.org>
 * Pierre Schmitz <pierre@archlinux.de>
-* Sébastien Luttringer <seblu@seblu.net> 
+* Sébastien Luttringer <seblu@seblu.net>
 * Sven-Hendrik Haase <svenstaro@gmail.com>
 * Thomas Bächler <thomas@archlinux.org>
 
