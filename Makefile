@@ -75,7 +75,8 @@ MANS = \
 	doc/makerepropkg.1 \
 	doc/mkarchroot.1 \
 	doc/find-libdeps.1 \
-	doc/find-libprovides.1
+	doc/find-libprovides.1 \
+	doc/devtools.7
 
 
 all: $(BINPROGS) bash_completion zsh_completion man

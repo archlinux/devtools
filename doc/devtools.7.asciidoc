@@ -1,0 +1,46 @@
+devtools(7)
+===========
+
+Name
+----
+devtools - Developer tools for the Arch Linux distribution
+
+Description
+-----------
+
+Devtools contains tools for package maintenance in Arch Linux. The toolset
+varies from tools for building packages in a clean chroot ('mkarchroot',...),
+packaging related tools for sonames ('sogrep', 'lddd') and tools for
+repository management such as ('archco', 'extra2community')
+
+Programs
+--------
+The list below gives a short overview; see the respective documentation
+for details.
+
+linkman:checkpkg[1]
+	Compare the current build pakcage with the repository version
+
+linkman:find-libdeps[1]
+	Find soname dependencies for a package
+
+linkman:find-libprovides[1]
+	Find soname's which are provided by a package
+
+linkman:lddd[1]
+	Find broken library links on your system
+
+linkman:makerepropkg[1]
+	Rebuild a package to see if it is reproducible
+
+linkman:mkarchroot[1]
+	Creates an arch chroot in a specified location with a specified set of
+	packages
+
+linkman:offload-build[1]
+	Build a PKGBUILD on a remote server using makechrootpkg
+
+linkman:sogrep[1]
+	Find packages using a linked to a given shared library
+
+include::footer.asciidoc[]
