@@ -19,3 +19,4 @@ crossrepomove
 arch-nspawn
 sogrep
 doc/*.1
+doc/*.7
