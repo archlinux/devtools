@@ -28,4 +28,15 @@ Options
 *-h, --help*::
 	Show a help text
 
+
+Environment Variables
+---------------------
+**SOLINKS_MIRROR**="https://mirror.foo.com"
+	Alternative mirror to use for downloading soname links database.
+
+**SOCACHE_DIR**="/path/to/directory"::
+	Directory where soname links database is stored, overrides the default
+	directory set by the **XDG_CACHE_HOME** environment variable or the
+	**HOME** environment variable if **XDG_CACHE_HOME** is not set.
+
 include::footer.asciidoc[]
