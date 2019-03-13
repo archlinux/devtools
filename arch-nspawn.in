@@ -58,19 +58,15 @@ else
 	cache_dirs=("$cache_dir")
 fi
 
-pacconf_cmd=$(command -v pacman-conf || command -v pacconf)
-# shellcheck disable=2016
-host_mirror=$($pacconf_cmd --repo extra Server 2> /dev/null | head -1 | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#')
-# shellcheck disable=2016
-[[ $host_mirror == *file://* ]] && host_mirror_path=$(echo "$host_mirror" | sed -r 's#file://(/.*)/\$repo/os/\$arch#\1#g')
+host_mirror=($(pacconf --raw --repo extra Server 2> /dev/null))
 
 # {{{ functions
 build_mount_args() {
 	declare -g mount_args=()
 
-	if [[ -n $host_mirror_path ]]; then
-		mount_args+=("--bind-ro=$host_mirror_path")
-	fi
+	for host_mirror_path in "${host_mirror[@]}"; do
+		[[ $host_mirror_path == *file://* ]] && mount_args+=("--bind-ro=$host_mirror_path")
+	done
 
 	mount_args+=("--bind=${cache_dirs[0]}")
 
@@ -81,7 +77,7 @@ build_mount_args() {
 
 copy_hostconf () {
 	cp -a /etc/pacman.d/gnupg "$working_dir/etc/pacman.d"
-	echo "Server = $host_mirror" >"$working_dir/etc/pacman.d/mirrorlist"
+	printf 'Server = %s\n' "${host_mirror[@]}" >"$working_dir/etc/pacman.d/mirrorlist"
 
 	[[ -n $pac_conf ]] && cp "$pac_conf" "$working_dir/etc/pacman.conf"
 	[[ -n $makepkg_conf ]] && cp "$makepkg_conf" "$working_dir/etc/makepkg.conf"
