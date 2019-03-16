@@ -1,24 +1,24 @@
-find-libdeps(1)
-===============
+find-libprovides(1)
+===================
 
 Name
 ----
-find-libdeps - Find soname dependencies for a package
+find-libprovides - Find soname's which are provided by a package
 
 Synopsis
 --------
-find-libdeps [options] [package]
+find-libprovides [options]
 
 Description
 -----------
 
-Finds soname dependencies of a package and prints out a list in the following
+Finds soname's provided by a package and prints out a list in the following
 format '<soname>=<soversion>-<soarch>'.
 
 Options
 -------
 
 *--ignore-internal*::
-	Ignore internal libraries
+	Ignore internal libraries.
 
 include::footer.asciidoc[]
