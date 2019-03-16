@@ -18,6 +18,7 @@ Maintainers:
 * Dave Reisner <dreisner@archlinux.org>
 * Evangelos Foutras <evangelos@foutrelis.com>
 * Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+* Jelle van der Waa <jelle@archlinux.org>
 * Levente Polyak <anthraxx@archlinux.org>
 * Pierre Schmitz <pierre@archlinux.de>
 * Sébastien Luttringer <seblu@seblu.net>
