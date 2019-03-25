@@ -1,6 +1,24 @@
 #!/bin/bash
-# License: Unspecified
+#
+#   sogrep - find shared library links in an Arch Linux repository.
+#
+#   Copyright (c) 2019 by Eli Schwartz <eschwartz@archlinux.org>
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
 
+# globals
 : ${SOLINKS_MIRROR:="https://mirror.pkgbuild.com"}
 : ${SOCACHE_DIR:="${XDG_CACHE_HOME:-${HOME}/.cache}/sogrep"}
 repos=('staging' 'testing' 'core' 'extra'
@@ -9,54 +27,66 @@ repos=('staging' 'testing' 'core' 'extra'
        'gnome-unstable' 'kde-unstable')
 arches=('x86_64')
 
+# options
+REFRESH=0
+VERBOSE=0
+
+source /usr/share/makepkg/util/parseopts.sh
 source /usr/share/makepkg/util/util.sh
 
 recache() {
-    local repo arch
+    local repo arch verbosity=-s
+
+    (( VERBOSE )) && verbosity=--progress-bar
 
     for repo in "${repos[@]}"; do
         for arch in "${arches[@]}"; do
             rm -rf "${SOCACHE_DIR}/${arch}/${repo}"
             mkdir -p "${SOCACHE_DIR}/${arch}/${repo}"
-            curl "${SOLINKS_MIRROR}/${repo}/os/${arch}/${repo}.links.tar.gz" | bsdtar -xf - -C "${SOCACHE_DIR}/${arch}/${repo}"
+            curl "$verbosity" "${SOLINKS_MIRROR}/${repo}/os/${arch}/${repo}.links.tar.gz" | bsdtar -xf - -C "${SOCACHE_DIR}/${arch}/${repo}"
         done
     done
 }
 
 search() {
-    local repo=$1 arch lib=$2
+    local repo=$1 arch lib=$2 srepos=("${repos[@]}")
 
     if [[ $repo != all ]]; then
-        if ! in_array "$repo" "${repos[@]}"; then
+        if ! in_array "${repo}" "${repos[@]}"; then
             echo "${BASH_SOURCE[0]##*/}: unrecognized repo '$repo'"
             echo "Try '${BASH_SOURCE[0]##*/} --help' for more information."
             exit 1
         fi
-        local repos=("${repo}")
-    fi
-
-    if [[ ! -d ${SOCACHE_DIR} ]]; then
-        recache
+        srepos=("${repo}")
     fi
 
     for arch in "${arches[@]}"; do
-        for repo in "${repos[@]}"; do
+        for repo in "${srepos[@]}"; do
+            local prefix=
+            (( VERBOSE && ${#srepos[@]} > 1 )) && prefix=${repo}/
             db=${SOCACHE_DIR}/${arch}/${repo}/
             if [[ -d ${db} ]]; then
                 while read -rd '' pkg; do
+                    read -r match
                     pkg=${pkg#${db}}
-                    printf '%s/%s\n' "${repo}" "${pkg%-*-*/links}"
-                done < <(grep -rlZ "${lib}" "${db}")
+                    pkg="${prefix}${pkg%-*-*/links}"
+
+                    if (( VERBOSE )); then
+                        printf '%-35s %s\n' "${pkg}" "${match}"
+                    else
+                        printf '%s\n' "${pkg}"
+                    fi
+                done < <(grep -rZ "${lib}" "${db}") | sort -u
             fi
         done
-     done | sort -u
+    done | resort
 }
 
 usage() {
     cat <<- _EOF_
 		Usage: ${BASH_SOURCE[0]##*/} [OPTIONS] REPO LIBNAME
 
-		Check the soname links database for pacman repositories containing
+		Check the soname links database for Arch Linux repositories containing
 		packages linked to a given shared library. If the repository specified
 		is "all", then all repositories will be searched, otherwise only the
 		named repository will be searched.
@@ -64,35 +94,56 @@ usage() {
 		If the links database does not exist, it will be downloaded first.
 
 		OPTIONS
+		    -v, --verbose   Show matched links in addition to pkgname
 		    -r, --refresh   Refresh the links databases
 		    -h, --help      Show this help text
 _EOF_
 }
+
+# utility function to resort with multiple repos + no-verbose
+resort() { sort -u; }
 
 if (( $# == 0 )); then
     echo "error: No arguments passed."
     echo "Try '${BASH_SOURCE[0]##*/} --help' for more information."
     exit 1
 fi
+OPT_SHORT='vrh'
+OPT_LONG=('verbose' 'refresh' 'help')
+if ! parseopts "$OPT_SHORT" "${OPT_LONG[@]}" -- "$@"; then
+    exit 1
+fi
+set  -- "${OPTRET[@]}"
 
-while (( $# )); do
+while :; do
     case $1 in
+        -v|--verbose)
+            resort() { cat; }
+            VERBOSE=1
+            ;;
         -r|--refresh)
-            recache
+            REFRESH=1
             ;;
         -h|--help)
             usage
             exit 0
             ;;
-        *)
-            if (( $# < 2 )); then
-                echo "error: Not enough arguments passed."
-                echo "Try '${BASH_SOURCE[0]##*/} --help' for more information."
-                exit 1
-            fi
-            search "$@"
-            exit $?
+        --)
+            shift; break
             ;;
     esac
     shift
 done
+
+if ! (( ( REFRESH && $# == 0 ) || $# == 2 )); then
+    echo "error: Incorrect number of arguments passed."
+    echo "Try '${BASH_SOURCE[0]##*/} --help' for more information."
+    exit 1
+fi
+
+if (( REFRESH )) || [[ ! -d ${SOCACHE_DIR} ]]; then
+    recache
+    (( $# == 2 )) || exit 0
+fi
+
+search "$@"
