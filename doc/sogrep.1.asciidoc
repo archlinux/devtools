@@ -3,7 +3,7 @@ sogrep(1)
 
 Name
 ----
-sogrep - Find packages using a linked to a given shared library
+sogrep - Find shared library links in an Arch Linux repository
 
 Synopsis
 --------
@@ -12,7 +12,7 @@ sogrep [options] repo libname
 Description
 -----------
 
-Check the soname links database for pacman repositories containing packages
+Check the soname links database for Arch Linux repositories containing packages
 linked to a given shared library. If the repository specified is "all", then
 all repositories will be searched, otherwise only the named repository will be
 searched.
@@ -21,6 +21,12 @@ If the links database does not exist, it will be downloaded first.
 
 Options
 -------
+
+*-v, --verbose*::
+    Provide detailed output containing the matched links for each package, the
+    repository it came from (in the event that all repositories are being
+    searched), and, in combination with `-r`, a progress bar for the links
+    database download.
 
 *-r, --refresh*::
 	Refresh the links databases
