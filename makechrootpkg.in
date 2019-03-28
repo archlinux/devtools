@@ -325,9 +325,8 @@ fi
 makepkg_args+=("${@:$OPTIND}")
 
 # See if -R or -e was passed to makepkg
-for arg in "${makepkg_args[@]}"; do
+for arg in "${@:$OPTIND}"; do
 	case ${arg%%=*} in
-		--repackage|--noextract) keepbuilddir=1; break ;;
 		--repackage|--noextract) keepbuilddir=1; break ;;
 		--*) ;;
 		-*R*|-*e*) keepbuilddir=1; break ;;
