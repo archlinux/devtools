@@ -81,14 +81,14 @@ build_mount_args() {
 	for host_mirror in "${host_mirrors[@]}"; do
 		if [[ $host_mirror == *file://* ]]; then
 			host_mirror_path=$(echo "$host_mirror" | sed -r 's#file://(/.*)/\$repo/os/\$arch#\1#g')
-			mount_args+=("--bind-ro=$host_mirror_path")
+			mount_args+=("--bind-ro=${host_mirror_path//:/\\:}")
 		fi
 	done
 
-	mount_args+=("--bind=${cache_dirs[0]}")
+	mount_args+=("--bind=${cache_dirs[0]//:/\\:}")
 
 	for cache_dir in "${cache_dirs[@]:1}"; do
-		mount_args+=("--bind-ro=$cache_dir")
+		mount_args+=("--bind-ro=${cache_dir//:/\\:}")
 	done
 }
 
