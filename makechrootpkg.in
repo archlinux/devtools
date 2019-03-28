@@ -17,6 +17,7 @@ shopt -s nullglob
 
 default_makepkg_args=(--syncdeps --noconfirm --log --holdver --skipinteg)
 makepkg_args=("${default_makepkg_args[@]}")
+verifysource_args=()
 chrootdir=
 passeddir=
 makepkg_user=
@@ -253,7 +254,7 @@ download_sources() {
 	# Ensure sources are downloaded
 	sudo -u "$makepkg_user" --preserve-env=GNUPGHOME \
 		env SRCDEST="$SRCDEST" BUILDDIR="$WORKDIR" \
-		makepkg --config="$copydir/etc/makepkg.conf" --verifysource -o ||
+		makepkg --config="$copydir/etc/makepkg.conf" --verifysource -o "${verifysource_args[@]}" ||
 		die "Could not download sources."
 }
 
@@ -327,9 +328,10 @@ makepkg_args+=("${@:$OPTIND}")
 # See if -R or -e was passed to makepkg
 for arg in "${@:$OPTIND}"; do
 	case ${arg%%=*} in
-		--repackage|--noextract) keepbuilddir=1; break ;;
+		--skip*|--holdver) verifysource_args+=("$arg") ;;
+		--repackage|--noextract) keepbuilddir=1 ;;
 		--*) ;;
-		-*R*|-*e*) keepbuilddir=1; break ;;
+		-*R*|-*e*) keepbuilddir=1 ;;
 	esac
 done
 
