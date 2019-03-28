@@ -61,6 +61,19 @@ fi
 # shellcheck disable=2016
 host_mirrors=($($pacconf_cmd --repo extra Server 2> /dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#'))
 
+while read -r line; do
+	mapfile -t lines < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" \
+		--repo $line Server | sed -r 's#(.*/)[^/]+/os/.+#\1$repo/os/$arch#')
+	if [[ ${lines[0]} != ${host_mirrors[0]} ]]; then
+		for line in "${lines[@]}"; do
+			if [[ $line = file://* ]]; then
+				line=${line#file://}
+				in_array "$line" "${cache_dirs[@]}" || cache_dirs+=("$line")
+			fi
+		done
+	fi
+done < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" --repo-list)
+
 # {{{ functions
 build_mount_args() {
 	declare -g mount_args=()
