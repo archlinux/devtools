@@ -13,6 +13,10 @@
 m4_include(lib/common.sh)
 m4_include(lib/archroot.sh)
 
+# umask might have been changed in /etc/profile
+# ensure that sane default is set again
+umask 0022
+
 working_dir=''
 
 files=()
