@@ -17,7 +17,7 @@ git config format.subjectprefix 'devtools] [PATCH'
 ## Releasing
 
 1. bump the version in the Makefile
-2. Commit everything as  ```Version $(date + "%Y%m%d")```
+2. Commit everything as  ```Version $(date +"%Y%m%d")```
 3. Create a new tag ```git tag -s $(date +"%Y%m%d")```
 4. Push changes
 5. Upload the source tarball with ```make dist upload```
