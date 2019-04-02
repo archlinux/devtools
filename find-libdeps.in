@@ -57,7 +57,7 @@ process_sofile() {
 
 case $script_mode in
 	deps) find_args=(-perm -u+x);;
-        provides) find_args=(-name '*.so*');;
+	provides) find_args=(-name '*.so*');;
 esac
 
 find . -type f "${find_args[@]}" | while read -r filename; do
