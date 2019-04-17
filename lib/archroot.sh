@@ -42,7 +42,7 @@ is_subvolume() {
 # return : whether $path_a and $path_b are on the same filesystem
 ##
 is_same_fs() {
-	[[ "$(stat -c %d "$1")" == "$(stat -c %d "$1")" ]]
+	[[ "$(stat -c %d "$1")" == "$(stat -c %d "$2")" ]]
 }
 
 ##
