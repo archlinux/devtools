@@ -101,9 +101,9 @@ copy_hostconf () {
 umask 0022
 
 # Sanity check
-if [[ ! -f "$working_dir/.arch-chroot" ]]; then
+if [ ! -f "$working_dir/".*-chroot ]; then
 	die "'%s' does not appear to be an Arch chroot." "$working_dir"
-elif [[ $(cat "$working_dir/.arch-chroot") != "$CHROOT_VERSION" ]]; then
+elif [ $(cat "$working_dir/".*-chroot) != "$CHROOT_VERSION" ]; then
 	die "chroot '%s' is not at version %s. Please rebuild." "$working_dir" "$CHROOT_VERSION"
 fi
 
