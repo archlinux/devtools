@@ -410,7 +410,7 @@ main() {
 
 	download_sources "$copydir" "$makepkg_user"
 
-	prepare_chroot "$copydir" "$USER_HOME" "$keepbuilddir" "$run_namcap"
+	prepare_chroot "$copydir" "$USER_HOME" "$keepbuilddir" "$run_namcap" "$makepkg_user"
 
 	if arch-nspawn "$copydir" \
 		--bind="$PWD:/startdir" \
