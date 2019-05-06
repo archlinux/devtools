@@ -17,7 +17,7 @@ if [[ -z $match ]]; then
 	exit 1
 fi
 
-find . -type d | while read -r d; do
+find . -type d -print0 2>/dev/null| while read -r -d '' d; do
 	if [[ -f "$d/PKGBUILD" ]]; then
 		pkgname=() depends=() makedepends=() optdepends=()
 		# shellcheck source=PKGBUILD.proto
