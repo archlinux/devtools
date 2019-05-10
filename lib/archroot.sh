@@ -38,14 +38,6 @@ is_subvolume() {
 }
 
 ##
-#  usage : is_same_fs( $path_a, $path_b )
-# return : whether $path_a and $path_b are on the same filesystem
-##
-is_same_fs() {
-	[[ "$(stat -c %d "$1")" == "$(stat -c %d "$2")" ]]
-}
-
-##
 #  usage : subvolume_delete_recursive( $path )
 #
 #    Find all btrfs subvolumes under and including $path and delete them.
