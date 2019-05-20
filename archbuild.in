@@ -20,6 +20,15 @@ fi
 chroots='/var/lib/archbuild'
 clean_first=false
 
+pacman_config="@pkgdatadir@/pacman-${repo}.conf"
+if [[ -f @pkgdatadir@/pacman-${repo}-${arch}.conf ]]; then
+    pacman_config="@pkgdatadir@/pacman-${repo}-${arch}.conf"
+fi
+makepkg_config="@pkgdatadir@/makepkg-${arch}.conf"
+if [[ -f @pkgdatadir@/makepkg-${repo}-${arch}.conf ]]; then
+    makepkg_config="@pkgdatadir@/makepkg-${repo}-${arch}.conf"
+fi
+
 usage() {
 	echo "Usage: $cmd [options] -- [makechrootpkg args]"
 	echo '    -h         This help'
@@ -61,15 +70,15 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 	rm -rf --one-file-system "${chroots}/${repo}-${arch}"
 	mkdir -m755 -p "${chroots}/${repo}-${arch}"
 	setarch "${arch}" mkarchroot \
-		-C "@pkgdatadir@/pacman-${repo}.conf" \
-		-M "@pkgdatadir@/makepkg-${arch}.conf" \
+		-C "${pacman_config}" \
+		-M "${makepkg_config}" \
 		"${chroots}/${repo}-${arch}/root" \
 		"${base_packages[@]}" || abort
 else
 	lock 9 "${chroots}/${repo}-${arch}/root.lock" "Locking clean chroot"
 	arch-nspawn \
-		-C "@pkgdatadir@/pacman-${repo}.conf" \
-		-M "@pkgdatadir@/makepkg-${arch}.conf" \
+		-C "${pacman_config}" \
+		-M "${makepkg_config}" \
 		"${chroots}/${repo}-${arch}/root" \
 		pacman -Syuu --noconfirm || abort
 fi
