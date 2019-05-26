@@ -361,7 +361,7 @@ fi
 
 (( update_first )) && arch-nspawn "$copydir" \
 		"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
-		pacman -Syu --noconfirm
+		pacman -Syuu --noconfirm
 
 if [[ -n ${install_pkgs[*]:-} ]]; then
 	install_packages

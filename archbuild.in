@@ -71,7 +71,7 @@ else
 		-C "@pkgdatadir@/pacman-${repo}.conf" \
 		-M "@pkgdatadir@/makepkg-${arch}.conf" \
 		"${chroots}/${repo}-${arch}/root" \
-		pacman -Syu --noconfirm || abort
+		pacman -Syuu --noconfirm || abort
 fi
 
 # Always build official packages reproducibly
