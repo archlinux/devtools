@@ -1,0 +1,52 @@
+offload-build(1)
+================
+
+Name
+----
+offload-build - Build a PKGBUILD on a remote server using makechrootpkg
+
+Synopsis
+--------
+offload-build [OPTIONS] -- [ARCHBUILD_OPTIONS]
+
+Description
+-----------
+
+Build a PKGBUILD on a remote server using makechrootpkg. Requires a remote user
+that can run archbuild in a non-interactive manner, e.g. must be able to
+elevate permissions using passwordless sudo.
+
+Options
+-------
+
+*-r, --repo* <reponame>::
+	Build against a specific repository. The default is `extra`, to build packages using
+	the stable repositories via extra-x86_64-build.
+
+*-a, --arch* <architecture>::
+	Build against a specific architecture. The default is `x86_64`, the only
+	architecture officially supported by Arch Linux.
+
+*-s, --server* <hostname>::
+	Offload to a specific build server. The default is dragon.archlinux.org
+	which is used as part of the build toolchain for the official Arch Linux
+	repos.
+
+*-h, --help*::
+	Show a help text.
+
+Passing options to archbuild
+----------------------------
+
+Options after a delimiting -- are passed on to archbuild on the remote.
+archbuild in turn supports passing arguments on to makechrootpkg, which in turn
+supports passing options to makepkg. Since each uses -- to delimit options that
+are forwarded, make sure to escape them properly:
+
+	`offload-build offload-args -- archbuild-args -- makechrootpkg-args -- makepkg-args`
+
+Example: To use a second `testing-x86_64-build` instance with another copydir:
+
+	`offload-build -r testing -- -- -l <chroot_copy>`
+
+include::footer.asciidoc[]

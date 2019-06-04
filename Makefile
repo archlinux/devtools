@@ -69,6 +69,7 @@ BASHCOMPLETION_LINKS = \
 MANS = \
 	doc/lddd.1 \
 	doc/checkpkg.1 \
+	doc/offload-build.1 \
 	doc/sogrep.1 \
 	doc/mkarchroot.1 \
 	doc/find-libdeps.1 \
