@@ -20,6 +20,7 @@ IN_PROGS = \
 
 BINPROGS = \
 	$(IN_PROGS) \
+	offload-build \
 	sogrep
 
 CONFIGFILES = \
