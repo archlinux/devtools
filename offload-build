@@ -89,6 +89,7 @@ makepkg --source || die "unable to make source package"
 mapfile -t files < <(
     # This is sort of bash golfing but it allows running a mildly complex
     # command over ssh with a single connection.
+    # shellcheck disable=SC2145
     cat "$SRCPKGDEST"/*.src.tar.gz |
         ssh $server '
             temp="${XDG_CACHE_HOME:-$HOME/.cache}/offload-build" &&
