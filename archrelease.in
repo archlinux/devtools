@@ -48,7 +48,8 @@ if [[ $(svn status -q) ]]; then
 fi
 
 pushd .. >/dev/null
-IFS=$'\n' read -r -d '' -a known_files < <(svn ls -r HEAD "$trunk")
+mapfile -t known_files < <(svn ls -r HEAD "$trunk")
+wait $! || die "failed to discover committed files"
 for file in "${known_files[@]}"; do
 	if [[ ${file:(-1)} = '/' ]]; then
 		die "archrelease: subdirectories are not supported in package directories!"
@@ -65,12 +66,12 @@ for tag in "$@"; do
 	stat_busy "Copying %s to %s" "${trunk}" "${tag}"
 
 	if [[ -d repos/$tag ]]; then
-		declare -a trash
-		trash=()
-		while read -r file; do
-			trash+=("repos/$tag/$file")
-		done < <(svn ls "repos/$tag")
-		[[ ${#trash[@]} == 0 ]] || svn rm -q "${trash[@]/%/@}"
+		mapfile -t trash < <(svn ls "repos/$tag")
+		wait $! || die "failed to discover existing files"
+		if (( ${#trash[@]} )); then
+			trash=("${trash[@]/#/repos/$tag/}")
+			svn rm -q "${trash[@]/%/@}"
+		fi
 	else
 		mkdir -p "repos/$tag"
 		svn add --parents -q "repos/$tag"
