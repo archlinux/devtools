@@ -105,4 +105,4 @@ mapfile -t files < <(
             makepkg --packagelist
 ')
 
-(( ${#files[@]} )) && printf '%s\n' '' '-> copying files...' && scp "${files[@]/#/$server:}" .
+(( ${#files[@]} )) && printf '%s\n' '' '-> copying files...' && scp "${files[@]/#/$server:}" "${PKGDEST:-$PWD}"
