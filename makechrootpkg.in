@@ -172,8 +172,8 @@ prepare_chroot() {
 	(( keepbuilddir )) || rm -rf "$copydir/build"
 
 	local builduser_uid builduser_gid
-	builduser_uid="${SUDO_UID:-$UID}"
-	builduser_gid="$(id -g "$builduser_uid")"
+	builduser_uid="$(id -u "$makepkg_user")"
+	builduser_gid="$(id -g "$makepkg_user")"
 	local install="install -o $builduser_uid -g $builduser_gid"
 	local x
 
