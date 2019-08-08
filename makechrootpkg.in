@@ -232,8 +232,15 @@ _chrootbuild() {
 	sudo --preserve-env=SOURCE_DATE_EPOCH -iu builduser bash -c 'cd /startdir; makepkg "$@"' -bash "$@"
 	ret=$?
 	case $ret in
-		0|14)
+		0)
 			return 0;;
+		14)
+			# whitelist "The package failed to install." but only if there are multiple split packages
+			# in which case they might be conflicting
+			local pkgfiles=(/pkgdest/*.pkg.tar.xz)
+			(( ${#pkgfiles[@]} > 1))
+			return $?;;
+
 		*)
 			return $ret;;
 	esac
