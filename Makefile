@@ -4,19 +4,19 @@ PREFIX = /usr/local
 MANDIR = $(PREFIX)/share/man
 
 IN_PROGS = \
-	checkpkg \
-	commitpkg \
 	archco \
+	arch-nspawn \
 	archrelease \
 	archbuild \
-	lddd \
-	finddeps \
-	rebuildpkgs \
-	find-libdeps \
+	checkpkg \
+	commitpkg \
 	crossrepomove\
-	arch-nspawn \
+	finddeps \
+	find-libdeps \
+	lddd \
 	mkarchroot \
 	makechrootpkg \
+	rebuildpkgs \
 	sogrep
 
 BINPROGS = \
