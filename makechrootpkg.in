@@ -13,6 +13,8 @@
 m4_include(lib/common.sh)
 m4_include(lib/archroot.sh)
 
+source /usr/share/makepkg/util/config.sh
+
 shopt -s nullglob
 
 default_makepkg_args=(--syncdeps --noconfirm --log --holdver --skipinteg)
@@ -80,26 +82,6 @@ usage() {
 }
 
 # {{{ functions
-# Usage: load_vars $makepkg_conf
-# Globals:
-#  - SRCDEST
-#  - SRCPKGDEST
-#  - PKGDEST
-#  - LOGDEST
-#  - MAKEFLAGS
-#  - PACKAGER
-load_vars() {
-	local makepkg_conf="$1" var
-
-	[[ -f $makepkg_conf ]] || return 1
-
-	for var in {SRC,SRCPKG,PKG,LOG}DEST MAKEFLAGS PACKAGER; do
-		[[ -z ${!var:-} ]] && eval "$(source "$makepkg_conf"; printf "%s='%s'" "$var" "${!var}")"
-	done
-
-	return 0
-}
-
 # Usage: sync_chroot $chrootdir $copydir [$copy]
 sync_chroot() {
 	local chrootdir=$1
@@ -338,16 +320,12 @@ for arg in "${@:$OPTIND}"; do
 	esac
 done
 
-if [[ -n $SUDO_USER ]]; then
-	eval "USER_HOME=~$SUDO_USER"
-else
-	USER_HOME=$HOME
-fi
-
 umask 0022
 
-load_vars "${XDG_CONFIG_HOME:-$USER_HOME/.config}/pacman/makepkg.conf" || load_vars "$USER_HOME/.makepkg.conf"
-load_vars /etc/makepkg.conf
+ORIG_HOME=$HOME
+IFS=: read -r _ _ _ _ _ HOME _ < <(getent passwd "${SUDO_USER:-$USER}")
+load_makepkg_config
+HOME=$ORIG_HOME
 
 # Use PKGBUILD directory if these don't exist
 [[ -d $PKGDEST ]]    || PKGDEST=$PWD

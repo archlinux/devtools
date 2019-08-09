@@ -18,6 +18,8 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+source /usr/share/makepkg/util/config.sh
+
 
 # global defaults suitable for use by Arch staff
 repo=extra
@@ -105,4 +107,9 @@ mapfile -t files < <(
             makepkg --packagelist
 ')
 
-(( ${#files[@]} )) && printf '%s\n' '' '-> copying files...' && scp "${files[@]/#/$server:}" .
+
+if (( ${#files[@]} )); then
+    printf '%s\n' '' '-> copying files...'
+    load_makepkg_config
+    scp "${files[@]/#/$server:}" "${PKGDEST:-${PWD}}/"
+fi
