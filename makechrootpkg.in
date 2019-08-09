@@ -177,13 +177,17 @@ prepare_chroot() {
 
 	$install -d "$copydir"/{build,startdir,{pkg,srcpkg,src,log}dest}
 
-	sed -e '/^MAKEFLAGS=/d' -e '/^PACKAGER=/d' -i "$copydir/etc/makepkg.conf"
-	for x in BUILDDIR=/build PKGDEST=/pkgdest SRCPKGDEST=/srcpkgdest SRCDEST=/srcdest LOGDEST=/logdest \
-		"MAKEFLAGS='${MAKEFLAGS:-}'" "PACKAGER='${PACKAGER:-}'"
-	do
-		grep -q "^$x" "$copydir/etc/makepkg.conf" && continue
-		echo "$x" >>"$copydir/etc/makepkg.conf"
-	done
+	[[ -f c"$USER_HOME/.makepkg.conf" ]] && \
+		cp "$USER_HOME/.makepkg.conf" "$copydir/build"
+	cat >> "$copydir/build/.makepkg.conf" <<EOF
+BUILDDIR=/build
+PKGDEST=/pkgdest
+SRCPKGDEST=/srcpkgdest
+SRCDEST=/srcdest
+LOGDEST=/logdest
+EOF
+	echo "MAKEFLAGS='${MAKEFLAGS:-}'" >> $copydir/build/.makepkg.conf
+	echo "PACKAGER='${PACKAGER:-}'" >> $copydir/build/.makepkg.conf
 
 	cat > "$copydir/etc/sudoers.d/builduser-pacman" <<EOF
 builduser ALL = NOPASSWD: /usr/bin/pacman
