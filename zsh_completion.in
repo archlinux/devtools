@@ -10,6 +10,7 @@ _archbuild_args=(
 	'-c[Recreate the chroot before building]'
 	'-r[Create chroots in this directory]:base_dir:_files -/'
 	'-h[Display usage]'
+	'--[Introduce makechrootpkg options]:*::makechrootpkg options:=  _dispatch makechrootpkg makechrootpkg'
 )
 
 _archco_args=(
