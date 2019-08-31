@@ -7,6 +7,9 @@ m4_include(lib/archroot.sh)
 base_packages=(base-devel)
 makechrootpkg_args=(-c -n)
 
+bindmounts_ro=()
+bindmounts_rw=()
+
 cmd="${0##*/}"
 if [[ "${cmd%%-*}" == 'multilib' ]]; then
 	repo="${cmd%-build}"
@@ -33,6 +36,8 @@ usage() {
 	echo "Usage: $cmd [options] -- [makechrootpkg args]"
 	echo '    -h         This help'
 	echo '    -c         Recreate the chroot before building'
+	echo '    -d <dir>   Bind directory into chroot as read-write'
+	echo '    -D <dir>   Bind directory into chroot as read-only'
 	echo '    -r <dir>   Create chroots in this directory'
 	echo ''
 	echo "Default makechrootpkg args: ${makechrootpkg_args[*]}"
@@ -40,9 +45,13 @@ usage() {
 	exit 1
 }
 
-while getopts 'hcr:' arg; do
+while getopts 'hcd:D:r:' arg; do
 	case "${arg}" in
 		c) clean_first=true ;;
+		d) bindmounts_rw+=("--bind=$OPTARG")
+		   makechrootpkg_args+=("-d" "$OPTARG");;
+		D) bindmounts_ro+=("--bind-ro=$OPTARG")
+		   makechrootpkg_args+=("-D" "$OPTARG");;
 		r) chroots="$OPTARG" ;;
 		*) usage ;;
 	esac
@@ -80,6 +89,7 @@ else
 		-C "${pacman_config}" \
 		-M "${makepkg_config}" \
 		"${chroots}/${repo}-${arch}/root" \
+		"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
 		pacman -Syuu --noconfirm || abort
 fi
 
