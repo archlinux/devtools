@@ -18,6 +18,7 @@ m4_include(lib/archroot.sh)
 umask 0022
 
 working_dir=''
+umode=''
 
 files=()
 nspawn_args=()
@@ -25,6 +26,7 @@ nspawn_args=()
 usage() {
 	echo "Usage: ${0##*/} [options] working-dir package-list..."
 	echo ' options:'
+	echo '    -U            Use pacman -U to install packages'
 	echo '    -C <file>     Location of a pacman config file'
 	echo '    -M <file>     Location of a makepkg config file'
 	echo '    -c <dir>      Set pacman cache'
@@ -34,8 +36,9 @@ usage() {
 	exit 1
 }
 
-while getopts 'hC:M:c:f:s' arg; do
+while getopts 'hUC:M:c:f:s' arg; do
 	case "$arg" in
+		U) umode=U ;;
 		C) pac_conf="$OPTARG" ;;
 		M) makepkg_conf="$OPTARG" ;;
 		c) cache_dirs+=("$OPTARG") ;;
@@ -44,8 +47,10 @@ while getopts 'hC:M:c:f:s' arg; do
 		h|?) usage ;;
 		*) error "invalid argument '%s'" "$arg"; usage ;;
 	esac
-    nspawn_args+=("-$arg")
-    [[ -v OPTARG ]] && nspawn_args+=("$OPTARG")
+	if [[ $arg != U ]]; then
+		nspawn_args+=("-$arg")
+		[[ -v OPTARG ]] && nspawn_args+=("$OPTARG")
+	fi
 done
 shift $((OPTIND - 1))
 
@@ -85,7 +90,7 @@ for file in "${files[@]}"; do
 	cp "$file" "$working_dir$file"
 done
 
-pacstrap -Mcd ${pac_conf:+-C "$pac_conf"} "$working_dir" \
+pacstrap -${umode}Mcd ${pac_conf:+-C "$pac_conf"} "$working_dir" \
 	"${cache_dirs[@]/#/--cachedir=}" "$@" || die 'Failed to install all packages'
 
 printf '%s.UTF-8 UTF-8\n' en_US de_DE > "$working_dir/etc/locale.gen"

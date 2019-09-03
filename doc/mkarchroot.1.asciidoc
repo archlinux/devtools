@@ -20,6 +20,9 @@ en_US.UTF-8 and de_DE.UTF-8 locale and a generated machine-id.
 Options
 -------
 
+*-U*::
+	Use 'pacman -U' to install packages.
+
 *-C* <file>::
 	Location of a pacman config file.
 
