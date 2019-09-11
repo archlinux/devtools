@@ -5,7 +5,7 @@ m4_include(lib/common.sh)
 m4_include(lib/archroot.sh)
 
 base_packages=(base-devel)
-makechrootpkg_args=(-c -n)
+makechrootpkg_args=(-c -n -C)
 
 cmd="${0##*/}"
 if [[ "${cmd%%-*}" == 'multilib' ]]; then
