@@ -47,6 +47,8 @@ _mkarchroot_args=(
 	'-M[Location of a makepkg config file]:makepkg_config:_files'
 	'-c[Set pacman cache]:pacman_cache:_files -/'
 	'-h[Display usage]'
+	'1:working_dir:_files -/'
+	'*:packages:_devtools_completions_all_packages'
 )
 
 _rebuildpkgs_args=(
