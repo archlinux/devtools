@@ -16,12 +16,12 @@ IN_PROGS = \
 	crossrepomove\
 	arch-nspawn \
 	mkarchroot \
-	makechrootpkg
+	makechrootpkg \
+	sogrep
 
 BINPROGS = \
 	$(IN_PROGS) \
 	offload-build \
-	sogrep
 
 CONFIGFILES = \
 	makepkg-x86_64.conf \
