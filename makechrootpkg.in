@@ -412,7 +412,7 @@ else
 		msg2 "Downloading current versions"
 		if pacman --noconfirm -Swdd --logfile /dev/null "${pkgnames[@]}"; then
 			msg2 "Checking packages"
-			sudo -u "$makepkg_user" checkpkg --rmdir
+			sudo -u "$makepkg_user" checkpkg --rmdir --warn
 		else
 			warning "Skipped checkpkg due to missing packages"
 		fi
