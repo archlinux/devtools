@@ -19,6 +19,16 @@ outputs if there are soname differences for the new package. A directory is
 also created using mktemp with files containing a file list for both packages
 and a library list for both packages.
 
+Options
+-------
+
+*-r, --rmdir*::
+	Remove the temporary directory created to contain the file and library list
+	of both packages.
+
+*-h, --help*::
+	Show a help text
+
 See Also
 --------
 

@@ -22,6 +22,48 @@ elif [[ -r "$HOME/.makepkg.conf" ]]; then
 	source "$HOME/.makepkg.conf"
 fi
 
+usage() {
+    cat <<- _EOF_
+		Usage: ${BASH_SOURCE[0]##*/} [OPTIONS]
+
+		Searches for a locally built package corresponding to the PKGBUILD, and
+		downloads the last version of that package from the Pacman repositories.
+		It then compares the list of .so files provided by each version of the
+		package and outputs if there are soname differences for the new package.
+		A directory is also created using mktemp with files containing a file
+		list for both packages and a library list for both packages.
+
+		OPTIONS
+		    -r, --rmdir     Remove the temporary directory
+		    -h, --help      Show this help text
+_EOF_
+}
+
+RMDIR=0
+
+OPT_SHORT='rh'
+OPT_LONG=('rmdir' 'help')
+if ! parseopts "$OPT_SHORT" "${OPT_LONG[@]}" -- "$@"; then
+    exit 1
+fi
+set  -- "${OPTRET[@]}"
+
+while :; do
+    case $1 in
+        -r|--rmdir)
+            RMDIR=1
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --)
+            shift; break
+            ;;
+    esac
+    shift
+done
+
 if [[ ! -f PKGBUILD ]]; then
 	die 'This must be run in the directory of a built package.'
 fi
@@ -33,6 +75,7 @@ if [[ ${arch[0]} == 'any' ]]; then
 fi
 
 STARTDIR=$(pwd)
+(( RMDIR )) && trap 'rm -rf $TEMPDIR' EXIT INT TERM QUIT
 TEMPDIR=$(mktemp -d --tmpdir checkpkg-script.XXXX)
 
 for _pkgname in "${pkgname[@]}"; do
@@ -92,4 +135,4 @@ for _pkgname in "${pkgname[@]}"; do
 	fi
 done
 
-msg "Files saved to %s" "$TEMPDIR"
+(( RMDIR )) || msg "Files saved to %s" "$TEMPDIR"
