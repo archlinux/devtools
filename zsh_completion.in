@@ -56,6 +56,7 @@ _rebuildpkgs_args=(
 
 _checkpkg_args=(
 	'(-r --rmdir)'{-r,--rmdir}'[Remove the temporary directory]'
+	'(-w --warn)'{-w,--warn}'[Print a warning in case of differences]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 )
 

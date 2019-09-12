@@ -35,14 +35,16 @@ usage() {
 
 		OPTIONS
 		    -r, --rmdir     Remove the temporary directory
+		    -w, --warn      Print a warning in case of differences
 		    -h, --help      Show this help text
 _EOF_
 }
 
 RMDIR=0
+WARN=0
 
-OPT_SHORT='rh'
-OPT_LONG=('rmdir' 'help')
+OPT_SHORT='rwh'
+OPT_LONG=('rmdir' 'warn' 'help')
 if ! parseopts "$OPT_SHORT" "${OPT_LONG[@]}" -- "$@"; then
     exit 1
 fi
@@ -52,6 +54,9 @@ while :; do
     case $1 in
         -r|--rmdir)
             RMDIR=1
+            ;;
+        -w|--warn)
+            WARN=1
             ;;
         -h|--help)
             usage
@@ -128,7 +133,8 @@ for _pkgname in "${pkgname[@]}"; do
 	find-libprovides "$TEMPDIR/$oldpkg" 2>/dev/null | sort > "$TEMPDIR/libraries-$_pkgname-old"
 	find-libprovides "$pkgfile" 2>/dev/null | sort > "$TEMPDIR/libraries-$_pkgname"
 	if ! diff_output="$(sdiff -s "$TEMPDIR/libraries-$_pkgname-old" "$TEMPDIR/libraries-$_pkgname")"; then
-		msg "Sonames differ in $_pkgname!"
+		message="Sonames differ in $_pkgname!"
+		(( WARN )) && warning "$message" || msg "$message"
 		echo "$diff_output"
 	else
 		msg "No soname differences for %s." "$_pkgname"
