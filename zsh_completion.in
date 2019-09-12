@@ -6,6 +6,7 @@ m4_include(lib/valid-tags.sh)
 _archbuild_args=(
 	'-c[Recreate the chroot before building]'
 	'-r[Create chroots in this directory]:base_dir:_files -/'
+	'-h[Display usage]'
 )
 
 _archco_args=(
@@ -13,19 +14,25 @@ _archco_args=(
 )
 
 _arch_nspawn_args=(
-	'-C[Location of a pacman config file]:pacman_config:_files'
-	'-M[Location of a makepkg config file]:makepkg_config:_files'
+	'-C[Location of a pacman config file]:pacman_config:_files -g "*.conf(.)"'
+	'-M[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
 	'-c[Set pacman cache]:pacman_cache:_files -/'
+	'-f[Copy file from the host to the chroot]:copy_file:_files'
+	'-s[Do not run setarch]'
 	'-h[Display usage]'
+	'1:chroot_dir:_files -/'
 )
 
 _archrelease_args=(
+	'-f[Force release without checks]'
 	"*:arch:($_tags[*])"
 )
 
 _commitpkg_args=(
-	"-a[Release to a specific architecture only]:arch:($_arch[*])"
+	'-f[Force release without checks]'
+	'-s[Target repo server]'
 	'-l[Set bandwidth limit]:limit'
+	"-a[Release to a specific architecture only]:arch:($_arch[*])"
 	'1:commit_msg'
 )
 
@@ -34,19 +41,26 @@ _finddeps_args=(
 )
 
 _makechrootpkg_args=(
-	'-I[Install a package into the working copy]:target:_files -g "*.pkg.tar.*(.)"'
-	'-c[Clean the chroot before building]'
 	'-h[Display usage]'
-	'-l[The directory to use as the working copy]:copy_dir:_files -/'
-	'-r[The chroot dir to use]:chroot_dir:_files -/'
+	'-c[Clean the chroot before building]'
+	'-d[Bind directory into build chroot as read-write]:bind_dir_rw:_files -/'
+	'-D[Bind directory into build chroot as read-only]:bind_dir_ro:_files -/'
 	'-u[Update the working copy of the chroot before building]'
+	'-r[The chroot dir to use]:chroot_dir:_files -/'
+	'-I[Install a package into the working copy]:target:_files -g "*.pkg.tar.*(.)"'
+	'-l[The directory to use as the working copy]:copy_dir:_files -/'
+	'-n[Run namcap on the package]'
+	'-T[Build in a temporary directory]'
+	'-U[Run makepkg as a specified user]:makepkg_user'
 )
 
 _mkarchroot_args=(
-	'-C[Location of a pacman config file]:pacman_config:_files'
-	'-M[Location of a makepkg config file]:makepkg_config:_files'
+	'-C[Location of a pacman config file]:pacman_config:_files -g "*.conf(.)"'
+	'-M[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
 	'-c[Set pacman cache]:pacman_cache:_files -/'
 	'-h[Display usage]'
+	'1:working_dir:_files -/'
+	'*:packages:_devtools_completions_all_packages'
 )
 
 _rebuildpkgs_args=(
