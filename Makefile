@@ -128,6 +128,12 @@ uninstall:
 		rm -f $(DESTDIR)$(MANDIR)/man$${manfile##*.}/$${manfile#doc/}; \
 	done;
 
+TODAY=$(shell date +"%Y%m%d")
+tag:
+	@sed -E "s|^V=[0-9]{8}|V=$(TODAY)|" -i Makefile
+	@git commit --gpg-sign --message "Version $(TODAY)" Makefile
+	@git tag --sign --message "Version $(TODAY)" $(TODAY)
+
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip -9 > devtools-$(V).tar.gz
 	gpg --detach-sign --use-agent devtools-$(V).tar.gz
@@ -138,5 +144,5 @@ upload:
 check: $(BINPROGS) bash_completion makepkg-x86_64.conf PKGBUILD.proto
 	shellcheck $^
 
-.PHONY: all clean install uninstall dist upload check
+.PHONY: all clean install uninstall dist upload check tag
 .DELETE_ON_ERROR:
