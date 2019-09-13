@@ -91,7 +91,7 @@ for _arch in "${arch[@]}"; do
 	for _pkgname in "${pkgname[@]}"; do
 		fullver=$(get_full_version "$_pkgname")
 
-		if pkgfile=$(find_cached_package "$_pkgname" "$_arch" "$fullver"); then
+		if pkgfile=$(find_cached_package "$_pkgname" "$fullver" "$_arch"); then
 			if grep -q "packager = Unknown Packager" <(bsdtar -xOqf "$pkgfile" .PKGINFO); then
 				die "PACKAGER was not set when building package"
 			fi
