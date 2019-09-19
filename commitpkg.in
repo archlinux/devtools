@@ -162,8 +162,8 @@ for _arch in "${arch[@]}"; do
 			fi
 			gpg --detach-sign --use-agent --no-armor "${SIGNWITHKEY[@]}" "${pkgfile}" || die
 		fi
-		if ! gpg --verify "$sigfile" >/dev/null 2>&1; then
-			die "Signature %s.sig is incorrect!" "$pkgfile"
+		if ! gpg --verify "$sigfile" "$pkgfile" >/dev/null 2>&1; then
+			die "Signature %s is incorrect!" "$sigfile"
 		fi
 		uploads+=("$sigfile")
 	done
