@@ -20,6 +20,7 @@ umask 0022
 working_dir=''
 
 files=()
+mount_args=()
 
 usage() {
 	echo "Usage: ${0##*/} [options] working-dir [systemd-nspawn arguments]"
@@ -65,6 +66,13 @@ fi
 # shellcheck disable=2016
 host_mirrors=($($pacconf_cmd --repo extra Server 2> /dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#'))
 
+for host_mirror in "${host_mirrors[@]}"; do
+	if [[ $host_mirror == *file://* ]]; then
+		host_mirror=$(echo "$host_mirror" | sed -r 's#file://(/.*)/\$repo/os/\$arch#\1#g')
+		in_array "$host_mirror" "${cache_dirs[@]}" || cache_dirs+=("$host_mirror")
+	fi
+done
+
 while read -r line; do
 	mapfile -t lines < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" \
 		--repo $line Server | sed -r 's#(.*/)[^/]+/os/.+#\1$repo/os/$arch#')
@@ -78,35 +86,18 @@ while read -r line; do
 	fi
 done < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" --repo-list)
 
+mount_args+=("--bind=${cache_dirs[0]//:/\\:}")
+
+for cache_dir in "${cache_dirs[@]:1}"; do
+	mount_args+=("--bind-ro=${cache_dir//:/\\:}")
+done
+
 # {{{ functions
-build_mount_args() {
-	declare -g mount_args=()
-
-	for host_mirror in "${host_mirrors[@]}"; do
-		if [[ $host_mirror == *file://* ]]; then
-			host_mirror_path=$(echo "$host_mirror" | sed -r 's#file://(/.*)/\$repo/os/\$arch#\1#g')
-			mount_args+=("--bind-ro=${host_mirror_path//:/\\:}")
-		fi
-	done
-
-	mount_args+=("--bind=${cache_dirs[0]//:/\\:}")
-
-	for cache_dir in "${cache_dirs[@]:1}"; do
-		mount_args+=("--bind-ro=${cache_dir//:/\\:}")
-	done
-}
-
 copy_hostconf () {
 	unshare --fork --pid gpg --homedir "$working_dir"/etc/pacman.d/gnupg/ --no-permission-warning --quiet --batch --import --import-options import-local-sigs "$(pacman-conf GpgDir)"/pubring.gpg >/dev/null 2>&1
 	pacman-key --gpgdir "$working_dir"/etc/pacman.d/gnupg/ --import-trustdb "$(pacman-conf GpgDir)" >/dev/null 2>&1
 
 	printf 'Server = %s\n' "${host_mirrors[@]}" >"$working_dir/etc/pacman.d/mirrorlist"
-	for host_mirror in "${host_mirrors[@]}"; do
-		if [[ $host_mirror == *file://* ]]; then
-			host_mirror=$(echo "$host_mirror" | sed -r 's#file://(/.*)/\$repo/os/\$arch#\1#g')
-			in_array "$host_mirror" "${cache_dirs[@]}" || cache_dirs+=("$host_mirror")
-		fi
-	done
 
 	[[ -n $pac_conf ]] && cp "$pac_conf" "$working_dir/etc/pacman.conf"
 	[[ -n $makepkg_conf ]] && cp "$makepkg_conf" "$working_dir/etc/makepkg.conf"
@@ -130,7 +121,6 @@ elif [[ $(cat "$working_dir/.arch-chroot") != "$CHROOT_VERSION" ]]; then
 	die "chroot '%s' is not at version %s. Please rebuild." "$working_dir" "$CHROOT_VERSION"
 fi
 
-build_mount_args
 copy_hostconf
 
 eval "$(grep -a '^CARCH=' "$working_dir/etc/makepkg.conf")"
