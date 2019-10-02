@@ -75,15 +75,13 @@ done
 
 while read -r line; do
 	mapfile -t lines < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" \
-		--repo $line Server | sed -r 's#(.*/)[^/]+/os/.+#\1$repo/os/$arch#')
-	if [[ ${lines[0]} != ${host_mirrors[0]} ]]; then
-		for line in "${lines[@]}"; do
-			if [[ $line = file://* ]]; then
-				line=${line#file://}
-				in_array "$line" "${cache_dirs[@]}" || cache_dirs+=("$line")
-			fi
-		done
-	fi
+		--repo $line Server | sed -r 's#(.*/)[^/]+/os/.+#\1#')
+	for line in "${lines[@]}"; do
+		if [[ $line = file://* ]]; then
+			line=${line#file://}
+			in_array "$line" "${cache_dirs[@]}" || cache_dirs+=("$line")
+		fi
+	done
 done < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" --repo-list)
 
 mount_args+=("--bind=${cache_dirs[0]//:/\\:}")
