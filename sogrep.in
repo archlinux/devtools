@@ -41,7 +41,7 @@ recache() {
         for arch in "${arches[@]}"; do
             rm -rf "${SOCACHE_DIR}/${arch}/${repo}"
             mkdir -p "${SOCACHE_DIR}/${arch}/${repo}"
-            curl "$verbosity" "${SOLINKS_MIRROR}/${repo}/os/${arch}/${repo}.links.tar.gz" | bsdtar -xf - -C "${SOCACHE_DIR}/${arch}/${repo}"
+            curl -L "$verbosity" "${SOLINKS_MIRROR}/${repo}/os/${arch}/${repo}.links.tar.gz" | bsdtar -xf - -C "${SOCACHE_DIR}/${arch}/${repo}"
         done
     done
 }
