@@ -80,7 +80,7 @@ fi
 
 archbuild_cmd=("${repo}${arch:+-$arch}-build" "$@")
 
-trap 'rm -rf $SRCPKGDEST' EXIT
+trap 'rm -rf $SRCPKGDEST' EXIT INT TERM QUIT
 
 # Use a source-only tarball as an intermediate to transfer files. This
 # guarantees the checksums are okay, and guarantees that all needed files are
