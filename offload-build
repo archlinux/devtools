@@ -88,6 +88,10 @@ trap 'rm -rf $SRCPKGDEST' EXIT INT TERM QUIT
 export SRCPKGDEST=$(mktemp -d)
 makepkg --source || die "unable to make source package"
 
+# Temporary cosmetic workaround makepkg if SRCDEST is set somewhere else
+# but an empty src dir is created in PWD. Remove once fixed in makepkg.
+rmdir --ignore-fail-on-non-empty src 2>/dev/null || true
+
 mapfile -t files < <(
     # This is sort of bash golfing but it allows running a mildly complex
     # command over ssh with a single connection.
