@@ -112,7 +112,7 @@ if [[ -n $(svn status -q) ]]; then
 	msgtemplate="upgpkg: $pkgbase $(get_full_version)"
 	if [[ -n $1 ]]; then
 		stat_busy 'Committing changes to trunk'
-		svn commit -q -m "${msgtemplate} ${1}" || die
+		svn commit -q -m "${msgtemplate}: ${1}" || die
 		stat_done
 	else
 		msgfile="$(mktemp)"
