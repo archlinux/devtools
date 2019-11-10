@@ -68,7 +68,7 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 	lock_close 9
 
 	rm -rf --one-file-system "${chroots}/${repo}-${arch}"
-	mkdir -m755 -p "${chroots}/${repo}-${arch}"
+	(umask 0022; mkdir -p "${chroots}/${repo}-${arch}")
 	setarch "${arch}" mkarchroot \
 		-C "${pacman_config}" \
 		-M "${makepkg_config}" \
