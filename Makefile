@@ -72,6 +72,7 @@ MANS = \
 	doc/checkpkg.1 \
 	doc/offload-build.1 \
 	doc/sogrep.1 \
+	doc/makerepropkg.1 \
 	doc/mkarchroot.1 \
 	doc/find-libdeps.1 \
 	doc/find-libprovides.1

@@ -1,0 +1,38 @@
+makerepropkg(1)
+================
+
+Name
+----
+makerepropkg - Rebuild a package to see if it is reproducible
+
+Synopsis
+--------
+makerepropkg [OPTIONS] <package_file>
+
+Description
+-----------
+
+Given the path to a built pacman package, attempt to rebuild it using the
+PKGBUILD in the current directory. The package will be built in an environment
+as closely matching the environment of the initial package as possible, by
+building up a chroot to match the information exposed in the package's
+linkman:BUILDINFO[5] manifest. On success, the resulting package will be
+compared to the input package, and makerepropkg will report whether the
+artifacts are identical.
+
+This implements a verifier for pacman/libalpm packages in accordance with the
+link:https://reproducible-builds.org/[Reproducible Builds] project.
+
+Options
+-------
+
+*-c*::
+	Set the pacman cache directory.
+
+*-M* <file>::
+	Location of a makepkg config file.
+
+*-h*::
+	Show this usage message
+
+include::footer.asciidoc[]
