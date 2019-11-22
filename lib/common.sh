@@ -17,7 +17,7 @@ export LANG=C
 shopt -s extglob
 
 # check if messages are to be printed using color
-if [[ -t 2 ]]; then
+if [[ -t 2 && "$TERM" != dumb ]]; then
 	colorize
 else
 	# shellcheck disable=2034
