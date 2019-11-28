@@ -58,6 +58,7 @@ _makechrootpkg_args=(
 )
 
 _mkarchroot_args=(
+	'-U[Install a package into the working copy]:target:_files -g "*.pkg.tar.*(.)"'
 	'-C[Location of a pacman config file]:pacman_config:_files -g "*.conf(.)"'
 	'-M[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
 	'-c[Set pacman cache]:pacman_cache:_files -/'
