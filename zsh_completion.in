@@ -1,4 +1,4 @@
-#compdef archbuild archco arch-nspawn archrelease commitpkg finddeps makechrootpkg mkarchroot rebuildpkgs extrapkg=commitpkg corepkg=commitpkg testingpkg=commitpkg stagingpkg=commitpkg communitypkg=commitpkg community-testingpkg=commitpkg community-stagingpkg=commitpkg multilibpkg=commitpkg multilib-testingpkg=commitpkg extra-x86_64-build=archbuild testing-x86_64-build=archbuild staging-x86_64-build=archbuild multilib-build=archbuild multilib-testing-build=archbuild multilib-staging-build=archbuild kde-unstable-x86_64-build=archbuild gnome-unstable-x86_64-build=archbuild communityco=archco checkpkg sogrep offload-build
+#compdef archbuild archco arch-nspawn archrelease commitpkg finddeps makechrootpkg mkarchroot rebuildpkgs extrapkg=commitpkg corepkg=commitpkg testingpkg=commitpkg stagingpkg=commitpkg communitypkg=commitpkg community-testingpkg=commitpkg community-stagingpkg=commitpkg multilibpkg=commitpkg multilib-testingpkg=commitpkg extra-x86_64-build=archbuild testing-x86_64-build=archbuild staging-x86_64-build=archbuild multilib-build=archbuild multilib-testing-build=archbuild multilib-staging-build=archbuild kde-unstable-x86_64-build=archbuild gnome-unstable-x86_64-build=archbuild communityco=archco checkpkg sogrep offload-build makerepropkg
 # License: Unspecified
 
 m4_include(lib/valid-tags.sh)
@@ -91,6 +91,13 @@ _offload_build_args=(
 	'(-a --arch)'{-a,--arch}'[Build against a specific architecture]:arch:(${_binary_arch[*]})'
 	'(-s --server)'{-s,--server}'[Offload to a specific Build server]:server:'
 	'(-h --help)'{-h,--help}'[Display usage]'
+)
+
+_makerepropkg_args=(
+	'-c[Set pacman cache]:pacman_cache:_files -/'
+	'-M[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
+	'-h[Display usage]'
+	'1:working_dir:_files -g "*.pkg.tar.*(.)"'
 )
 
 _devtools_completions_all_packages() {
