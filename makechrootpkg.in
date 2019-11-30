@@ -387,13 +387,19 @@ if (( ret != 0 )); then
 else
 	if (( run_checkpkg )); then
 		msg "Running checkpkg"
-		msg2 "Downloading current versions"
-		if pacman --noconfirm -Swdd --logfile /dev/null "${pkgnames[@]}"; then
-			msg2 "Checking packages"
-			sudo -u "$makepkg_user" checkpkg --rmdir --warn
-		else
-			warning "Skipped checkpkg due to missing packages"
+		remotepkgs=($(pacman -Sddp --logfile /dev/null "${pkgnames[@]}"))
+		if (( $? )); then
+			warning "Skipped checkpkg due to missing repo packages"
+			exit 0
 		fi
+		for remotepkg in ${remotepkgs[@]}; do
+			[[ $remotepkg == file://* ]] && continue
+			msg2 "Downloading current versions"
+			pacman --noconfirm -Swdd --logfile /dev/null "${pkgnames[@]}"
+			break
+		done
+		msg2 "Checking packages"
+		sudo -u "$makepkg_user" checkpkg --rmdir --warn
 	fi
 	true
 fi
