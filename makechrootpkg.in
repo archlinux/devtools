@@ -387,7 +387,7 @@ if (( ret != 0 )); then
 else
 	if (( run_checkpkg )); then
 		msg "Running checkpkg"
-		remotepkgs=($(pacman -Sddp --logfile /dev/null "${pkgnames[@]}"))
+		remotepkgs=($(pacman -Syddp --logfile /dev/null "${pkgnames[@]}"|grep '://'))
 		if (( $? )); then
 			warning "Skipped checkpkg due to missing repo packages"
 			exit 0
