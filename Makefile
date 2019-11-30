@@ -1,4 +1,4 @@
-V=20191016
+V=20191130
 
 PREFIX = /usr/local
 MANDIR = $(PREFIX)/share/man
