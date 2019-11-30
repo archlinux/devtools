@@ -392,7 +392,7 @@ else
 			warning "Skipped checkpkg due to missing repo packages"
 			exit 0
 		fi
-		for remotepkg in ${remotepkgs[@]}; do
+		for remotepkg in "${remotepkgs[@]}"; do
 			[[ $remotepkg == file://* ]] && continue
 			msg2 "Downloading current versions"
 			pacman --noconfirm -Swdd --logfile /dev/null "${pkgnames[@]}"
