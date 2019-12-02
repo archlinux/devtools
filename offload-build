@@ -115,5 +115,7 @@ mapfile -t files < <(
 if (( ${#files[@]} )); then
     printf '%s\n' '' '-> copying files...'
     load_makepkg_config
-    scp "${files[@]/#/$server:}" "${PKGDEST:-${PWD}}/"
+    scp "${files[@]/#/$server:}" "${PKGDEST:-${PWD}}/" && exit 0
 fi
+
+exit 1
