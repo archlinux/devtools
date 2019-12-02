@@ -116,4 +116,6 @@ if (( ${#files[@]} )); then
     printf '%s\n' '' '-> copying files...'
     load_makepkg_config
     scp "${files[@]/#/$server:}" "${PKGDEST:-${PWD}}/"
+else
+    exit 1
 fi
