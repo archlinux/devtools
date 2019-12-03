@@ -387,17 +387,28 @@ if (( ret != 0 )); then
 else
 	if (( run_checkpkg )); then
 		msg "Running checkpkg"
-		remotepkgs=($(pacman -Syddp --logfile /dev/null "${pkgnames[@]}"|grep '://'))
+
+		# sync off-site databases for up-to-date queries
+		trap 'rm -rf $dbpath; cleanup' EXIT INT TERM QUIT
+		dbpath=$(mktemp -d --tmpdir makechrootpkg-database.XXXXXXXXXX)
+		mkdir -p "$dbpath"
+		pacman -Sy --dbpath "$dbpath" --logfile /dev/null
+
+		# query current package locations
+		remotepkgs=($(pacman -Sddp --dbpath "$dbpath" --logfile /dev/null "${pkgnames[@]}"))
 		if (( $? )); then
 			warning "Skipped checkpkg due to missing repo packages"
 			exit 0
 		fi
+
+		# download package files if any non-local location exists
 		for remotepkg in "${remotepkgs[@]}"; do
 			[[ $remotepkg == file://* ]] && continue
 			msg2 "Downloading current versions"
-			pacman --noconfirm -Swdd --logfile /dev/null "${pkgnames[@]}"
+			pacman --noconfirm -Swdd --dbpath "$dbpath" --logfile /dev/null "${pkgnames[@]}"
 			break
 		done
+
 		msg2 "Checking packages"
 		sudo -u "$makepkg_user" checkpkg --rmdir --warn
 	fi
