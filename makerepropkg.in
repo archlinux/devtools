@@ -101,12 +101,12 @@ __EOF__
 }
 
 while getopts 'M:c:h' arg; do
-        case "$arg" in
-                M) archroot_args+=(-M "$OPTARG") ;;
-                c) cache_dirs+=("$OPTARG") ;;
-                h) usage; exit 0 ;;
-                *|?) usage; exit 1 ;;
-        esac
+    case "$arg" in
+        M) archroot_args+=(-M "$OPTARG") ;;
+        c) cache_dirs+=("$OPTARG") ;;
+        h) usage; exit 0 ;;
+        *|?) usage; exit 1 ;;
+    esac
 done
 shift $((OPTIND - 1))
 
