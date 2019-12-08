@@ -26,6 +26,9 @@ link:https://reproducible-builds.org/[Reproducible Builds] project.
 Options
 -------
 
+*-d*::
+	If packages are not reproducible, compare them using diffoscope.
+
 *-c*::
 	Set the pacman cache directory.
 

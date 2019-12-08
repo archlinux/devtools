@@ -29,6 +29,7 @@ declare -a buildenv buildopts installed installpkgs
 archiveurl='https://archive.archlinux.org/packages'
 buildroot=/var/lib/archbuild/reproducible
 chroot=testenv
+diffoscope=0
 
 parse_buildinfo() {
     local line var val
@@ -94,14 +95,16 @@ package, including the .PKGINFO as well as the buildinfo.
 For more details see https://reproducible-builds.org/
 
 OPTIONS
+    -d            Run diffoscope if the package is unreproducible
     -c <dir>      Set pacman cache
     -M <file>     Location of a makepkg config file
     -h            Show this usage message
 __EOF__
 }
 
-while getopts 'M:c:h' arg; do
+while getopts 'dM:c:h' arg; do
     case "$arg" in
+        d) diffoscope=1 ;;
         M) archroot_args+=(-M "$OPTARG") ;;
         c) cache_dirs+=("$OPTARG") ;;
         h) usage; exit 0 ;;
@@ -177,12 +180,17 @@ arch-nspawn "${buildroot}/${chroot}" \
 if (( $? == 0 )); then
     msg2 "built succeeded! built packages can be found in ${buildroot}/${chroot}/pkgdest"
     msg "comparing artifacts..."
-    if cmp -s "${pkgfile}" "${buildroot}/${chroot}/pkgdest/${pkgfile##*/}"; then
+
+    comparefiles=("${pkgfile}" "${buildroot}/${chroot}/pkgdest/${pkgfile##*/}")
+    if cmp -s "${comparefiles[@]}"; then
         msg2 "Package successfully reproduced!"
         exit 0
     else
         warning "Package is not reproducible. :("
-        sha256sum "${pkgfile}" "${buildroot}/${chroot}/pkgdest/${pkgfile##*/}"
+        sha256sum "${comparefiles[@]}"
+        if (( diffoscope )); then
+            diffoscope "${comparefiles[@]}"
+        fi
     fi
 fi
 
