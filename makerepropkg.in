@@ -117,10 +117,13 @@ check_root
 
 if [[ -n $1 ]]; then
     pkgfile="$1"
-    if ! bsdtar -tqf "${pkgfile}" .BUILDINFO >/dev/null 2>&1; then
-        error "file is not a valid pacman package: '%s'" "${pkgfile}"
-        exit 1
-    fi
+    splitpkgs=("$@")
+    for f in "${splitpkgs[@]}"; do
+        if ! bsdtar -tqf "${f}" .BUILDINFO >/dev/null 2>&1; then
+            error "file is not a valid pacman package: '%s'" "${f}"
+            exit 1
+        fi
+    done
 else
     error "no package file specified. Try '${BASH_SOURCE[0]##*/} -h' for more information. "
     exit 1
@@ -176,23 +179,26 @@ arch-nspawn "${buildroot}/${chroot}" \
     --bind="${PWD}:/startdir" \
     --bind="${SRCDEST}:/srcdest" \
     /chrootbuild -C --noconfirm --log --holdver --skipinteg
+ret=$?
 
-if (( $? == 0 )); then
+if (( ${ret} == 0 )); then
     msg2 "built succeeded! built packages can be found in ${buildroot}/${chroot}/pkgdest"
     msg "comparing artifacts..."
 
-    comparefiles=("${pkgfile}" "${buildroot}/${chroot}/pkgdest/${pkgfile##*/}")
-    if cmp -s "${comparefiles[@]}"; then
-        msg2 "Package successfully reproduced!"
-        exit 0
-    else
-        warning "Package is not reproducible. :("
-        sha256sum "${comparefiles[@]}"
-        if (( diffoscope )); then
-            diffoscope "${comparefiles[@]}"
+    for pkgfile in "${splitpkgs[@]}"; do
+        comparefiles=("${pkgfile}" "${buildroot}/${chroot}/pkgdest/${pkgfile##*/}")
+        if cmp -s "${comparefiles[@]}"; then
+            msg2 "Package '%s' successfully reproduced!" "${pkgfile}"
+        else
+            ret=1
+            warning "Package '%s' is not reproducible. :(" "${pkgfile}"
+            sha256sum "${comparefiles[@]}"
+            if (( diffoscope )); then
+                diffoscope "${comparefiles[@]}"
+            fi
         fi
-    fi
+    done
 fi
 
-# the package either failed to build, or was unreproducible
-exit 1
+# return failure from chrootbuild, or the reproducibility status
+exit ${ret}
