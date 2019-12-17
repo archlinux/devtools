@@ -95,8 +95,10 @@ for _pkgname in "${pkgname[@]}"; do
 
 	if (( $# )); then
 		case $1 in
+			*://*)
+				pkgurl=$1 ;;
 			/*|*/*)
-				pkgurl=file://$(readlink -m "$1") ;;
+				pkgurl=$(readlink -m "$1") ;;
 			*.pkg.tar*)
 				pkgurl=$1 ;;
 			'')
