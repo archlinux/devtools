@@ -366,11 +366,7 @@ if arch-nspawn "$copydir" \
 	"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
 	/chrootbuild "${makepkg_args[@]}"
 then
-	pkgnames=()
-	for pkgfile in "$copydir"/pkgdest/*; do
-		pkgfile=${pkgfile##*/};
-		pkgnames+=("${pkgfile%-*-*-*}");
-	done
+	mapfile -t pkgnames < <(sudo -u "$makepkg_user" bash -c 'source PKGBUILD; printf "%s\n" "${pkgname[@]}"')
 	move_products
 else
 	(( ret += 1 ))
@@ -388,29 +384,29 @@ else
 	if (( run_checkpkg )); then
 		msg "Running checkpkg"
 
-		# sync off-site databases for up-to-date queries
-		trap 'rm -rf $dbpath; cleanup' EXIT INT TERM QUIT
-		dbpath=$(mktemp -d --tmpdir makechrootpkg-database.XXXXXXXXXX)
-		mkdir -p "$dbpath"
-		pacman -Sy --dbpath "$dbpath" --logfile /dev/null
+		mapfile -t remotepkgs < <(pacman --config "$copydir"/etc/pacman.conf \
+			--dbpath "$copydir"/var/lib/pacman \
+			-Sddp "${pkgnames[@]}")
 
-		# query current package locations
-		remotepkgs=($(pacman -Sddp --dbpath "$dbpath" --logfile /dev/null "${pkgnames[@]}"))
-		if (( $? )); then
+		if ! wait $!; then
 			warning "Skipped checkpkg due to missing repo packages"
 			exit 0
 		fi
 
 		# download package files if any non-local location exists
 		for remotepkg in "${remotepkgs[@]}"; do
-			[[ $remotepkg == file://* ]] && continue
-			msg2 "Downloading current versions"
-			pacman --noconfirm -Swdd --dbpath "$dbpath" --logfile /dev/null "${pkgnames[@]}"
-			break
+			if [[ $remotepkg != file://* ]]; then
+				msg2 "Downloading current versions"
+				arch-nspawn "$copydir" pacman --noconfirm -Swdd "${pkgnames[@]}"
+				mapfile -t remotepkgs < <(pacman --config "$copydir"/etc/pacman.conf \
+					--dbpath "$copydir"/var/lib/pacman \
+					-Sddp "${pkgnames[@]}")
+				break
+			fi
 		done
 
 		msg2 "Checking packages"
-		sudo -u "$makepkg_user" checkpkg --rmdir --warn
+		sudo -u "$makepkg_user" checkpkg --rmdir --warn "${remotepkgs[@]/#file:\/\//}"
 	fi
 	true
 fi
