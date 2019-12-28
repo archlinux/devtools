@@ -17,12 +17,12 @@ IN_PROGS = \
 	makerepropkg \
 	mkarchroot \
 	makechrootpkg \
+	offload-build \
 	rebuildpkgs \
 	sogrep
 
 BINPROGS = \
-	$(IN_PROGS) \
-	offload-build \
+	$(IN_PROGS)
 
 CONFIGFILES = \
 	makepkg-x86_64.conf \

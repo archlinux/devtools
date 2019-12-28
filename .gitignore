@@ -11,6 +11,7 @@ lddd
 makechrootpkg
 makerepropkg
 mkarchroot
+offload-build
 rebuildpkgs
 zsh_completion
 find-libdeps
