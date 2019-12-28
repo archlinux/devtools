@@ -153,8 +153,7 @@ for fname in "${installed[@]}"; do
         exit 1
     fi
 done
-printf '%s\n' "${allpkgfiles[@]}" | mkarchroot -U "${archroot_args[@]}" "${buildroot}"/root - || exit 1
-
+printf '%s\n' "${allpkgfiles[@]}" | mkarchroot -M @pkgdatadir@/makepkg-x86_64.conf -U "${archroot_args[@]}" "${buildroot}"/root - || exit 1
 
 # use makechrootpkg to prep the build directory
 makechrootpkg -r "${buildroot}" -l "${chroot}" -- --packagelist || exit 1
