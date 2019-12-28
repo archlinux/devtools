@@ -74,11 +74,12 @@ while (( $# )); do
 done
 
 # multilib must be handled specially
+archbuild_arch="${arch}"
 if [[ $repo = multilib* ]]; then
-    arch=
+    archbuild_arch=
 fi
 
-archbuild_cmd=("${repo}${arch:+-$arch}-build" "$@")
+archbuild_cmd=("${repo}${archbuild_arch:+-$archbuild_arch}-build" "$@")
 
 trap 'rm -rf $SRCPKGDEST' EXIT INT TERM QUIT
 
@@ -108,7 +109,11 @@ mapfile -t files < <(
                 printf "%s\n" "" "-> build complete" &&
                 printf "\t%s\n" "$temp"/*
             } >&2 &&
-            makepkg --packagelist
+            makepkg_config="/usr/share/devtools/makepkg-'"${arch}"'.conf" &&
+            if [[ -f /usr/share/devtools/makepkg-'"${repo}"'-'"${arch}"'.conf ]]; then
+                makepkg_config="/usr/share/devtools/makepkg-'"${repo}"'-'"${arch}"'.conf"
+            fi &&
+            makepkg --config "${makepkg_config}" --packagelist
 ')
 
 
