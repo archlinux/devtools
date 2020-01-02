@@ -94,10 +94,11 @@ _offload_build_args=(
 )
 
 _makerepropkg_args=(
+	'-d[Run diffoscope if the package is unreproducible]'
 	'-c[Set pacman cache]:pacman_cache:_files -/'
 	'-M[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
 	'-h[Display usage]'
-	'1:working_dir:_files -g "*.pkg.tar.*(.)"'
+	'*:working_dir:_files -g "*.pkg.tar.*(.)"'
 )
 
 _devtools_completions_all_packages() {
