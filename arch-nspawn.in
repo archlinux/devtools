@@ -69,7 +69,9 @@ host_mirrors=($($pacconf_cmd --repo extra Server 2> /dev/null | sed -r 's#(.*/)e
 for host_mirror in "${host_mirrors[@]}"; do
 	if [[ $host_mirror == *file://* ]]; then
 		host_mirror=$(echo "$host_mirror" | sed -r 's#file://(/.*)/\$repo/os/\$arch#\1#g')
-		in_array "$host_mirror" "${cache_dirs[@]}" || cache_dirs+=("$host_mirror")
+		for m in "$host_mirror"/pool/*/; do
+			in_array "$m" "${cache_dirs[@]}" || cache_dirs+=("$m")
+		done
 	fi
 done
 
