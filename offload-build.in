@@ -109,11 +109,12 @@ mapfile -t files < <(
                 printf "%s\n" "" "-> build complete" &&
                 printf "\t%s\n" "$temp"/*
             } >&2 &&
+            makepkg_user_config="${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf" &&
             makepkg_config="/usr/share/devtools/makepkg-'"${arch}"'.conf" &&
             if [[ -f /usr/share/devtools/makepkg-'"${repo}"'-'"${arch}"'.conf ]]; then
                 makepkg_config="/usr/share/devtools/makepkg-'"${repo}"'-'"${arch}"'.conf"
             fi &&
-            makepkg --config "${makepkg_config}" --packagelist
+            makepkg --config <(cat "${makepkg_user_config}" "${makepkg_config}" 2>/dev/null) --packagelist
 ')
 
 
