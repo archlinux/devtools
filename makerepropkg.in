@@ -60,7 +60,7 @@ get_pkgfile() {
     local pkgname=${pkgfilebase%-*-*-*}
     local pkgfile ext
 
-    for ext in .xz .zst ''; do
+    for ext in .zst .xz ''; do
         pkgfile=${pkgfilebase}.pkg.tar${ext}
 
         for c in "${cache_dirs[@]}"; do
