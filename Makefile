@@ -11,6 +11,7 @@ IN_PROGS = \
 	checkpkg \
 	commitpkg \
 	crossrepomove\
+	devtools-config \
 	finddeps \
 	find-libdeps \
 	lddd \
@@ -70,6 +71,7 @@ BASHCOMPLETION_LINKS = \
 MANS = \
 	doc/lddd.1 \
 	doc/checkpkg.1 \
+	doc/devtools-config.1 \
 	doc/offload-build.1 \
 	doc/sogrep.1 \
 	doc/makerepropkg.1 \

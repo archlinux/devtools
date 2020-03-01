@@ -6,6 +6,7 @@ archrelease
 bash_completion
 checkpkg
 commitpkg
+devtools-config
 finddeps
 lddd
 makechrootpkg
