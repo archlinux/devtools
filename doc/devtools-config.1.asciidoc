@@ -1,0 +1,26 @@
+devtools-config(1)
+================
+
+Name
+----
+devtools-config - Manage and print environment specific devtools information.
+
+Synopsis
+--------
+devtools-config [OPTIONS]
+
+Description
+-----------
+
+Manage and print environment specific devtools information.
+
+Options
+-------
+
+*--pkgdatadir*::
+	Print environment specific pkgdatadir location.
+
+*-h, --help*::
+	Show a help text.
+
+include::footer.asciidoc[]

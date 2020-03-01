@@ -12,6 +12,7 @@ IN_PROGS = \
 	checkpkg \
 	commitpkg \
 	crossrepomove\
+	devtools-config \
 	diffpkg \
 	finddeps \
 	find-libdeps \
@@ -77,6 +78,7 @@ MANS = \
 	doc/makechrootpkg.1 \
 	doc/lddd.1 \
 	doc/checkpkg.1 \
+	doc/devtools-config.1 \
 	doc/diffpkg.1 \
 	doc/offload-build.1 \
 	doc/sogrep.1 \

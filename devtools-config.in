@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+pkgdatadir='@pkgdatadir@'
+
+# shellcheck disable=SC2059
+die() { printf "error: $1\n" "${@:2}" >&2; exit 1; }
+
+usage() {
+	cat <<- _EOF_
+		Usage: ${BASH_SOURCE[0]##*/} [OPTION...]
+
+		Manage and print environment specific devtools information.
+
+		OPTIONS
+		    --pkgdatadir    Print pkgdatadir location
+		    -h, --help      Show this help text
+_EOF_
+}
+
+print_pkgdatadir() {
+	printf "%s\n" "${pkgdatadir}"
+}
+
+if (( $# == 0 )); then
+	usage
+	exit 0
+fi
+
+# option checking
+while (( $# )); do
+	case $1 in
+		-h|--help)
+			usage
+			exit 0
+			;;
+		--pkgdatadir)
+			print_pkgdatadir
+			exit 0
+			;;
+		*)
+			die "invalid argument: %s" "$1"
+			;;
+	esac
+done
