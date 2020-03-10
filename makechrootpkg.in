@@ -367,10 +367,10 @@ if arch-nspawn "$copydir" \
 	/chrootbuild "${makepkg_args[@]}"
 then
 	mapfile -t pkgnames < <(sudo -u "$makepkg_user" bash -c 'source PKGBUILD; printf "%s\n" "${pkgname[@]}"')
-	move_products
 else
 	(( ret += 1 ))
 fi
+move_products
 
 (( temp_chroot )) && delete_chroot "$copydir" "$copy"
 
