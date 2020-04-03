@@ -34,16 +34,18 @@ usage() {
 	echo '    -h         This help'
 	echo '    -c         Recreate the chroot before building'
 	echo '    -r <dir>   Create chroots in this directory'
+	echo '    -s         Do not run setarch'
 	echo ''
 	echo "Default makechrootpkg args: ${makechrootpkg_args[*]}"
 	echo ''
 	exit 1
 }
 
-while getopts 'hcr:' arg; do
+while getopts 'hcr:s' arg; do
 	case "${arg}" in
 		c) clean_first=true ;;
 		r) chroots="$OPTARG" ;;
+		s) nosetarch_opt="-s" ;;
 		*) usage ;;
 	esac
 done
@@ -51,7 +53,7 @@ done
 check_root SOURCE_DATE_EPOCH,SRCDEST,SRCPKGDEST,PKGDEST,LOGDEST,MAKEFLAGS,PACKAGER,GNUPGHOME
 
 # Pass all arguments after -- right to makepkg
-makechrootpkg_args+=("${@:$OPTIND}")
+makechrootpkg_args+=("${nosetarch_opt}" "${@:$OPTIND}")
 
 if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 	msg "Creating chroot for [%s] (%s)..." "${repo}" "${arch}"
@@ -69,14 +71,14 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 
 	rm -rf --one-file-system "${chroots}/${repo}-${arch}"
 	(umask 0022; mkdir -p "${chroots}/${repo}-${arch}")
-	setarch "${arch}" mkarchroot \
+	mkarchroot ${nosetarch_opt} \
 		-C "${pacman_config}" \
 		-M "${makepkg_config}" \
 		"${chroots}/${repo}-${arch}/root" \
 		"${base_packages[@]}" || abort
 else
 	lock 9 "${chroots}/${repo}-${arch}/root.lock" "Locking clean chroot"
-	arch-nspawn \
+	arch-nspawn ${nosetarch_opt} \
 		-C "${pacman_config}" \
 		-M "${makepkg_config}" \
 		"${chroots}/${repo}-${arch}/root" \

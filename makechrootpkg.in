@@ -78,6 +78,7 @@ usage() {
 	echo '-C         Run checkpkg on the package'
 	echo '-T         Build in a temporary directory'
 	echo '-U         Run makepkg as a specified user'
+	echo '-s         Do not run setarch'
 	exit 1
 }
 
@@ -273,7 +274,7 @@ move_products() {
 }
 # }}}
 
-while getopts 'hcur:I:l:nCTD:d:U:' arg; do
+while getopts 'hcur:I:l:nCTD:d:U:s' arg; do
 	case "$arg" in
 		c) clean_first=1 ;;
 		D) bindmounts_ro+=("--bind-ro=$OPTARG") ;;
@@ -286,6 +287,7 @@ while getopts 'hcur:I:l:nCTD:d:U:' arg; do
 		C) run_checkpkg=1 ;;
 		T) temp_chroot=1; copy+="-$$" ;;
 		U) makepkg_user="$OPTARG" ;;
+		s) nosetarch_opt="-s" ;;
 		h|*) usage ;;
 	esac
 done
@@ -360,7 +362,7 @@ download_sources
 
 prepare_chroot
 
-if arch-nspawn "$copydir" \
+if arch-nspawn ${nosetarch_opt} "$copydir" \
 	--bind="${PWD//:/\\:}:/startdir" \
 	--bind="${SRCDEST//:/\\:}:/srcdest" \
 	"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
