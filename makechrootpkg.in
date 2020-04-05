@@ -145,7 +145,7 @@ install_packages() {
 	pkgnames=("${install_pkgs[@]##*/}")
 
 	cp -- "${install_pkgs[@]}" "$copydir/root/"
-	arch-nspawn "$copydir" "${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
+	arch-nspawn ${nosetarch_opt} "$copydir" "${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
 		bash -c 'yes y | pacman -U -- "$@"' -bash "${pkgnames[@]/#//root/}"
 	ret=$?
 	rm -- "${pkgnames[@]/#/$copydir/root/}"
@@ -342,7 +342,7 @@ if [[ ! -d $copydir ]] || (( clean_first )); then
 	sync_chroot "$chrootdir" "$copydir" "$copy"
 fi
 
-(( update_first )) && arch-nspawn "$copydir" \
+(( update_first )) && arch-nspawn ${nosetarch_opt} "$copydir" \
 		"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
 		pacman -Syuu --noconfirm
 
@@ -399,7 +399,7 @@ else
 		for remotepkg in "${remotepkgs[@]}"; do
 			if [[ $remotepkg != file://* ]]; then
 				msg2 "Downloading current versions"
-				arch-nspawn "$copydir" pacman --noconfirm -Swdd "${pkgnames[@]}"
+				arch-nspawn ${nosetarch_opt} "$copydir" pacman --noconfirm -Swdd "${pkgnames[@]}"
 				mapfile -t remotepkgs < <(pacman --config "$copydir"/etc/pacman.conf \
 					--dbpath "$copydir"/var/lib/pacman \
 					-Sddp "${pkgnames[@]}")
