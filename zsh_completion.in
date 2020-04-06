@@ -9,6 +9,7 @@ _binary_arch=${_arch[*]:0:-1}
 _archbuild_args=(
 	'-c[Recreate the chroot before building]'
 	'-r[Create chroots in this directory]:base_dir:_files -/'
+	'-I[Install extra packages on recreating chroot]:packages:_devtools_completions_all_packages'
 	'-h[Display usage]'
 )
 

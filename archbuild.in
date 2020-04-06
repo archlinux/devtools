@@ -34,16 +34,19 @@ usage() {
 	echo '    -h         This help'
 	echo '    -c         Recreate the chroot before building'
 	echo '    -r <dir>   Create chroots in this directory'
+	echo '    -I <pkgs>  Install extra packages on recreating chroot'
 	echo ''
 	echo "Default makechrootpkg args: ${makechrootpkg_args[*]}"
+	echo "Default packages: ${base_packages[*]}"
 	echo ''
 	exit 1
 }
 
-while getopts 'hcr:' arg; do
+while getopts 'hcr:I:' arg; do
 	case "${arg}" in
 		c) clean_first=true ;;
 		r) chroots="$OPTARG" ;;
+		I) base_packages+=($OPTARG) ;;
 		*) usage ;;
 	esac
 done
