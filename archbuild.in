@@ -69,7 +69,10 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 
 	rm -rf --one-file-system "${chroots}/${repo}-${arch}"
 	(umask 0022; mkdir -p "${chroots}/${repo}-${arch}")
-	setarch "${arch}" mkarchroot \
+
+	setarch --list | grep -qx "$arch" && setarch_cmd="setarch $arch"
+
+	${setarch_cmd} mkarchroot \
 		-C "${pacman_config}" \
 		-M "${makepkg_config}" \
 		"${chroots}/${repo}-${arch}/root" \

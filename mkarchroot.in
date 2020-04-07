@@ -31,7 +31,6 @@ usage() {
 	echo '    -M <file>     Location of a makepkg config file'
 	echo '    -c <dir>      Set pacman cache'
 	echo '    -f <file>     Copy file from the host to the chroot'
-	echo '    -s            Do not run setarch'
 	echo '    -h            This message'
 	exit 1
 }
@@ -43,7 +42,6 @@ while getopts 'hUC:M:c:f:s' arg; do
 		M) makepkg_conf="$OPTARG" ;;
 		c) cache_dirs+=("$OPTARG") ;;
 		f) files+=("$OPTARG") ;;
-		s) nosetarch=1 ;;
 		h|?) usage ;;
 		*) error "invalid argument '%s'" "$arg"; usage ;;
 	esac

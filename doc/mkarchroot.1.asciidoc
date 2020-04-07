@@ -35,9 +35,6 @@ Options
 *-f* <file>::
 	Copy file from the host to the chroot.
 
-*-s*::
-	Do not run setarch.
-
 *-h*::
 	Output command line options.
 

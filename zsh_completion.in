@@ -21,7 +21,6 @@ _arch_nspawn_args=(
 	'-M[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
 	'-c[Set pacman cache]:pacman_cache:_files -/'
 	'-f[Copy file from the host to the chroot]:copy_file:_files'
-	'-s[Do not run setarch]'
 	'-h[Display usage]'
 	'1:chroot_dir:_files -/'
 )
