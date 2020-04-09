@@ -126,8 +126,13 @@ copy_hostconf
 eval "$(grep -a '^CARCH=' "$working_dir/etc/makepkg.conf")"
 
 [[ -z $nosetarch ]] || unset CARCH
+if [[ -f "@pkgdatadir@/setarch-aliases.d/${CARCH}" ]]; then
+	read -r set_arch < "@pkgdatadir@/setarch-aliases.d/${CARCH}"
+else
+	set_arch="${CARCH}"
+fi
 
-exec ${CARCH:+setarch "$CARCH"} systemd-nspawn -q \
+exec ${CARCH:+setarch "$set_arch"} systemd-nspawn -q \
 	-D "$working_dir" \
 	-E "PATH=/usr/local/sbin:/usr/local/bin:/usr/bin" \
 	--register=no --keep-unit --as-pid2 \
