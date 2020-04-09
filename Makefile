@@ -35,6 +35,8 @@ CONFIGFILES = \
 	pacman-kde-unstable.conf \
 	pacman-gnome-unstable.conf
 
+SETARCH_ALIASES = \
+
 COMMITPKG_LINKS = \
 	extrapkg \
 	testingpkg \
@@ -101,9 +103,10 @@ clean:
 
 install:
 	install -dm0755 $(DESTDIR)$(PREFIX)/bin
-	install -dm0755 $(DESTDIR)$(PREFIX)/share/devtools
+	install -dm0755 $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d
 	install -m0755 ${BINPROGS} $(DESTDIR)$(PREFIX)/bin
 	install -m0644 ${CONFIGFILES} $(DESTDIR)$(PREFIX)/share/devtools
+	for a in ${SETARCH_ALIASES}; do install -m0644 setarch-aliases.d/$$a $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d; done
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${CROSSREPOMOVE_LINKS}; do ln -sf crossrepomove $(DESTDIR)$(PREFIX)/bin/$$l; done
@@ -119,6 +122,7 @@ install:
 uninstall:
 	for f in ${BINPROGS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$f; done
 	for f in ${CONFIGFILES}; do rm -f $(DESTDIR)$(PREFIX)/share/devtools/$$f; done
+	for f in ${SETARCH_ALIASES}; do rm -f $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d/$$f; done
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${CROSSREPOMOVE_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done

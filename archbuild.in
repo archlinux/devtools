@@ -17,6 +17,11 @@ else
 	repo=${tag%-*}
 	arch=${tag##*-}
 fi
+if [[ -f "@pkgdatadir@/setarch-aliases.d/${arch}" ]]; then
+	set_arch=$(cat "@pkgdatadir@/setarch-aliases.d/${arch}")
+else
+	set_arch="${arch}"
+fi
 chroots='/var/lib/archbuild'
 clean_first=false
 
@@ -69,7 +74,7 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 
 	rm -rf --one-file-system "${chroots}/${repo}-${arch}"
 	(umask 0022; mkdir -p "${chroots}/${repo}-${arch}")
-	setarch "${arch}" mkarchroot \
+	setarch "${set_arch}" mkarchroot \
 		-C "${pacman_config}" \
 		-M "${makepkg_config}" \
 		"${chroots}/${repo}-${arch}/root" \
