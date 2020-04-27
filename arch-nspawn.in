@@ -127,7 +127,7 @@ eval "$(grep -a '^CARCH=' "$working_dir/etc/makepkg.conf")"
 
 [[ -z $nosetarch ]] || unset CARCH
 if [[ -f "@pkgdatadir@/setarch-aliases.d/${CARCH}" ]]; then
-	set_arch=$(cat "@pkgdatadir@/setarch-aliases.d/${CARCH}")
+	read -r set_arch < "@pkgdatadir@/setarch-aliases.d/${CARCH}"
 else
 	set_arch="${CARCH}"
 fi

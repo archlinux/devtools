@@ -18,7 +18,7 @@ else
 	arch=${tag##*-}
 fi
 if [[ -f "@pkgdatadir@/setarch-aliases.d/${arch}" ]]; then
-	set_arch=$(cat "@pkgdatadir@/setarch-aliases.d/${arch}")
+	read -r set_arch < "@pkgdatadir@/setarch-aliases.d/${arch}"
 else
 	set_arch="${arch}"
 fi
