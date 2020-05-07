@@ -54,6 +54,24 @@ recache() {
     done
 }
 
+is_outdated_cache() {
+    local repo arch
+
+    # links databases are generated at about the same time every day; we should
+    # attempt to check for new database files if any of them are over a day old
+
+    for repo in "${_repos[@]}"; do
+        for arch in "${arches[@]}"; do
+            local dbpath=${SOCACHE_DIR}/${arch}/${repo}.links.tar.gz
+            if [[ ! -f ${dbpath} ]] || [[ $(find "${dbpath}" -mtime +0) ]]; then
+                return 0
+            fi
+        done
+    done
+
+    return 1
+}
+
 search() {
     local repo=$1 arch lib=$2 srepos=("${_repos[@]}")
 
@@ -152,7 +170,8 @@ if ! (( ( REFRESH && $# == 0 ) || $# == 2 )); then
     exit 1
 fi
 
-if (( REFRESH )) || [[ ! -d ${SOCACHE_DIR} ]]; then
+# trigger a refresh if requested explicitly or the cached dbs might be outdated
+if (( REFRESH )) || [[ ! -d ${SOCACHE_DIR} ]] || is_outdated_cache; then
     recache
     (( $# == 2 )) || exit 0
 fi
