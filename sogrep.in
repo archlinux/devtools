@@ -18,6 +18,8 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+m4_include(lib/common.sh)
+
 # globals
 : ${SOLINKS_MIRROR:="https://mirror.pkgbuild.com"}
 : ${SOCACHE_DIR:="${XDG_CACHE_HOME:-${HOME}/.cache}/sogrep"}
@@ -39,9 +41,15 @@ recache() {
 
     for repo in "${_repos[@]}"; do
         for arch in "${arches[@]}"; do
+            # delete extracted tarballs from previous sogrep versions
             rm -rf "${SOCACHE_DIR}/${arch}/${repo}"
-            mkdir -p "${SOCACHE_DIR}/${arch}/${repo}"
-            curl -L "$verbosity" "${SOLINKS_MIRROR}/${repo}/os/${arch}/${repo}.links.tar.gz" | bsdtar -xf - -C "${SOCACHE_DIR}/${arch}/${repo}"
+
+            # fetch repo links database if newer than our cached copy
+            local dbpath=${SOCACHE_DIR}/${arch}/${repo}.links.tar.gz
+            mkdir -p "${dbpath%/*}"
+            (( VERBOSE )) && echo "Fetching ${repo}.links.tar.gz..."
+            curl -LR "${verbosity}" -o "${dbpath}" -z "${dbpath}" \
+                "${SOLINKS_MIRROR}/${repo}/os/${arch}/${repo}.links.tar.gz"
         done
     done
 }
@@ -58,15 +66,20 @@ search() {
         srepos=("${repo}")
     fi
 
+    setup_workdir
+
     for arch in "${arches[@]}"; do
         for repo in "${srepos[@]}"; do
             local prefix=
             (( VERBOSE && ${#srepos[@]} > 1 )) && prefix=${repo}/
-            db=${SOCACHE_DIR}/${arch}/${repo}/
-            if [[ -d ${db} ]]; then
+            local db=${SOCACHE_DIR}/${arch}/${repo}.links.tar.gz
+            if [[ -f ${db} ]]; then
+                local extracted=${WORKDIR}/${arch}/${repo}
+                mkdir -p "${extracted}"
+                bsdtar -C "${extracted}" -xf "${db}"
                 while read -rd '' pkg; do
                     read -r match
-                    pkg=${pkg#${db}}
+                    pkg=${pkg#${extracted}/}
                     pkg="${prefix}${pkg%-*-*/links}"
 
                     if (( VERBOSE )); then
@@ -74,7 +87,7 @@ search() {
                     else
                         printf '%s\n' "${pkg}"
                     fi
-                done < <(grep -rZ "${lib}" "${db}") | sort -u
+                done < <(grep -rZ "${lib}" "${extracted}") | sort -u
             fi
         done
     done | resort
