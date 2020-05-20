@@ -83,6 +83,9 @@ archbuild_cmd=("${repo}${archbuild_arch:+-$archbuild_arch}-build" "$@")
 
 trap 'rm -rf $TEMPDIR' EXIT INT TERM QUIT
 
+# Load makepkg.conf variables to be available
+load_makepkg_config
+
 # Use a source-only tarball as an intermediate to transfer files. This
 # guarantees the checksums are okay, and guarantees that all needed files are
 # transferred, including local sources, install scripts, and changelogs.
@@ -98,7 +101,7 @@ mapfile -t files < <(
     # This is sort of bash golfing but it allows running a mildly complex
     # command over ssh with a single connection.
     # shellcheck disable=SC2145
-    cat "$SRCPKGDEST"/*.src.tar.gz |
+    cat "$SRCPKGDEST"/*"$SRCEXT" |
         ssh $server '
             temp="${XDG_CACHE_HOME:-$HOME/.cache}/offload-build" &&
             mkdir -p "$temp" &&
@@ -122,7 +125,6 @@ mapfile -t files < <(
 
 if (( ${#files[@]} )); then
     printf '%s\n' '' '-> copying files...'
-    load_makepkg_config
     scp "${files[@]/#/$server:}" "${TEMPDIR}/"
     mv "${TEMPDIR}"/*.pkg.tar* "${PKGDEST:-${PWD}}/"
     mv "${TEMPDIR}/PKGBUILD" "${PWD}/"
