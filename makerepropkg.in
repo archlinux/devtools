@@ -57,8 +57,14 @@ parse_buildinfo() {
 get_pkgfile() {
     local cdir=${cache_dirs[0]}
     local pkgfilebase=${1}
+    local mode=${2}
     local pkgname=${pkgfilebase%-*-*-*}
     local pkgfile ext
+
+    # try without downloading
+    if [[ ${mode} != localonly ]] && get_pkgfile "${pkgfilebase}" localonly; then
+        return 0
+    fi
 
     for ext in .zst .xz ''; do
         pkgfile=${pkgfilebase}.pkg.tar${ext}
@@ -72,6 +78,9 @@ get_pkgfile() {
 
         for f in "${pkgfile}" "${pkgfile}.sig"; do
             if [[ ! -f "${cdir}/${f}" ]]; then
+                if [[ ${mode} = localonly ]]; then
+                    continue 2
+                fi
                 msg2 "retrieving '%s'..." "${f}" >&2
                 curl -Llf -# -o "${cdir}/${f}" "${archiveurl}/${pkgname:0:1}/${pkgname}/${f}" || continue 2
             fi
