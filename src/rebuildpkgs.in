@@ -38,7 +38,7 @@ elif [[ -r "$HOME/.makepkg.conf" ]]; then
 fi
 
 bump_pkgrel() {
-	# Get the current pkgrel from SVN and update the working copy with it
+	# Get the current pkgrel from git and update the working copy with it
 	# This prevents us from incrementing out of control :)
 	pbuild='.svn/text-base/PKGBUILD.svn-base'
 	oldrel=$(grep 'pkgrel=' $pbuild | cut -d= -f2)
