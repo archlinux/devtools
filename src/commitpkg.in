@@ -64,7 +64,7 @@ if (( ${#validpgpkeys[@]} != 0 )); then
 fi
 
 # find files which should be under source control
-needsversioning=()
+needsversioning=(PKGBUILD)
 for s in "${source[@]}"; do
 	[[ $s != *://* ]] && needsversioning+=("$s")
 done
@@ -79,13 +79,13 @@ for key in "${validpgpkeys[@]}"; do
 	needsversioning+=("keys/pgp/$key.asc")
 done
 
-# assert that they really are controlled by SVN
+# assert that they really are controlled by git
 if (( ${#needsversioning[*]} )); then
-	# svn status's output is only two columns when the status is unknown
-	while read -r status filename; do
-		[[ $status = '?' ]] && unversioned+=("$filename")
-	done < <(svn status -v "${needsversioning[@]}")
-	(( ${#unversioned[*]} )) && die "%s is not under version control" "${unversioned[@]}"
+	for file in "${needsversioning[@]}"; do
+		if ! git ls-files --error-unmatch "$file" 2>/dev/null; then
+			die "%s is not under version control" "$file"
+		fi
+	done
 fi
 
 rsyncopts=(-e ssh -p '--chmod=ug=rw,o=r' -c -h -L --progress --partial -y)
@@ -125,18 +125,18 @@ if [[ -z $server ]]; then
 	server='repos.archlinux.org'
 fi
 
-if [[ -n $(svn status -q) ]]; then
+if [[ -n $(git status --short --untracked-files=no) ]]; then
 	msgtemplate="upgpkg: $pkgbase $(get_full_version)"
 	if [[ -n $1 ]]; then
-		stat_busy 'Committing changes to trunk'
-		svn commit -q -m "${msgtemplate}: ${1}" || die
+		stat_busy 'Committing changes'
+		git commit -q -m "${msgtemplate}: ${1}" || die
 		stat_done
 	else
 		[[ -z ${WORKDIR:-} ]] && setup_workdir
 		msgfile=$(mktemp --tmpdir="${WORKDIR}" commitpkg.XXXXXXXXXX)
 		echo "$msgtemplate" > "$msgfile"
-		if [[ -n $SVN_EDITOR ]]; then
-			$SVN_EDITOR "$msgfile" || die
+		if [[ -n $GIT_EDITOR ]]; then
+			$GIT_EDITOR "$msgfile" || die
 		elif [[ -n $VISUAL ]]; then
 			$VISUAL "$msgfile" || die
 		elif [[ -n $EDITOR ]]; then
@@ -145,8 +145,8 @@ if [[ -n $(svn status -q) ]]; then
 			vi "$msgfile" || die
 		fi
 		[[ -s $msgfile ]] || die
-		stat_busy 'Committing changes to trunk'
-		svn commit -q -F "$msgfile" || die
+		stat_busy 'Committing changes'
+		git commit -v -q -F "$msgfile" || die
 		unlink "$msgfile"
 		stat_done
 	fi
@@ -219,24 +219,4 @@ if [[ ${#uploads[*]} -gt 0 ]]; then
 	unset new_uploads
 	msg 'Uploading all package and signature files'
 	rsync "${rsyncopts[@]}" "${uploads[@]}" "$server:staging/$repo/" || die
-fi
-
-if [[ "${arch[*]}" == 'any' ]]; then
-	if [[ -d ../repos/$repo-x86_64 ]]; then
-		pushd ../repos/ >/dev/null
-		stat_busy "Removing %s" "$repo-x86_64"
-		svn rm -q "$repo-x86_64"
-		svn commit -q -m "Removed $repo-x86_64 for $pkgname"
-		stat_done
-		popd >/dev/null
-	fi
-else
-	if [[ -d ../repos/$repo-any ]]; then
-		pushd ../repos/ >/dev/null
-		stat_busy "Removing %s" "$repo-any"
-		svn rm -q "$repo-any"
-		svn commit -q -m "Removed $repo-any for $pkgname"
-		stat_done
-		popd >/dev/null
-	fi
 fi

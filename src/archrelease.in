@@ -34,54 +34,16 @@ if [[ ! -f PKGBUILD ]]; then
 	die 'archrelease: PKGBUILD not found'
 fi
 
-trunk=${PWD##*/}
+. ./PKGBUILD
+pkgbase=${pkgbase:-$pkgname}
+pkgver=$(get_full_version "$pkgbase")
 
-# Normally this should be trunk, but it may be something
-# such as 'gnome-unstable'
-IFS='/' read -r -d '' -a parts <<< "$PWD"
-if [[ "${parts[*]:(-2):1}" == "repos" ]]; then
-	die 'archrelease: Should not be in repos dir (try from trunk/)'
+if git rev-parse "$pkgver" >/dev/null 2>&1; then
+	die "archrelease: the tag $pkgver already exists in the repository!"
 fi
-unset parts
-
-if [[ $(svn status -q) ]]; then
-	die 'archrelease: You have not committed your changes yet!'
-fi
-
-pushd .. >/dev/null
-mapfile -t known_files < <(svn ls -r HEAD "$trunk")
-wait $! || die "failed to discover committed files"
-
-# gracefully handle files containing an "@" character
-known_files=("${known_files[@]/%/@}")
-
-# update repo directory first to avoid a commit failure
-svn up repos
-
-for tag in "$@"; do
-	stat_busy "Copying %s to %s" "${trunk}" "${tag}"
-
-	if [[ -d repos/$tag ]]; then
-		mapfile -t trash < <(svn ls --recursive "repos/$tag")
-		wait $! || die "failed to discover existing files"
-		if (( ${#trash[@]} )); then
-			trash=("${trash[@]/#/repos/$tag/}")
-			svn rm -q "${trash[@]/%/@}"
-		fi
-	else
-		mkdir -p "repos/$tag"
-		svn add --parents -q "repos/$tag"
-	fi
-
-	# copy all files at once from trunk to the subdirectory in repos/
-	svn copy -q -r HEAD "${known_files[@]/#/$trunk/}" "repos/$tag/"
-
-	stat_done
-done
 
 stat_busy "Releasing package"
 printf -v tag_list ", %s" "$@"; tag_list="${tag_list#, }"
-svn commit -q -m "archrelease: copy ${trunk} to $tag_list" || abort
+git tag -s -m "archrelease: released $pkgbase-$pkgver to $tag_list"  "$pkgver" || abort
+git push --tags || abort
 stat_done
-
-popd >/dev/null
