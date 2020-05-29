@@ -160,6 +160,15 @@ if [[ -z $server ]]; then
 fi
 
 if [[ -n $(git status --short --untracked-files=no) ]]; then
+	stat_busy 'Staging files'
+	for f in $(git ls-files --modified); do
+		git add "$f"
+	done
+	for f in $(git ls-files --deleted); do
+		git rm "$f"
+	done
+	stat_done
+
 	msgtemplate="upgpkg: $pkgbase $(get_full_version)"
 	if [[ -n $1 ]]; then
 		stat_busy 'Committing changes'
