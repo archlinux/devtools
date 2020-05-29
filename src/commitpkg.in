@@ -27,6 +27,10 @@ if [[ ! -f PKGBUILD ]]; then
 	die 'No PKGBUILD file'
 fi
 
+if [[ "$(git symbolic-ref --short HEAD)" != main ]]; then
+	die 'must be run from the main branch'
+fi
+
 source=()
 # shellcheck source=contrib/makepkg/PKGBUILD.proto
 . ./PKGBUILD
