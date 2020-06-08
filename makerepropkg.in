@@ -124,19 +124,45 @@ shift $((OPTIND - 1))
 
 check_root
 
-if [[ -n $1 ]]; then
-    pkgfile="$1"
-    splitpkgs=("$@")
-    for f in "${splitpkgs[@]}"; do
-        if ! bsdtar -tqf "${f}" .BUILDINFO >/dev/null 2>&1; then
-            error "file is not a valid pacman package: '%s'" "${f}"
-            exit 1
-        fi
-    done
-else
-    error "no package file specified. Try '${BASH_SOURCE[0]##*/} -h' for more information. "
-    exit 1
+[[ -f PKGBUILD ]] || { error "No PKGBUILD in current directory."; exit 1; }
+
+# without arguments, get list of packages from PKGBUILD
+if [[ -z $1 ]]; then
+    mapfile -t pkgnames < <(source PKGBUILD; pacman -Sddp --print-format '%r/%n' "${pkgname[@]}")
+    wait $! || {
+        error "No package file specified and failed to retrieve package names from './PKGBUILD'."
+        plain "Try '${BASH_SOURCE[0]##*/} -h' for more information." >&2
+        exit 1
+    }
+    msg "Reproducing all pkgnames listed in ./PKGBUILD"
+    set -- "${pkgnames[@]}"
 fi
+
+# check each package to see if it's a file, and if not, try to download it
+# using pacman -Sw, and get the filename from there
+splitpkgs=()
+for p in "$@"; do
+    if [[ -f ${p} ]]; then
+        splitpkgs+=("${p}")
+    else
+        pkgfile_remote=$(pacman -Sddp "${p}" 2>/dev/null) || { error "package name '%s' not in repos" "${p}"; exit 1; }
+        pkgfile=${pkgfile_remote#file://}
+        if [[ ! -f ${pkgfile} ]]; then
+            msg "Downloading package '%s' into pacman's cache" "${pkgfile}"
+            sudo pacman -Swdd --noconfirm --logfile /dev/null "${p}" || exit 1
+            pkgfile_remote=$(pacman -Sddp "${p}" 2>/dev/null)
+            pkgfile="${pkgfile_remote#file://}"
+        fi
+        splitpkgs+=("${pkgfile}")
+    fi
+done
+
+for f in "${splitpkgs[@]}"; do
+    if ! bsdtar -tqf "${f}" .BUILDINFO >/dev/null 2>&1; then
+        error "file is not a valid pacman package: '%s'" "${f}"
+        exit 1
+    fi
+done
 
 if (( ${#cache_dirs[@]} == 0 )); then
 	mapfile -t cache_dirs < <(pacman-conf CacheDir)
@@ -148,11 +174,11 @@ load_makepkg_config
 HOME=${ORIG_HOME}
 [[ -d ${SRCDEST} ]] || SRCDEST=${PWD}
 
-parse_buildinfo < <(bsdtar -xOqf "${pkgfile}" .BUILDINFO)
+parse_buildinfo < <(bsdtar -xOqf "${splitpkgs[0]}" .BUILDINFO)
 export SOURCE_DATE_EPOCH="${buildinfo[builddate]}"
 PACKAGER="${buildinfo[packager]}"
 BUILDDIR="${buildinfo[builddir]}"
-PKGEXT=${pkgfile#${pkgfile%.pkg.tar*}}
+PKGEXT=${splitpkgs[0]#${splitpkgs[0]%.pkg.tar*}}
 
 # nuke and restore reproducible testenv
 for copy in "${buildroot}"/*/; do

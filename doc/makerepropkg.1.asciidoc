@@ -7,7 +7,7 @@ makerepropkg - Rebuild a package to see if it is reproducible
 
 Synopsis
 --------
-makerepropkg [OPTIONS] <package_file>...
+makerepropkg [OPTIONS] [<package_file|pkgname>...]
 
 Description
 -----------
@@ -23,6 +23,15 @@ artifacts are identical.
 When given multiple packages, additional package files are assumed to be split
 packages and will be treated as additional artifacts to compare during the
 verification step.
+
+A valid target(s) for pacman -S can be specified instead, and makerepropkg will
+download it to the cache if needed. This is mostly useful to specify which
+repository to retrieve from. If no positional arguments are specified, the
+targets will be sourced from the PKGBUILD.
+
+In either case, the package name will be converted to a filename from the
+cache, and makerepropkg will proceed as though this filename was initially
+specified.
 
 This implements a verifier for pacman/libalpm packages in accordance with the
 link:https://reproducible-builds.org/[Reproducible Builds] project.
