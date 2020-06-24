@@ -52,6 +52,7 @@ check_root SOURCE_DATE_EPOCH,SRCDEST,SRCPKGDEST,PKGDEST,LOGDEST,MAKEFLAGS,PACKAG
 
 # Pass all arguments after -- right to makepkg
 makechrootpkg_args+=("${@:$OPTIND}")
+cachedir=$(pacman-conf -c "${pacman_config}" CacheDir)
 
 if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 	msg "Creating chroot for [%s] (%s)..." "${repo}" "${arch}"
@@ -72,6 +73,7 @@ if ${clean_first} || [[ ! -d "${chroots}/${repo}-${arch}" ]]; then
 	setarch "${arch}" mkarchroot \
 		-C "${pacman_config}" \
 		-M "${makepkg_config}" \
+		-c "${cachedir}" \
 		"${chroots}/${repo}-${arch}/root" \
 		"${base_packages[@]}" || abort
 else
