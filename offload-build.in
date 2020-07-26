@@ -83,7 +83,7 @@ archbuild_cmd=("${repo}${archbuild_arch:+-$archbuild_arch}-build" "$@")
 
 trap 'rm -rf $TEMPDIR' EXIT INT TERM QUIT
 
-# Make makepkg.conf variables available
+# Load makepkg.conf variables to be available
 load_makepkg_config
 
 # Use a source-only tarball as an intermediate to transfer files. This
