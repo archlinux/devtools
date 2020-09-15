@@ -37,16 +37,17 @@ fi
 . ./PKGBUILD
 pkgbase=${pkgbase:-$pkgname}
 pkgver=$(get_full_version "$pkgbase")
+tag_pkgver=release-${pkgver/:/-}
 
-if git rev-parse "$pkgver" >/dev/null 2>&1; then
+if git rev-parse "$tag_pkgver" >/dev/null 2>&1; then
 	die "archrelease: the tag $pkgver already exists in the repository!"
 fi
 
 # If the tag exists we check if it's properly signed and that it
 # matches the working directory PKGBUILD.
-if git tag --verify "$pkgver" &> /dev/null; then
+if git tag --verify "$tag_pkgver" &> /dev/null; then
 	cwd_checksum=$(sha256sum PKGBUILD|cut -d' ' -f1)
-	tag_checksum=$(git show $pkgver:PKGBUILD | sha256sum |cut -d' ' -f1)
+	tag_checksum=$(git show $tag_pkgver:PKGBUILD | sha256sum |cut -d' ' -f1)
 	if [[ "$cwd_checksum" != "$tag_checksum" ]]; then
 		die "tagged PKGBUILD is not the same as the working dir PKGBUILD"
 	fi
@@ -55,6 +56,6 @@ fi
 
 stat_busy "Releasing package"
 printf -v tag_list ", %s" "$@"; tag_list="${tag_list#, }"
-git tag -s -m "archrelease: released $pkgbase-$pkgver to $tag_list"  "$pkgver" || abort
+git tag -s -m "archrelease: released $pkgbase-$pkgver to $tag_list"  "$tag_pkgver" || abort
 git push --tags || abort
 stat_done
