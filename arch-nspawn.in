@@ -58,17 +58,18 @@ shift 1
 [[ -z $working_dir ]] && die 'Please specify a working directory.'
 
 pacconf_cmd=$(command -v pacman-conf || command -v pacconf)
+pacconf_arch=$($pacconf_cmd architecture)
 
 if (( ${#cache_dirs[@]} == 0 )); then
 	mapfile -t cache_dirs < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" CacheDir)
 fi
 
 # shellcheck disable=2016
-host_mirrors=($($pacconf_cmd --repo extra Server 2> /dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#'))
+host_mirrors=($($pacconf_cmd --repo extra Server 2> /dev/null | sed -r 's#'"${pacconf_arch}"'#$arch#;s#extra#$repo#'))
 
 for host_mirror in "${host_mirrors[@]}"; do
 	if [[ $host_mirror == *file://* ]]; then
-		host_mirror=$(echo "$host_mirror" | sed -r 's#file://(/.*)/\$repo/os/\$arch#\1#g')
+		host_mirror=$(echo "$host_mirror" | sed -r 's#file://(/.*)/\$repo[/.]*#\1#g')
 		for m in "$host_mirror"/pool/*/; do
 			in_array "$m" "${cache_dirs[@]}" || cache_dirs+=("$m")
 		done
