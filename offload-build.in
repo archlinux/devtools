@@ -24,7 +24,7 @@ source /usr/share/makepkg/util/config.sh
 # global defaults suitable for use by Arch staff
 repo=extra
 arch=x86_64
-server=dragon.archlinux.org
+server=build.archlinux.org
 
 die() { printf "error: $1\n" "${@:2}"; exit 1; }
 
