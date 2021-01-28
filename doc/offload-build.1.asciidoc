@@ -28,7 +28,7 @@ Options
 	architecture officially supported by Arch Linux.
 
 *-s, --server* <hostname>::
-	Offload to a specific build server. The default is dragon.archlinux.org
+	Offload to a specific build server. The default is build.archlinux.org
 	which is used as part of the build toolchain for the official Arch Linux
 	repos.
 
