@@ -70,7 +70,7 @@ for host_mirror in "${host_mirrors[@]}"; do
 	if [[ $host_mirror == *file://* ]]; then
 		host_mirror=$(echo "$host_mirror" | sed -r 's#file://(/.*)/\$repo/os/\$arch#\1#g')
 		for m in "$host_mirror"/pool/*/; do
-			in_array "$m" "${cache_dirs[@]}" || cache_dirs+=("$m")
+			in_array "$m" "${cache_dirs[@]}" || extra_cache_dirs+=("$m")
 		done
 	fi
 done
@@ -81,14 +81,14 @@ while read -r line; do
 	for line in "${lines[@]}"; do
 		if [[ $line = file://* ]]; then
 			line=${line#file://}
-			in_array "$line" "${cache_dirs[@]}" || cache_dirs+=("$line")
+			in_array "$line" "${cache_dirs[@]}" || extra_cache_dirs+=("$line")
 		fi
 	done
 done < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" --repo-list)
 
 mount_args+=("--bind=${cache_dirs[0]//:/\\:}")
 
-for cache_dir in "${cache_dirs[@]:1}"; do
+for cache_dir in "${cache_dirs[@]:1}" "${extra_cache_dirs[@]}"; do
 	mount_args+=("--bind-ro=${cache_dir//:/\\:}")
 done
 
@@ -99,7 +99,12 @@ copy_hostconf () {
 
 	printf 'Server = %s\n' "${host_mirrors[@]}" >"$working_dir/etc/pacman.d/mirrorlist"
 
-	[[ -n $pac_conf ]] && cp "$pac_conf" "$working_dir/etc/pacman.conf"
+	if [[ -n $pac_conf ]]; then
+		cp "$pac_conf" "$working_dir/etc/pacman.conf"
+		if (( ${#extra_cache_dirs[@]} != 0 )); then
+			echo -e "\n[options]\nCacheDir = ${extra_cache_dirs[*]}" >> "$working_dir/etc/pacman.conf"
+		fi
+	fi
 	[[ -n $makepkg_conf ]] && cp "$makepkg_conf" "$working_dir/etc/makepkg.conf"
 
 	local file
@@ -107,8 +112,6 @@ copy_hostconf () {
 		mkdir -p "$(dirname "$working_dir$file")"
 		cp -T "$file" "$working_dir$file"
 	done
-
-	sed -r "s|^#?\\s*CacheDir.+|CacheDir = ${cache_dirs[*]}|g" -i "$working_dir/etc/pacman.conf"
 }
 # }}}
 
