@@ -63,34 +63,47 @@ if (( ${#cache_dirs[@]} == 0 )); then
 	mapfile -t cache_dirs < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" CacheDir)
 fi
 
+# find first writable cache, bind it to container in rw mode, remove it from cache_dirs
+for cache_dir in "${cache_dirs[@]}"; do
+	if [[ -d "$cache_dir" && -w "$cache_dir" ]]; then
+		mount_args+=("--bind=$cache_dir")
+		mapfile -t cache_dirs < <(printf "%s\n" "${cache_dirs[@]}" | grep -vFx "$cache_dir")
+		break
+	fi
+# this could print an warning to the user that no host caches would be used
+done
+
+
 # shellcheck disable=2016
 host_mirrors=($($pacconf_cmd --repo extra Server 2> /dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#'))
 
-for host_mirror in "${host_mirrors[@]}"; do
-	if [[ $host_mirror == *file://* ]]; then
-		host_mirror=$(echo "$host_mirror" | sed -r 's#file://(/.*)/\$repo/os/\$arch#\1#g')
-		for m in "$host_mirror"/pool/*/; do
-			in_array "$m" "${cache_dirs[@]}" || cache_dirs+=("$m")
-		done
-	fi
-done
+# extract local host mirrors (Server=file://...)
+mapfile -t host_mirrors_local < <(printf "%s\n" "${host_mirrors[@]}" | grep -Po "(?<=file://).*(?=\/\$repo)")
 
-while read -r line; do
-	mapfile -t lines < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" \
-		--repo $line Server | sed -r 's#(.*/)[^/]+/os/.+#\1#')
-	for line in "${lines[@]}"; do
-		if [[ $line = file://* ]]; then
-			line=${line#file://}
-			in_array "$line" "${cache_dirs[@]}" || cache_dirs+=("$line")
-		fi
+for host_mirror in "${host_mirrors_local[@]}"; do
+	for m in "$host_mirror"/pool/*/; do
+		cache_dirs+=("$m")
 	done
-done < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" --repo-list)
-
-mount_args+=("--bind=${cache_dirs[0]//:/\\:}")
-
-for cache_dir in "${cache_dirs[@]:1}"; do
-	mount_args+=("--bind-ro=${cache_dir//:/\\:}")
 done
+
+mapfile -t repos < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" --repo-list)
+
+declare -a servers
+for repo in "${repos[@]}"; do
+	mapfile -t -O "${#servers[@]}" servers < <( \
+		$pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" --repo "$repo" Server | \
+		grep -Po "(?<=file://).*$" | sed -r -e "s#\$repo#$repo#" -e 's#/$arch##' )
+done
+
+cache_dirs+=("${servers[@]}")
+
+# rest of cache_dirs are getting bind ro therefor we don't care about ordering and can use sort -u for concatenation
+if (( ${#cache_dirs[@]} != 0 )); then
+	mapfile -t cache_dirs < <(printf '%s\n' "${cache_dirs[@]}" | sort -u)
+	for cache_dir in "${cache_dirs[@]}"; do
+		mount_args+=("--bind-ro=${cache_dir//:/\\:}")
+	done
+fi
 
 # {{{ functions
 copy_hostconf () {
@@ -102,13 +115,18 @@ copy_hostconf () {
 	[[ -n $pac_conf ]] && cp "$pac_conf" "$working_dir/etc/pacman.conf"
 	[[ -n $makepkg_conf ]] && cp "$makepkg_conf" "$working_dir/etc/makepkg.conf"
 
+	# check if any extra cache_dirs was added
+	mapfile -t container_cache_dirs < <($pacconf_cmd --config "$working_dir/etc/pacman.conf" CacheDir)
+	mapfile -t extra_cache_dirs < <(comm -13 <(printf "%s\n" "${container_cache_dirs[@]}"|sort) <(printf "%s\n" "${cache_dirs[@]}"|sort))
+	if (( ${#extra_cache_dirs[@]} != 0 )); then
+		echo -e "\n[options]\nCacheDir = ${extra_cache_dirs[*]}" >> "$working_dir/etc/pacman.conf"
+	fi
+
 	local file
 	for file in "${files[@]}"; do
 		mkdir -p "$(dirname "$working_dir$file")"
 		cp -T "$file" "$working_dir$file"
 	done
-
-	sed -r "s|^#?\\s*CacheDir.+|CacheDir = ${cache_dirs[*]}|g" -i "$working_dir/etc/pacman.conf"
 }
 # }}}
 
