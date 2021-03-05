@@ -63,10 +63,9 @@ shift 1
 
 [[ -z $working_dir ]] && die 'Please specify a working directory.'
 
-pacconf_cmd=$(command -v pacman-conf || command -v pacconf)
 
 if (( ${#cache_dirs[@]} == 0 )); then
-	mapfile -t cache_dirs < <($pacconf_cmd CacheDir)
+	mapfile -t cache_dirs < <(pacman-conf CacheDir)
 fi
 
 umask 0022
