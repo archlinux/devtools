@@ -57,10 +57,8 @@ shift 1
 
 [[ -z $working_dir ]] && die 'Please specify a working directory.'
 
-pacconf_cmd=$(command -v pacman-conf || command -v pacconf)
-
 if (( ${#cache_dirs[@]} == 0 )); then
-	mapfile -t cache_dirs < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" CacheDir)
+	mapfile -t cache_dirs < <(pacman-conf --config "${pac_conf:-$working_dir/etc/pacman.conf}" CacheDir)
 fi
 
 # find first writable cache, bind it to container in rw mode, remove it from cache_dirs
@@ -75,7 +73,7 @@ done
 
 
 # shellcheck disable=2016
-host_mirrors=($($pacconf_cmd --repo extra Server 2> /dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#'))
+host_mirrors=($(pacman-conf --repo extra Server 2> /dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#'))
 
 # extract local host mirrors (Server=file://...)
 mapfile -t host_mirrors_local < <(printf "%s\n" "${host_mirrors[@]}" | grep -Po "(?<=file://).*(?=\/\$repo)")
@@ -86,12 +84,12 @@ for host_mirror in "${host_mirrors_local[@]}"; do
 	done
 done
 
-mapfile -t repos < <($pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" --repo-list)
+mapfile -t repos < <(pacman-conf --config "${pac_conf:-$working_dir/etc/pacman.conf}" --repo-list)
 
 declare -a servers
 for repo in "${repos[@]}"; do
 	mapfile -t -O "${#servers[@]}" servers < <( \
-		$pacconf_cmd --config "${pac_conf:-$working_dir/etc/pacman.conf}" --repo "$repo" Server | \
+		pacman-conf --config "${pac_conf:-$working_dir/etc/pacman.conf}" --repo "$repo" Server | \
 		grep -Po "(?<=file://).*$" | sed -r -e "s#\$repo#$repo#" -e 's#/$arch##' )
 done
 
@@ -116,7 +114,7 @@ copy_hostconf () {
 	[[ -n $makepkg_conf ]] && cp "$makepkg_conf" "$working_dir/etc/makepkg.conf"
 
 	# check if any extra cache_dirs was added
-	mapfile -t container_cache_dirs < <($pacconf_cmd --config "$working_dir/etc/pacman.conf" CacheDir)
+	mapfile -t container_cache_dirs < <(pacman-conf --config "$working_dir/etc/pacman.conf" CacheDir)
 	mapfile -t extra_cache_dirs < <(comm -13 <(printf "%s\n" "${container_cache_dirs[@]}"|sort) <(printf "%s\n" "${cache_dirs[@]}"|sort))
 	if (( ${#extra_cache_dirs[@]} != 0 )); then
 		echo -e "\n[options]\nCacheDir = ${extra_cache_dirs[*]}" >> "$working_dir/etc/pacman.conf"
