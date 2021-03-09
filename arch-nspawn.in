@@ -71,9 +71,8 @@ for cache_dir in "${cache_dirs[@]}"; do
 # this could print an warning to the user that no host caches would be used
 done
 
-
 # shellcheck disable=2016
-host_mirrors=($(pacman-conf --repo extra Server 2> /dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#'))
+mapfile -t host_mirrors < <(pacman-conf --repo extra Server 2> /dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#')
 
 # extract local host mirrors (Server=file://...)
 mapfile -t host_mirrors_local < <(printf "%s\n" "${host_mirrors[@]}" | grep -Po "(?<=file://).*(?=\/\$repo)")
