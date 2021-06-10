@@ -22,3 +22,7 @@ git config format.subjectprefix 'devtools] [PATCH'
 4. Push changes
 5. Upload the source tarball with ```make dist upload```
 6. Update the package
+
+## License
+
+Devtools is licensed under the terms of the **GPL-3.0-or-later** (see [LICENSE](LICENSE)).
