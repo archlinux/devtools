@@ -1,7 +1,8 @@
 #!/hint/bash
+#
 # This may be included with or without `set -euE`
-
-# License: Unspecified
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 [[ -z ${_INCLUDE_COMMON_SH:-} ]] || return 0
 _INCLUDE_COMMON_SH="$(set +o|grep nounset)"

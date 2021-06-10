@@ -2,7 +2,7 @@
 #
 # finddeps - find packages that depend on a given depname
 #
-# License: Unspecified
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 m4_include(lib/common.sh)
 
