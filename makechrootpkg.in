@@ -190,6 +190,8 @@ EOF
 		printf '#!/bin/bash\n'
 		declare -f _chrootbuild
 		declare -p SOURCE_DATE_EPOCH 2>/dev/null || true
+		declare -p BUILDTOOL 2>/dev/null
+		declare -p BUILDTOOLVER 2>/dev/null
 		printf '_chrootbuild "$@" || exit\n'
 
 		if (( run_namcap )); then
@@ -213,7 +215,10 @@ _chrootbuild() {
 	# use "$" in arguments to commands with "sudo -i".  ${foo} or
 	# ${1} is OK, but $foo or $1 isn't.
 	# https://bugzilla.sudo.ws/show_bug.cgi?id=765
-	sudo --preserve-env=SOURCE_DATE_EPOCH -iu builduser bash -c 'cd /startdir; makepkg "$@"' -bash "$@"
+	sudo --preserve-env=SOURCE_DATE_EPOCH \
+		--preserve-env=BUILDTOOL \
+		--preserve-env=BUILDTOOLVER \
+		-iu builduser bash -c 'cd /startdir; makepkg "$@"' -bash "$@"
 	ret=$?
 	case $ret in
 		0|14)
@@ -298,7 +303,7 @@ done
 [[ -n $makepkg_user && -z $(id -u "$makepkg_user") ]] && die 'Invalid makepkg user.'
 makepkg_user=${makepkg_user:-${SUDO_USER:-$USER}}
 
-check_root SOURCE_DATE_EPOCH,GNUPGHOME,SRCDEST,SRCPKGDEST,PKGDEST,LOGDEST,MAKEFLAGS,PACKAGER
+check_root SOURCE_DATE_EPOCH,BUILDTOOL,BUILDTOOLVER,GNUPGHOME,SRCDEST,SRCPKGDEST,PKGDEST,LOGDEST,MAKEFLAGS,PACKAGER
 
 # Canonicalize chrootdir, getting rid of trailing /
 chrootdir=$(readlink -e "$passeddir")

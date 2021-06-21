@@ -178,6 +178,8 @@ parse_buildinfo < <(bsdtar -xOqf "${splitpkgs[0]}" .BUILDINFO)
 export SOURCE_DATE_EPOCH="${buildinfo[builddate]}"
 PACKAGER="${buildinfo[packager]}"
 BUILDDIR="${buildinfo[builddir]}"
+BUILDTOOL="${buildinfo[buildtool]}"
+BUILDTOOLVER="${buildinfo[buildtoolver]}"
 PKGEXT=${splitpkgs[0]#${splitpkgs[0]%.pkg.tar*}}
 
 # nuke and restore reproducible testenv
@@ -201,7 +203,7 @@ makechrootpkg -r "${buildroot}" -l "${chroot}" -- --packagelist || exit 1
 
 # set detected makepkg.conf options
 {
-    for var in PACKAGER BUILDDIR PKGEXT; do
+    for var in PACKAGER BUILDDIR BUILDTOOL BUILDTOOLVER PKGEXT; do
         printf '%s=%s\n' "${var}" "${!var@Q}"
     done
     printf 'OPTIONS=(%s)\n' "${buildopts[*]@Q}"

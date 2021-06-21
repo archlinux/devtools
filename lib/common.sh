@@ -14,6 +14,10 @@ $_INCLUDE_COMMON_SH
 # Avoid any encoding problems
 export LANG=C
 
+# Set buildtool properties
+export BUILDTOOL=devtools
+export BUILDTOOLVER=m4_devtools_version
+
 shopt -s extglob
 
 # check if messages are to be printed using color

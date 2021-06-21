@@ -89,7 +89,7 @@ edit = sed -e "s|@pkgdatadir[@]|$(PREFIX)/share/devtools|g"
 %: %.in Makefile lib/common.sh
 	@echo "GEN $@"
 	@$(RM) "$@"
-	@{ echo -n 'm4_changequote([[[,]]])'; cat $@.in; } | m4 -P | $(edit) >$@
+	@{ echo -n 'm4_changequote([[[,]]])'; cat $@.in; } | m4 -P --define=m4_devtools_version=$V | $(edit) >$@
 	@chmod a-w "$@"
 	@chmod +x "$@"
 	@bash -O extglob -n "$@"
