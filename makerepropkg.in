@@ -206,7 +206,7 @@ makechrootpkg -r "${buildroot}" -l "${chroot}" -- --packagelist || exit 1
     done
     printf 'OPTIONS=(%s)\n' "${buildopts[*]@Q}"
     printf 'BUILDENV=(%s)\n' "${buildenv[*]@Q}"
-} >> "${buildroot}/${chroot}"/etc/makepkg.conf >> "${buildroot}/${chroot}"/etc/makepkg.conf
+} >> "${buildroot}/${chroot}"/etc/makepkg.conf
 install -d -o "${SUDO_UID:-$UID}" -g "$(id -g "${SUDO_UID:-$UID}")" "${buildroot}/${chroot}/${BUILDDIR}"
 
 # kick off the build
