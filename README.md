@@ -14,6 +14,17 @@ as following.
 git config format.subjectprefix 'devtools] [PATCH'
 ```
 
+## Building
+
+When building official distro packages the `BUILDTOOLVER` needs to be set to the
+exact label of the release package in order to allow to detect the exactly used
+devtools version. This is required for reproducible builds to fetch the according
+files like `makepkg.conf`.
+
+```sh
+BUILDTOOLVER="${pkgver}-${pkgrel}-${arch}" make all
+```
+
 ## Releasing
 
 1. bump the version in the Makefile
