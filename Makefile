@@ -1,4 +1,5 @@
 V=20210202
+BUILDTOOLVER ?= $(V)-git
 
 PREFIX = /usr/local
 MANDIR = $(PREFIX)/share/man
@@ -92,7 +93,7 @@ edit = sed -e "s|@pkgdatadir[@]|$(PREFIX)/share/devtools|g"
 %: %.in Makefile lib/common.sh
 	@echo "GEN $@"
 	@$(RM) "$@"
-	@{ echo -n 'm4_changequote([[[,]]])'; cat $@.in; } | m4 -P --define=m4_devtools_version=$V | $(edit) >$@
+	@{ echo -n 'm4_changequote([[[,]]])'; cat $@.in; } | m4 -P --define=m4_devtools_version=$(BUILDTOOLVER) | $(edit) >$@
 	@chmod a-w "$@"
 	@chmod +x "$@"
 	@bash -O extglob -n "$@"
