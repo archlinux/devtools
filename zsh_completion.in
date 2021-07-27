@@ -77,6 +77,7 @@ _rebuildpkgs_args=(
 _checkpkg_args=(
 	'(-r --rmdir)'{-r,--rmdir}'[Remove the temporary directory]'
 	'(-w --warn)'{-w,--warn}'[Print a warning in case of differences]'
+	'(-M --makepkg-config)'{-M,--makepkg-config}'[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
 	'(-h --help)'{-h,--help}'[Display usage]'
 )
 

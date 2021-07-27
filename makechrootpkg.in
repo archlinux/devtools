@@ -408,7 +408,7 @@ else
 		done
 
 		msg2 "Checking packages"
-		sudo -u "$makepkg_user" checkpkg --rmdir --warn "${remotepkgs[@]/#file:\/\//}"
+		sudo -u "$makepkg_user" checkpkg --rmdir --warn --makepkg-config "$copydir/etc/makepkg.conf" "${remotepkgs[@]/#file:\/\//}"
 	fi
 	true
 fi

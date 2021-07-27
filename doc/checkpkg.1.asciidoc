@@ -29,6 +29,9 @@ Options
 *-w, --warn*::
 	Print a warning instead of a regular message in case of soname differences.
 
+*-M, --makepkg-config*::
+	Set an alternate makepkg configuration file.
+
 *-h, --help*::
 	Show a help text
 

@@ -6,23 +6,6 @@ shopt -s extglob
 
 m4_include(lib/common.sh)
 
-# Source makepkg.conf; fail if it is not found
-if [[ -r '/etc/makepkg.conf' ]]; then
-	# shellcheck source=makepkg-x86_64.conf
-	source '/etc/makepkg.conf'
-else
-	die '/etc/makepkg.conf not found!'
-fi
-
-# Source user-specific makepkg.conf overrides
-if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf" ]]; then
-	# shellcheck source=/dev/null
-	source "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf"
-elif [[ -r "$HOME/.makepkg.conf" ]]; then
-	# shellcheck source=/dev/null
-	source "$HOME/.makepkg.conf"
-fi
-
 usage() {
     cat <<- _EOF_
 		Usage: ${BASH_SOURCE[0]##*/} [OPTIONS]
@@ -35,40 +18,65 @@ usage() {
 		list for both packages and a library list for both packages.
 
 		OPTIONS
-		    -r, --rmdir     Remove the temporary directory
-		    -w, --warn      Print a warning in case of differences
-		    -h, --help      Show this help text
+		    -r, --rmdir          Remove the temporary directory
+		    -w, --warn           Print a warning in case of differences
+		    -M, --makepkg-config Set an alternate makepkg configuration file
+		    -h, --help           Show this help text
 _EOF_
 }
 
 RMDIR=0
 WARN=0
+MAKEPKG_CONF=/etc/makepkg.conf
 
-OPT_SHORT='rwh'
-OPT_LONG=('rmdir' 'warn' 'help')
-if ! parseopts "$OPT_SHORT" "${OPT_LONG[@]}" -- "$@"; then
-    exit 1
-fi
-set  -- "${OPTRET[@]}"
-
-while :; do
-    case $1 in
-        -r|--rmdir)
-            RMDIR=1
-            ;;
-        -w|--warn)
-            WARN=1
-            ;;
-        -h|--help)
-            usage
-            exit 0
-            ;;
-        --)
-            shift; break
-            ;;
-    esac
-    shift
+# option checking
+while (( $# )); do
+	case $1 in
+		-h|--help)
+			usage
+			exit 0
+			;;
+		-r|--rmdir)
+			RMDIR=1
+			shift
+			;;
+		-w|--warn)
+			WARN=1
+			shift
+			;;
+		-M|--makepkg-config)
+			MAKEPKG_CONF="$2"
+			shift 2
+			;;
+		--)
+			shift
+			break
+			;;
+		-*,--*)
+			die "invalid argument: %s" "$1"
+			;;
+		*)
+			break
+			;;
+	esac
 done
+
+# Source makepkg.conf; fail if it is not found
+if [[ -r "${MAKEPKG_CONF}" ]]; then
+	# shellcheck source=makepkg-x86_64.conf
+	source "${MAKEPKG_CONF}"
+else
+	die "${MAKEPKG_CONF} not found!"
+fi
+
+# Source user-specific makepkg.conf overrides
+if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf" ]]; then
+	# shellcheck source=/dev/null
+	source "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf"
+elif [[ -r "$HOME/.makepkg.conf" ]]; then
+	# shellcheck source=/dev/null
+	source "$HOME/.makepkg.conf"
+fi
 
 if [[ ! -f PKGBUILD ]]; then
 	die 'This must be run in the directory of a built package.'
