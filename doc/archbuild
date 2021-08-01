@@ -1,0 +1,38 @@
+archbuild(1)
+==============
+
+Name
+----
+archbuild - is a script to build an Arch Linux package inside a clean chroot. 
+
+--------
+archbuild [options] -- [makechrootpkg args]
+
+Description
+-----------
+
+'archbuild' is a script to build an Arch Linux package, Devtools includes archbuild, but you don't run this directly. 
+It also includes symlinks of {extra, gnome-unstable, kde-unstable, staging, testing}-x86_64-build.
+The symlink is being used to run it will be inspected by archbuild, to determine 
+which target you want it to use. 
+
+
+Options
+-------
+
+*-h*::
+	Output command line options.
+  
+*-c*::
+	Recreate the chroot before building
+
+*-r* <dir>::
+	Create chroots in this directory.
+
+
+See Also
+--------
+
+linkman:devtools[7]
+
+include::footer.asciidoc[]
