@@ -70,6 +70,7 @@ BASHCOMPLETION_LINKS = \
 
 
 MANS = \
+	doc/archbuild.1 \
 	doc/makechrootpkg.1 \
 	doc/lddd.1 \
 	doc/checkpkg.1 \
@@ -98,7 +99,7 @@ edit = sed -e "s|@pkgdatadir[@]|$(PREFIX)/share/devtools|g"
 $(MANS): doc/asciidoc.conf doc/footer.asciidoc
 
 doc/%: doc/%.asciidoc
-	a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage -D doc $<
+	a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage -D doc -a pkgdatadir=$(PREFIX)/share/devtools $<
 
 clean:
 	rm -f $(IN_PROGS) bash_completion zsh_completion $(MANS)

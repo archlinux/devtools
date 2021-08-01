@@ -21,6 +21,9 @@ for details.
 linkman:checkpkg[1]
 	Compare the current build pakcage with the repository version
 
+linkman:archbuild[1]
+	Build an Arch Linux package inside a clean chroot
+
 linkman:find-libdeps[1]
 	Find soname dependencies for a package
 
