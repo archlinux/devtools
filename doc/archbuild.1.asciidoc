@@ -12,8 +12,8 @@ archbuild [options] -- [makechrootpkg args]
 Description
 -----------
 
-'archbuild' is a script to build an Arch Linux package, Devtools includes archbuild, but you don't run this directly. 
-It also includes symlinks of this:
+'archbuild' is a script to build an Arch Linux package. devtools includes archbuild, but you don't run this command directly. 
+It also includes these symlinks:
 
 * kde-unstable-x86_64-build 
 * multilib-testing-build 
