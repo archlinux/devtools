@@ -13,7 +13,15 @@ Description
 -----------
 
 'archbuild' is a script to build an Arch Linux package, Devtools includes archbuild, but you don't run this directly. 
-It also includes symlinks of {extra, gnome-unstable, kde-unstable, staging, testing}-x86_64-build.
+It also includes symlinks of this:
+* kde-unstable-x86_64-build 
+* multilib-testing-build 
+* testing-x86_64-build
+* extra-x86_64-build
+* multilib-build 
+* gnome-unstable-x86_64-build  
+* multilib-staging-build     
+* staging-x86_64-build
 The symlink used to run it will be inspected by archbuild, to determine which target you want it to use. 
 
 
