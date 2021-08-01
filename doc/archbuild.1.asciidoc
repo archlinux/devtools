@@ -5,6 +5,7 @@ Name
 ----
 archbuild - is a script to build an Arch Linux package inside a clean chroot. 
 
+Synopsis
 --------
 archbuild [options] -- [makechrootpkg args]
 
