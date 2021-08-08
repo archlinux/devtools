@@ -37,6 +37,9 @@ linkman:mkarchroot[1]
 	Creates an arch chroot in a specified location with a specified set of
 	packages
 
+linkman:makechrootpkg[1]
+	Build a PKGBUILD in a given chroot environment
+
 linkman:offload-build[1]
 	Build a PKGBUILD on a remote server using makechrootpkg
 

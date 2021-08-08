@@ -70,6 +70,7 @@ BASHCOMPLETION_LINKS = \
 
 
 MANS = \
+	doc/makechrootpkg.1 \
 	doc/lddd.1 \
 	doc/checkpkg.1 \
 	doc/offload-build.1 \

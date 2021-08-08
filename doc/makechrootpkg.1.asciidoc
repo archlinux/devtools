@@ -1,0 +1,76 @@
+makechrootpkg(1)
+================
+
+Name
+----
+makechrootpkg - Build a PKGBUILD in a given chroot environment
+
+Synopsis
+--------
+makechrootpkg [OPTIONS] -r <chrootdir> [--] [makepkg args]
+
+Description
+-----------
+
+Run this script in a directory containing a PKGBUILD to build a package
+inside a clean chroot. Arguments passed to this script after the
+end-of-options marker (--) will be passed to makepkg.
+
+The chroot dir consists of the following directories:
+<chrootdir>/{root, copy} but only "root" is required
+by default. The working copy will be created as needed
+
+The chroot "root" directory must be created via the following
+command:
+	mkarchroot <chrootdir>/root base-devel
+
+This script reads {SRC,SRCPKG,PKG,LOG}DEST, MAKEFLAGS and PACKAGER
+from makepkg.conf(5), if those variables are not part of the
+environment.
+
+Default makepkg args: --syncdeps --noconfirm --log --holdver --skipinteg
+
+Options
+-------
+
+*-h*::
+	Show this usage message
+
+*-c*::
+	Clean the chroot before building
+
+*-d* <dir>::
+	Bind directory into build chroot as read-write
+
+*-D* <dir>::
+	Bind directory into build chroot as read-only
+
+*-u*::
+	Update the working copy of the chroot before building
+	This is useful for rebuilds without dirtying the pristine
+	chroot
+
+*-r* <dir>::
+	The chroot dir to use
+
+*-I* <pkg>::
+	Install a package into the working copy of the chroot
+
+*-l* <copy>::
+	The directory to use as the working copy of the chroot
+	Useful for maintaining multiple copies
+	Default: $USER
+
+*-n*::
+	Run namcap on the build package
+
+*-C*::
+	Run checkpkg on the build package
+
+*-T*::
+	Build in a temporary directory
+
+*-U*::
+	Run makepkg as a specified user
+
+include::footer.asciidoc[]
