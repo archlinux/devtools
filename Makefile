@@ -78,6 +78,7 @@ MANS = \
 	doc/mkarchroot.1 \
 	doc/find-libdeps.1 \
 	doc/find-libprovides.1 \
+	doc/makechrootpkg.1 \
 	doc/devtools.7
 
 
