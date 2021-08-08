@@ -70,6 +70,7 @@ BASHCOMPLETION_LINKS = \
 
 
 MANS = \
+	doc/makechrootpkg.1 \
 	doc/lddd.1 \
 	doc/checkpkg.1 \
 	doc/offload-build.1 \
@@ -78,7 +79,6 @@ MANS = \
 	doc/mkarchroot.1 \
 	doc/find-libdeps.1 \
 	doc/find-libprovides.1 \
-	doc/makechrootpkg.1 \
 	doc/devtools.7
 
 
