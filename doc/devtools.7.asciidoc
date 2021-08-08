@@ -43,4 +43,7 @@ linkman:offload-build[1]
 linkman:sogrep[1]
 	Find packages using a linked to a given shared library
 
+linkman:makechrootpkg[1]
+	 Build a PKGBUILD in a given chroot environment
+
 include::footer.asciidoc[]
