@@ -12,8 +12,8 @@ makechrootpkg [OPTIONS] -r <chrootdir> [--] [makepkg args]
 Description
 -----------
 
-Run this script in a PKGBUILD dir to build a package inside a
-clean chroot. Arguments passed to this script after the
+Run this script in a directory containing a PKGBUILD to build a package
+inside a clean chroot. Arguments passed to this script after the
 end-of-options marker (--) will be passed to makepkg.
 
 The chroot dir consists of the following directories:
@@ -62,10 +62,10 @@ Options
 	Default: $USER
 
 *-n*::
-	Run namcap on the package
+	Run namcap on the build package
 
 *-C*::
-	Run checkpkg on the package
+	Run checkpkg on the build package
 
 *-T*::
 	Build in a temporary directory
