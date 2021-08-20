@@ -43,4 +43,7 @@ linkman:offload-build[1]
 linkman:sogrep[1]
 	Find packages using a linked to a given shared library
 
+linkman:arch-nspawn[1]
+	Run a command or OS in a light-weight namespace container
+
 include::footer.asciidoc[]
