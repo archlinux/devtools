@@ -1,0 +1,40 @@
+arch-nspawn(1)
+==============
+
+Name
+----
+arch-nspawn - Run a command or OS in a light-weight namespace container
+
+Synopsis
+--------
+arch-nspawn [options] working-dir [systemd-nspawn arguments]
+
+Description
+-----------
+
+'arch-nspawn' is a wrapper around systemd-nspawn to run command or OS in a
+namespace container such as a directory including base utilities of a OS.
+It is used to build package(s) in given clean and defined environment.
+
+Options
+-------
+
+*-C* <file>::
+	Location of a pacman config file
+
+*-M* <file>::
+	Location of a makepkg config file
+
+*-c* <dir>::
+	Set pacman cache, if no directory is specified the passed pacman.conf's cachedir is used with a fallback to '/etc/pacman.conf'
+
+*-f* <file>::
+	Copy file from the host to the chroot
+
+*-s*::
+	Do not run setarch
+
+*-h*::
+	Show this usage message
+
+include::footer.asciidoc[]

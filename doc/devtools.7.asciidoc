@@ -21,6 +21,9 @@ for details.
 linkman:archbuild[1]
 	Build an Arch Linux package inside a clean chroot
 
+linkman:arch-nspawn[1]
+	Run a command or OS in a light-weight namespace container
+
 linkman:checkpkg[1]
 	Compare the current build pakcage with the repository version
 

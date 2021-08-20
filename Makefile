@@ -71,6 +71,7 @@ BASHCOMPLETION_LINKS = \
 
 MANS = \
 	doc/archbuild.1 \
+	doc/arch-nspawn.1 \
 	doc/makechrootpkg.1 \
 	doc/lddd.1 \
 	doc/checkpkg.1 \
