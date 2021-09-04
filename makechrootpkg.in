@@ -241,7 +241,7 @@ download_sources() {
 	chown "$makepkg_user:" "$WORKDIR"
 
 	# Ensure sources are downloaded
-	sudo -u "$makepkg_user" --preserve-env=GNUPGHOME \
+	sudo -u "$makepkg_user" --preserve-env=GNUPGHOME,SSH_AUTH_SOCK \
 		env SRCDEST="$SRCDEST" BUILDDIR="$WORKDIR" \
 		makepkg --config="$copydir/etc/makepkg.conf" --verifysource -o "${verifysource_args[@]}" ||
 		die "Could not download sources."
