@@ -18,11 +18,11 @@ Programs
 The list below gives a short overview; see the respective documentation
 for details.
 
-linkman:checkpkg[1]
-	Compare the current build pakcage with the repository version
-
 linkman:archbuild[1]
 	Build an Arch Linux package inside a clean chroot
+
+linkman:checkpkg[1]
+	Compare the current build pakcage with the repository version
 
 linkman:find-libdeps[1]
 	Find soname dependencies for a package
@@ -33,15 +33,15 @@ linkman:find-libprovides[1]
 linkman:lddd[1]
 	Find broken library links on your system
 
-linkman:makerepropkg[1]
-	Rebuild a package to see if it is reproducible
-
 linkman:mkarchroot[1]
 	Creates an arch chroot in a specified location with a specified set of
 	packages
 
 linkman:makechrootpkg[1]
 	Build a PKGBUILD in a given chroot environment
+
+linkman:makerepropkg[1]
+	Rebuild a package to see if it is reproducible
 
 linkman:offload-build[1]
 	Build a PKGBUILD on a remote server using makechrootpkg
