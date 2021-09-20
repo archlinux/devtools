@@ -218,7 +218,7 @@ _chrootbuild() {
 	sudo --preserve-env=SOURCE_DATE_EPOCH \
 		--preserve-env=BUILDTOOL \
 		--preserve-env=BUILDTOOLVER \
-		-iu builduser bash -c 'cd /startdir; makepkg "$@"' -bash "$@"
+		-u builduser bash -c 'cd /startdir; makepkg "$@"' -bash "$@"
 	ret=$?
 	case $ret in
 		0|14)
