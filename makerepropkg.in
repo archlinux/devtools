@@ -17,8 +17,11 @@ declare -a buildenv buildopts installed installpkgs
 
 archiveurl='https://archive.archlinux.org/packages'
 buildroot=/var/lib/archbuild/reproducible
-chroot=testenv
 diffoscope=0
+
+chroot=$USER
+[[ -n ${SUDO_USER:-} ]] && chroot=$SUDO_USER
+[[ -z "$chroot" || $chroot = root ]] && chroot=copy
 
 parse_buildinfo() {
     local line var val
@@ -108,15 +111,19 @@ OPTIONS
     -d            Run diffoscope if the package is unreproducible
     -c <dir>      Set pacman cache
     -M <file>     Location of a makepkg config file
+    -l <chroot>   The directory name to use as the chroot namespace
+                  Useful for maintaining multiple copies
+                  Default: $chroot
     -h            Show this usage message
 __EOF__
 }
 
-while getopts 'dM:c:h' arg; do
+while getopts 'dM:c:l:h' arg; do
     case "$arg" in
         d) diffoscope=1 ;;
         M) archroot_args+=(-M "$OPTARG") ;;
         c) cache_dirs+=("$OPTARG") ;;
+        l) chroot="$OPTARG" ;;
         h) usage; exit 0 ;;
         *|?) usage; exit 1 ;;
     esac
@@ -184,12 +191,14 @@ BUILDTOOLVER="${buildinfo[buildtoolver]}"
 PKGEXT=${splitpkgs[0]#${splitpkgs[0]%.pkg.tar*}}
 
 # nuke and restore reproducible testenv
-for copy in "${buildroot}"/*/; do
+namespace="$buildroot/$chroot"
+lock 9 "${namespace}.lock" "Locking chroot namespace '%s'" "${namespace}"
+for copy in "${namespace}"/*/; do
     [[ -d ${copy} ]] || continue
     subvolume_delete_recursive "${copy}"
 done
-rm -rf --one-file-system "${buildroot}"
-(umask 0022; mkdir -p "${buildroot}")
+rm -rf --one-file-system "${namespace}"
+(umask 0022; mkdir -p "${namespace}")
 
 for fname in "${installed[@]}"; do
     if ! allpkgfiles+=("$(get_pkgfile "${fname}")"); then
@@ -216,10 +225,10 @@ else
     warning "Unknown buildtool (${BUILDTOOL}-${BUILDTOOLVER}), using fallback"
     makepkg_conf=@pkgdatadir@/makepkg-x86_64.conf
 fi
-printf '%s\n' "${allpkgfiles[@]}" | mkarchroot -M "${makepkg_conf}" -U "${archroot_args[@]}" "${buildroot}"/root - || exit 1
+printf '%s\n' "${allpkgfiles[@]}" | mkarchroot -M "${makepkg_conf}" -U "${archroot_args[@]}" "${namespace}/root" - || exit 1
 
 # use makechrootpkg to prep the build directory
-makechrootpkg -r "${buildroot}" -l "${chroot}" -- --packagelist || exit 1
+makechrootpkg -r "${namespace}" -l build -- --packagelist || exit 1
 
 # set detected makepkg.conf options
 {
@@ -228,22 +237,22 @@ makechrootpkg -r "${buildroot}" -l "${chroot}" -- --packagelist || exit 1
     done
     printf 'OPTIONS=(%s)\n' "${buildopts[*]@Q}"
     printf 'BUILDENV=(%s)\n' "${buildenv[*]@Q}"
-} >> "${buildroot}/${chroot}"/etc/makepkg.conf
-install -d -o "${SUDO_UID:-$UID}" -g "$(id -g "${SUDO_UID:-$UID}")" "${buildroot}/${chroot}/${BUILDDIR}"
+} >> "${namespace}/build"/etc/makepkg.conf
+install -d -o "${SUDO_UID:-$UID}" -g "$(id -g "${SUDO_UID:-$UID}")" "${namespace}/build/${BUILDDIR}"
 
 # kick off the build
-arch-nspawn "${buildroot}/${chroot}" \
+arch-nspawn "${namespace}/build" \
     --bind="${PWD}:/startdir" \
     --bind="${SRCDEST}:/srcdest" \
     /chrootbuild -C --noconfirm --log --holdver --skipinteg
 ret=$?
 
 if (( ${ret} == 0 )); then
-    msg2 "built succeeded! built packages can be found in ${buildroot}/${chroot}/pkgdest"
+    msg2 "built succeeded! built packages can be found in ${namespace}/build/pkgdest"
     msg "comparing artifacts..."
 
     for pkgfile in "${splitpkgs[@]}"; do
-        comparefiles=("${pkgfile}" "${buildroot}/${chroot}/pkgdest/${pkgfile##*/}")
+        comparefiles=("${pkgfile}" "${namespace}/build/pkgdest/${pkgfile##*/}")
         if cmp -s "${comparefiles[@]}"; then
             msg2 "Package '%s' successfully reproduced!" "${pkgfile}"
         else

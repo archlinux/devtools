@@ -48,6 +48,11 @@ Options
 *-M* <file>::
 	Location of a makepkg config file.
 
+*-l* <chroot>::
+	The directory name to use as the chroot namespace
+	Useful for maintaining multiple copies
+	Default: $USER
+
 *-h*::
 	Show this usage message
 
