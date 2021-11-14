@@ -35,17 +35,19 @@ usage() {
 		list for both packages and a library list for both packages.
 
 		OPTIONS
-		    -r, --rmdir     Remove the temporary directory
-		    -w, --warn      Print a warning in case of differences
-		    -h, --help      Show this help text
+		    -d, --diffoscope     Remove the temporary directory
+		    -r, --rmdir          Remove the temporary directory
+		    -w, --warn           Print a warning in case of differences
+		    -h, --help           Show this help text
 _EOF_
 }
 
+DIFFOSCOPE=0
 RMDIR=0
 WARN=0
 
-OPT_SHORT='rwh'
-OPT_LONG=('rmdir' 'warn' 'help')
+OPT_SHORT='drwh'
+OPT_LONG=('diffoscope' 'rmdir' 'warn' 'help')
 if ! parseopts "$OPT_SHORT" "${OPT_LONG[@]}" -- "$@"; then
     exit 1
 fi
@@ -53,6 +55,10 @@ set  -- "${OPTRET[@]}"
 
 while :; do
     case $1 in
+        -d|--diffoscope)
+            DIFFOSCOPE=1
+            RMDIR=1
+            ;;
         -r|--rmdir)
             RMDIR=1
             ;;
@@ -128,20 +134,26 @@ for _pkgname in "${pkgname[@]}"; do
 		curl -fsLC - --retry 3 --retry-delay 3 -o "$TEMPDIR/$oldpkg" "$pkgurl"
 	fi
 
-	bsdtar tf "$TEMPDIR/$oldpkg" | sort > "$TEMPDIR/filelist-$_pkgname-old"
-	bsdtar tf "$pkgfile" | sort > "$TEMPDIR/filelist-$_pkgname"
+        if (( DIFFOSCOPE )); then
+                echo $pkgfile
+                echo "$TEMPDIR/$oldpkg"
+                diffoscope "$pkgfile" $(readlink "$TEMPDIR/$oldpkg")
+        else
+                bsdtar tf "$TEMPDIR/$oldpkg" | sort > "$TEMPDIR/filelist-$_pkgname-old"
+                bsdtar tf "$pkgfile" | sort > "$TEMPDIR/filelist-$_pkgname"
 
-	sdiff -s "$TEMPDIR/filelist-$_pkgname-old" "$TEMPDIR/filelist-$_pkgname"
+                sdiff -s "$TEMPDIR/filelist-$_pkgname-old" "$TEMPDIR/filelist-$_pkgname"
 
-	find-libprovides "$TEMPDIR/$oldpkg" 2>/dev/null | sort > "$TEMPDIR/libraries-$_pkgname-old"
-	find-libprovides "$pkgfile" 2>/dev/null | sort > "$TEMPDIR/libraries-$_pkgname"
-	if ! diff_output="$(sdiff -s "$TEMPDIR/libraries-$_pkgname-old" "$TEMPDIR/libraries-$_pkgname")"; then
-		message="Sonames differ in $_pkgname!"
-		(( WARN )) && warning "$message" || msg "$message"
-		echo "$diff_output"
-	else
-		msg "No soname differences for %s." "$_pkgname"
-	fi
+                find-libprovides "$TEMPDIR/$oldpkg" 2>/dev/null | sort > "$TEMPDIR/libraries-$_pkgname-old"
+                find-libprovides "$pkgfile" 2>/dev/null | sort > "$TEMPDIR/libraries-$_pkgname"
+                if ! diff_output="$(sdiff -s "$TEMPDIR/libraries-$_pkgname-old" "$TEMPDIR/libraries-$_pkgname")"; then
+                        message="Sonames differ in $_pkgname!"
+                        (( WARN )) && warning "$message" || msg "$message"
+                        echo "$diff_output"
+                else
+                        msg "No soname differences for %s." "$_pkgname"
+                fi
+        fi
 done
 
 (( RMDIR )) || msg "Files saved to %s" "$TEMPDIR"

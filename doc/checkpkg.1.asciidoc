@@ -22,6 +22,9 @@ and a library list for both packages.
 Options
 -------
 
+*-d, --diffoscope*::
+	Run diffoscope on the build and previous package, this skips soname checks.
+
 *-r, --rmdir*::
 	Remove the temporary directory created to contain the file and library list
 	of both packages.
