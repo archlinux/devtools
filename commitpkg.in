@@ -147,20 +147,22 @@ for _arch in "${arch[@]}"; do
 			continue 2
 		fi
 		uploads+=("$pkgfile")
-
-		sigfile="${pkgfile}.sig"
-		if [[ ! -f $sigfile ]]; then
-			msg "Signing package %s..." "${pkgfile}"
-			if [[ -n $GPGKEY ]]; then
-				SIGNWITHKEY=(-u "${GPGKEY}")
-			fi
-			gpg --detach-sign --use-agent --no-armor "${SIGNWITHKEY[@]}" "${pkgfile}" || die
-		fi
-		if ! gpg --verify "$sigfile" "$pkgfile" >/dev/null 2>&1; then
-			die "Signature %s is incorrect!" "$sigfile"
-		fi
-		uploads+=("$sigfile")
 	done
+done
+
+for pkgfile in "${uploads[@]}"; do
+	sigfile="${pkgfile}.sig"
+	if [[ ! -f $sigfile ]]; then
+		msg "Signing package %s..." "${pkgfile}"
+		if [[ -n $GPGKEY ]]; then
+			SIGNWITHKEY=(-u "${GPGKEY}")
+		fi
+		gpg --detach-sign --use-agent --no-armor "${SIGNWITHKEY[@]}" "${pkgfile}" || die
+	fi
+	if ! gpg --verify "$sigfile" "$pkgfile" >/dev/null 2>&1; then
+		die "Signature %s is incorrect!" "$sigfile"
+	fi
+	uploads+=("$sigfile")
 done
 
 for _arch in "${arch[@]}"; do
