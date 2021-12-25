@@ -197,3 +197,60 @@ check_package_validity(){
 		die "PKGBUILD $hashsum mismatch: expected $pkgbuild_hash"
 	fi
 }
+
+
+# usage: _grep_pkginfo pkgfile pattern
+_grep_pkginfo() {
+	local _ret=()
+	mapfile -t _ret < <(bsdtar -xOqf "$1" ".PKGINFO" | grep "^${2} = ")
+	printf '%s\n' "${_ret[@]#${2} = }"
+}
+
+
+# Get the package name
+getpkgname() {
+	local _name
+
+	_name="$(_grep_pkginfo "$1" "pkgname")"
+	if [[ -z $_name ]]; then
+		error "Package '%s' has no pkgname in the PKGINFO. Fail!" "$1"
+		exit 1
+	fi
+
+	echo "$_name"
+}
+
+
+# Get the package base or name as fallback
+getpkgbase() {
+	local _base
+
+	_base="$(_grep_pkginfo "$1" "pkgbase")"
+	if [[ -z $_base ]]; then
+		getpkgname "$1"
+	else
+		echo "$_base"
+	fi
+}
+
+
+getpkgdesc() {
+	local _desc
+
+	_desc="$(_grep_pkginfo "$1" "pkgdesc")"
+	if [[ -z $_desc ]]; then
+		error "Package '%s' has no pkgdesc in the PKGINFO. Fail!" "$1"
+		exit 1
+	fi
+
+	echo "$_desc"
+}
+
+
+is_debug_package() {
+	local pkgfile=${1} pkgbase pkgname pkgdesc
+	pkgbase="$(getpkgbase "${pkgfile}")"
+	pkgname="$(getpkgname "${pkgfile}")"
+	pkgdesc="$(getpkgdesc "${pkgfile}")"
+	[[ ${pkgdesc} == "Detached debugging symbols for "* && ${pkgbase}-debug = "${pkgname}" ]]
+}
