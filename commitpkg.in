@@ -93,14 +93,7 @@ for _arch in "${arch[@]}"; do
 		fullver=$(get_full_version "$_pkgname")
 
 		if pkgfile=$(find_cached_package "$_pkgname" "$fullver" "$_arch"); then
-			if grep -q "packager = Unknown Packager" <(bsdtar -xOqf "$pkgfile" .PKGINFO); then
-				die "PACKAGER was not set when building package"
-			fi
-			hashsum=sha256sum
-			pkgbuild_hash=$(awk -v"hashsum=$hashsum" -F' = ' '$1 == "pkgbuild_"hashsum {print $2}' <(bsdtar -xOqf "$pkgfile" .BUILDINFO))
-			if [[ "$pkgbuild_hash" != "$($hashsum PKGBUILD|cut -d' ' -f1)" ]]; then
-				die "PKGBUILD $hashsum mismatch: expected $pkgbuild_hash"
-			fi
+			check_package_validity "$pkgfile"
 		fi
 	done
 done
