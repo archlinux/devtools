@@ -184,3 +184,16 @@ find_cached_package() {
 			return 1
 	esac
 }
+
+
+check_package_validity(){
+	local pkgfile=$1
+	if grep -q "packager = Unknown Packager" <(bsdtar -xOqf "$pkgfile" .PKGINFO); then
+		die "PACKAGER was not set when building package"
+	fi
+	hashsum=sha256sum
+	pkgbuild_hash=$(awk -v"hashsum=$hashsum" -F' = ' '$1 == "pkgbuild_"hashsum {print $2}' <(bsdtar -xOqf "$pkgfile" .BUILDINFO))
+	if [[ "$pkgbuild_hash" != "$($hashsum PKGBUILD|cut -d' ' -f1)" ]]; then
+		die "PKGBUILD $hashsum mismatch: expected $pkgbuild_hash"
+	fi
+}
