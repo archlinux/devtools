@@ -95,6 +95,11 @@ for _arch in "${arch[@]}"; do
 			check_package_validity "$pkgfile"
 		fi
 	done
+
+	fullver=$(get_full_version "$pkgbase")
+	if pkgfile=$(find_cached_package "$pkgbase-debug" "$fullver" "$_arch"); then
+		check_package_validity "$pkgfile"
+	fi
 done
 
 if [[ -z $server ]]; then
@@ -139,7 +144,6 @@ for _arch in "${arch[@]}"; do
 
 	for _pkgname in "${pkgname[@]}"; do
 		fullver=$(get_full_version "$_pkgname")
-
 		if ! pkgfile=$(find_cached_package "$_pkgname" "$fullver" "${_arch}"); then
 			warning "Skipping %s: failed to locate package file" "$_pkgname-$fullver-$_arch"
 			skip_arches+=("$_arch")
@@ -147,6 +151,15 @@ for _arch in "${arch[@]}"; do
 		fi
 		uploads+=("$pkgfile")
 	done
+
+	fullver=$(get_full_version "$pkgbase")
+	if ! pkgfile=$(find_cached_package "$pkgbase-debug" "$fullver" "$_arch"); then
+		continue
+	fi
+	if ! is_debug_package "$pkgfile"; then
+		continue
+	fi
+	uploads+=("$pkgfile")
 done
 
 for pkgfile in "${uploads[@]}"; do
