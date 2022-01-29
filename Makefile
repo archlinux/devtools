@@ -29,9 +29,13 @@ BINPROGS = \
 
 CONFIGFILES = \
 	makepkg-x86_64.conf \
+	makepkg-x86_64_v3.conf \
 	pacman-extra.conf \
+	pacman-extra-x86_64_v3.conf \
 	pacman-testing.conf \
+	pacman-testing-x86_64_v3.conf \
 	pacman-staging.conf \
+	pacman-staging-x86_64_v3.conf \
 	pacman-multilib.conf \
 	pacman-multilib-testing.conf \
 	pacman-multilib-staging.conf \
@@ -39,6 +43,7 @@ CONFIGFILES = \
 	pacman-gnome-unstable.conf
 
 SETARCH_ALIASES = \
+	x86_64_v3
 
 COMMITPKG_LINKS = \
 	extrapkg \
@@ -55,8 +60,11 @@ COMMITPKG_LINKS = \
 
 ARCHBUILD_LINKS = \
 	extra-x86_64-build \
+	extra-x86_64_v3-build \
 	testing-x86_64-build \
+	testing-x86_64_v3-build \
 	staging-x86_64-build \
+	staging-x86_64_v3-build \
 	multilib-build \
 	multilib-testing-build \
 	multilib-staging-build \
