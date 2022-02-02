@@ -36,8 +36,11 @@ recache() {
             local dbpath=${SOCACHE_DIR}/${arch}/${repo}.links.tar.gz
             mkdir -p "${dbpath%/*}"
             (( VERBOSE )) && echo "Fetching ${repo}.links.tar.gz..."
-            curl -LR "${verbosity}" -o "${dbpath}" -z "${dbpath}" \
-                "${SOLINKS_MIRROR}/${repo}/os/${arch}/${repo}.links.tar.gz"
+            if ! curl -fLR "${verbosity}" -o "${dbpath}" -z "${dbpath}" \
+                "${SOLINKS_MIRROR}/${repo}/os/${arch}/${repo}.links.tar.gz"; then
+                echo "error: failed to download links database for repo ${repo}"
+                exit 1
+            fi
         done
     done
 }
