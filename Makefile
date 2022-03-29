@@ -13,6 +13,7 @@ IN_PROGS = \
 	commitpkg \
 	crossrepomove\
 	diffpkg \
+	export-pkgbuild-keys \
 	finddeps \
 	find-libdeps \
 	lddd \
@@ -74,6 +75,7 @@ BASHCOMPLETION_LINKS = \
 MANS = \
 	doc/archbuild.1 \
 	doc/arch-nspawn.1 \
+	doc/export-pkgbuild-keys.1 \
 	doc/makechrootpkg.1 \
 	doc/lddd.1 \
 	doc/checkpkg.1 \

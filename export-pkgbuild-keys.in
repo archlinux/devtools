@@ -1,0 +1,68 @@
+#!/bin/bash
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+m4_include(lib/common.sh)
+
+usage() {
+	cat <<- _EOF_
+		Usage: ${BASH_SOURCE[0]##*/}
+
+		Export the PGP keys from a PKGBUILDs validpgpkeys array into the keys/pgp/
+		subdirectory. Useful for distributing packager validated source signing
+		keys alongside PKGBUILDs.
+
+		OPTIONS
+		    -h, --help      Show this help text
+_EOF_
+}
+
+# option checking
+while (( $# )); do
+	case $1 in
+		-h|--help)
+			usage
+			exit 0
+			;;
+		*)
+			die "invalid argument: %s" "$1"
+			;;
+	esac
+done
+
+if [[ ! -f PKGBUILD ]]; then
+	die "This must be run a directory containing a PKGBUILD."
+fi
+
+mapfile -t validpgpkeys < <(
+	# shellcheck source=PKGBUILD.proto
+	. ./PKGBUILD
+	printf "%s\n" "${validpgpkeys[@]}"
+)
+
+if (( ${#validpgpkeys[@]} == 0 )); then
+	exit 0
+fi
+
+mkdir -p keys/pgp
+error=0
+
+for key in "${validpgpkeys[@]}"; do
+	gpg --output "keys/pgp/$key.asc.tmp" --armor --export --export-options export-minimal "$key" 2>/dev/null
+
+	# gpg does not give a non-zero return value if it fails to export...
+	if [[ -f keys/pgp/$key.asc.tmp ]]; then
+		mv "keys/pgp/$key.asc.tmp" "keys/pgp/$key.asc"
+	else
+		if [[ -f keys/pgp/$key.asc ]]; then
+			warning "Failed to update key: $key"
+		else
+			error "Key unavailable: $key"
+			error=1
+		fi
+	fi
+done
+
+if (( error )); then
+	die "Failed to export all \'validpgpkeys\' entries."
+fi

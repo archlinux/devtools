@@ -1,0 +1,25 @@
+export-pkgbuild-keys(1)
+=======================
+
+Name
+----
+export-pkgbuild-keys - Export valid source signing keys from a PKGBUILD
+
+Synopsis
+--------
+export-pkgbuild-keys
+
+Description
+-----------
+
+Export the PGP keys from a PKGBUILDs validpgpkeys array into the keys/pgp/
+subdirectory. Useful for distributing packager validated source signing
+keys alongside PKGBUILDs.
+
+Options
+-------
+
+*-h, --help*::
+	Show a help text.
+
+include::footer.asciidoc[]

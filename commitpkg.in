@@ -48,6 +48,21 @@ case "$cmd" in
 		;;
 esac
 
+
+if (( ${#validpgpkeys[@]} != 0 )); then
+	if [[ -d keys ]]; then
+		for key in "${validpgpkeys[@]}"; do
+			if [[ ! -f keys/pgp/$key.asc ]]; then
+				export-pkgbuild-keys || die 'Failed to export valid PGP keys for source files'
+			fi
+		done
+	else
+		export-pkgbuild-keys || die 'Failed to export valid PGP keys for source files'
+	fi
+
+	svn add --parents --force keys/pgp/*
+fi
+
 # find files which should be under source control
 needsversioning=()
 for s in "${source[@]}"; do
@@ -59,6 +74,9 @@ for i in 'changelog' 'install'; do
 		eval "file=\"$(sed "s/^\(['\"]\)\(.*\)\1\$/\2/" <<< "$file")\""
 		needsversioning+=("$file")
 	done < <(sed -n "s/^[[:space:]]*$i=//p" PKGBUILD)
+done
+for key in "${validpgpkeys[@]}"; do
+	needsversioning+=("keys/pgp/$key.asc")
 done
 
 # assert that they really are controlled by SVN
