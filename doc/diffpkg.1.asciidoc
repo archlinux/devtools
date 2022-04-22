@@ -1,0 +1,33 @@
+diffpkg(1)
+===========
+
+Name
+----
+diffpkg - Diffoscope the current build package with the repository version
+
+Synopsis
+--------
+diffpkg
+
+Description
+-----------
+
+Searches for a locally built package corresponding to the PKGBUILD, and
+downloads the last version of that package from the Pacman repositories.
+It then compares them with diffoscope.
+
+Options
+-------
+
+*-M, --makepkg-config*::
+	Set an alternate makepkg configuration file.
+
+*-h, --help*::
+	Show a help text
+
+See Also
+--------
+
+linkman:find-libprovides[1]
+
+include::footer.asciidoc[]

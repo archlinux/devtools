@@ -1,0 +1,125 @@
+#!/bin/bash
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+shopt -s extglob
+
+m4_include(lib/common.sh)
+
+usage() {
+    cat <<- _EOF_
+		Usage: ${BASH_SOURCE[0]##*/} [OPTIONS]
+
+		Searches for a locally built package corresponding to the PKGBUILD, and
+		downloads the last version of that package from the Pacman repositories.
+		It then compares them with diffoscope.
+
+		OPTIONS
+		    -M, --makepkg-config Set an alternate makepkg configuration file
+		    -h, --help           Show this help text
+_EOF_
+}
+
+MAKEPKG_CONF=/etc/makepkg.conf
+
+# option checking
+while (( $# )); do
+	case $1 in
+		-h|--help)
+			usage
+			exit 0
+			;;
+		-M|--makepkg-config)
+			MAKEPKG_CONF="$2"
+			shift 2
+			;;
+		--)
+			shift
+			break
+			;;
+		-*,--*)
+			die "invalid argument: %s" "$1"
+			;;
+		*)
+			break
+			;;
+	esac
+done
+
+# Source makepkg.conf; fail if it is not found
+if [[ -r "${MAKEPKG_CONF}" ]]; then
+	# shellcheck source=makepkg-x86_64.conf
+	source "${MAKEPKG_CONF}"
+else
+	die "${MAKEPKG_CONF} not found!"
+fi
+
+# Source user-specific makepkg.conf overrides
+if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf" ]]; then
+	# shellcheck source=/dev/null
+	source "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf"
+elif [[ -r "$HOME/.makepkg.conf" ]]; then
+	# shellcheck source=/dev/null
+	source "$HOME/.makepkg.conf"
+fi
+
+if [[ ! -f PKGBUILD ]]; then
+	die 'This must be run in the directory of a built package.'
+fi
+
+# shellcheck source=PKGBUILD.proto
+. ./PKGBUILD
+if [[ ${arch[0]} == 'any' ]]; then
+	CARCH='any'
+fi
+
+STARTDIR=$(pwd)
+trap 'rm -rf $TEMPDIR' EXIT INT TERM QUIT
+TEMPDIR=$(mktemp -d --tmpdir diffpkg-script.XXXX)
+
+for _pkgname in "${pkgname[@]}"; do
+	comparepkg=$_pkgname
+	pkgurl=
+	target_pkgver=$(get_full_version "$_pkgname")
+	if ! pkgfile=$(find_cached_package "$_pkgname" "$target_pkgver" "$CARCH"); then
+		die 'tarball not found for package: %s' "${_pkgname}-$target_pkgver"
+	fi
+
+	ln -s "$pkgfile" "$TEMPDIR"
+
+	if (( $# )); then
+		case $1 in
+			*://*)
+				pkgurl=$1 ;;
+			/*|*/*)
+				pkgurl=$(readlink -m "$1") ;;
+			*.pkg.tar*)
+				pkgurl=$1 ;;
+			'')
+				;;
+			*)
+				comparepkg=$1 ;;
+		esac
+		shift
+	fi
+	[[ -n $pkgurl ]] || pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm "$comparepkg") ||
+		die "Couldn't download previous package for %s." "$comparepkg"
+
+	oldpkg=${pkgurl##*/}
+
+	if [[ ${oldpkg} = "${pkgfile##*/}" ]]; then
+		die "The built package (%s) is the one in the repo right now!" "$_pkgname"
+	fi
+
+	if [[ $pkgurl = file://* || ( $pkgurl = /* && -f $pkgurl ) ]]; then
+		ln -s "${pkgurl#file://}" "$TEMPDIR/$oldpkg"
+	elif [[ -f "$PKGDEST/$oldpkg" ]]; then
+		ln -s "$PKGDEST/$oldpkg" "$TEMPDIR/$oldpkg"
+	elif [[ -f "$STARTDIR/$oldpkg" ]]; then
+		ln -s "$STARTDIR/$oldpkg" "$TEMPDIR/$oldpkg"
+	else
+		curl -fsLC - --retry 3 --retry-delay 3 -o "$TEMPDIR/$oldpkg" "$pkgurl"
+	fi
+
+        diffoscope $TEMPDIR/$oldpkg $pkgfile
+done
