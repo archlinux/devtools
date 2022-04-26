@@ -8,19 +8,32 @@ m4_include(lib/common.sh)
 
 usage() {
     cat <<- _EOF_
-		Usage: ${BASH_SOURCE[0]##*/} [OPTIONS]
+		Usage: ${BASH_SOURCE[0]##*/} [OPTIONS] [MODES]
 
 		Searches for a locally built package corresponding to the PKGBUILD, and
 		downloads the last version of that package from the Pacman repositories.
-		It then compares them with diffoscope.
+		It then compares them using different modes while using simple tar
+		content list by default.
 
 		OPTIONS
 		    -M, --makepkg-config Set an alternate makepkg configuration file
+		    -v, --verbose        Provide more detailed/unfiltered output
 		    -h, --help           Show this help text
+
+		MODES
+		    -l, --list           Activate content list diff mode (default)
+		    -d, --diffoscope     Activate diffoscope diff mode
+		    -p, --pkginfo        Activate .PKGINFO diff mode
+		    -b, --buildinfo      Activate .BUILDINFO diff mode
 _EOF_
 }
 
 MAKEPKG_CONF=/etc/makepkg.conf
+VERBOSE=0
+TARLIST=0
+DIFFOSCOPE=0
+PKGINFO=0
+BUILDINFO=0
 
 # option checking
 while (( $# )); do
@@ -32,6 +45,26 @@ while (( $# )); do
 		-M|--makepkg-config)
 			MAKEPKG_CONF="$2"
 			shift 2
+			;;
+		-l|--list)
+			TARLIST=1
+			shift
+			;;
+		-d|--diffoscope)
+			DIFFOSCOPE=1
+			shift
+			;;
+		-p|--pkginfo)
+			PKGINFO=1
+			shift
+			;;
+		-b|--buildinfo)
+			BUILDINFO=1
+			shift
+			;;
+		-v|--verbose)
+			VERBOSE=1
+			shift
 			;;
 		--)
 			shift
@@ -45,6 +78,10 @@ while (( $# )); do
 			;;
 	esac
 done
+
+if ! (( DIFFOSCOPE || TARLIST || PKGINFO || BUILDINFO )); then
+	TARLIST=1
+fi
 
 # Source makepkg.conf; fail if it is not found
 if [[ -r "${MAKEPKG_CONF}" ]]; then
@@ -75,7 +112,45 @@ fi
 
 STARTDIR=$(pwd)
 trap 'rm -rf $TEMPDIR' EXIT INT TERM QUIT
-TEMPDIR=$(mktemp -d --tmpdir diffpkg-script.XXXX)
+TEMPDIR=$(mktemp -d --tmpdir diffpkg-script.XXXXXXXX)
+
+tar_list() {
+	bsdtar tf "$*" | if (( VERBOSE )); then
+		cat
+	else
+		sed -E 's|^usr/lib/modules/[0-9][^/]+|usr/lib/modules/[…]|g'
+	fi | sort
+}
+
+diff_pkgs() {
+	local oldpkg=$1
+	local newpkg=$2
+
+	if (( TARLIST )); then
+		tar_list "$oldpkg" > "$TEMPDIR/filelist-old"
+		tar_list "$newpkg" > "$TEMPDIR/filelist"
+
+		sdiff -s "$TEMPDIR/filelist-old" "$TEMPDIR/filelist"
+	fi
+
+	if (( PKGINFO )); then
+		bsdtar xOqf "$oldpkg" .PKGINFO > "$TEMPDIR/pkginfo-old"
+		bsdtar xOqf "$newpkg" .PKGINFO > "$TEMPDIR/pkginfo"
+
+		sdiff -s "$TEMPDIR/pkginfo-old" "$TEMPDIR/pkginfo"
+	fi
+
+	if (( BUILDINFO )); then
+		bsdtar xOqf "$oldpkg" .BUILDINFO > "$TEMPDIR/buildinfo-old"
+		bsdtar xOqf "$newpkg" .BUILDINFO > "$TEMPDIR/buildinfo"
+
+		sdiff -s "$TEMPDIR/buildinfo-old" "$TEMPDIR/buildinfo"
+	fi
+
+	if (( DIFFOSCOPE )); then
+		diffoscope "$(readlink -e "$oldpkg")" "$(readlink -e "$newpkg")"
+	fi
+}
 
 for _pkgname in "${pkgname[@]}"; do
 	comparepkg=$_pkgname
@@ -121,5 +196,5 @@ for _pkgname in "${pkgname[@]}"; do
 		curl -fsLC - --retry 3 --retry-delay 3 -o "$TEMPDIR/$oldpkg" "$pkgurl"
 	fi
 
-        diffoscope $TEMPDIR/$oldpkg $pkgfile
+	diff_pkgs "$TEMPDIR/$oldpkg" "$pkgfile"
 done

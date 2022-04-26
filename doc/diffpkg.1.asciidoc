@@ -3,31 +3,48 @@ diffpkg(1)
 
 Name
 ----
-diffpkg - Diffoscope the current build package with the repository version
+diffpkg - Compare package files using different modes.
 
 Synopsis
 --------
-diffpkg
+diffpkg [OPTIONS] [MODES]
 
 Description
 -----------
 
 Searches for a locally built package corresponding to the PKGBUILD, and
 downloads the last version of that package from the Pacman repositories.
-It then compares them with diffoscope.
+It then compares them using different modes while using simple tar
+content list by default.
 
 Options
 -------
 
 *-M, --makepkg-config*::
-	Set an alternate makepkg configuration file.
+	Set an alternate makepkg configuration file
+
+*-v, --verbose*::
+	Provide more detailed/unfiltered output
 
 *-h, --help*::
 	Show a help text
 
+Modes
+-----
+
+*-l, --list*::
+	Activate tar content list diff mode (default)
+
+*-d, --diffoscope*::
+	Activate diffoscope diff mode
+
+*-p, --pkginfo*::
+	Activate .PKGINFO diff mode
+
+*-b, --buildinfo*::
+	Activate .BUILDINFO diff mode
+
 See Also
 --------
-
-linkman:find-libprovides[1]
 
 include::footer.asciidoc[]
