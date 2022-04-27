@@ -8,12 +8,19 @@ m4_include(lib/common.sh)
 
 usage() {
     cat <<- _EOF_
-		Usage: ${BASH_SOURCE[0]##*/} [OPTIONS] [MODES]
+		Usage: ${BASH_SOURCE[0]##*/} [OPTIONS] [MODES] [FILE|PKGNAME...]
 
 		Searches for a locally built package corresponding to the PKGBUILD, and
 		downloads the last version of that package from the Pacman repositories.
-		It then compares them using different modes while using simple tar
-		content list by default.
+		It then compares the package archives using different modes while using
+		simple tar content list by default.
+
+		When given one package, use it to diff against the locally built one.
+		When given two packages, diff both packages against each other.
+
+		In either case, a package name will be converted to a filename from the
+		cache, and diffpkg will proceed as though this filename was initially
+		specified.
 
 		OPTIONS
 		    -M, --makepkg-config Set an alternate makepkg configuration file
@@ -100,19 +107,10 @@ elif [[ -r "$HOME/.makepkg.conf" ]]; then
 	source "$HOME/.makepkg.conf"
 fi
 
-if [[ ! -f PKGBUILD ]]; then
-	die 'This must be run in the directory of a built package.'
-fi
-
-# shellcheck source=PKGBUILD.proto
-. ./PKGBUILD
-if [[ ${arch[0]} == 'any' ]]; then
-	CARCH='any'
-fi
-
 STARTDIR=$(pwd)
-trap 'rm -rf $TEMPDIR' EXIT INT TERM QUIT
-TEMPDIR=$(mktemp -d --tmpdir diffpkg-script.XXXXXXXX)
+trap 'rm -rf $TMPDIR' EXIT INT TERM QUIT
+TMPDIR=$(mktemp -d --tmpdir diffpkg-script.XXXXXXXX)
+export TMPDIR
 
 tar_list() {
 	bsdtar tf "$*" | if (( VERBOSE )); then
@@ -123,78 +121,108 @@ tar_list() {
 }
 
 diff_pkgs() {
-	local oldpkg=$1
-	local newpkg=$2
+	local oldpkg newpkg
+	oldpkg=$(readlink -m "$1")
+	newpkg=$(readlink -m "$2")
+
+	[[ -f $oldpkg ]] || die "No such file: %s" "${oldpkg}"
+	[[ -f $newpkg ]] || die "No such file: %s" "${newpkg}"
 
 	if (( TARLIST )); then
-		tar_list "$oldpkg" > "$TEMPDIR/filelist-old"
-		tar_list "$newpkg" > "$TEMPDIR/filelist"
+		tar_list "$oldpkg" > "$TMPDIR/filelist-old"
+		tar_list "$newpkg" > "$TMPDIR/filelist"
 
-		sdiff -s "$TEMPDIR/filelist-old" "$TEMPDIR/filelist"
+		sdiff -s "$TMPDIR/filelist-old" "$TMPDIR/filelist"
 	fi
 
 	if (( PKGINFO )); then
-		bsdtar xOqf "$oldpkg" .PKGINFO > "$TEMPDIR/pkginfo-old"
-		bsdtar xOqf "$newpkg" .PKGINFO > "$TEMPDIR/pkginfo"
+		bsdtar xOqf "$oldpkg" .PKGINFO > "$TMPDIR/pkginfo-old"
+		bsdtar xOqf "$newpkg" .PKGINFO > "$TMPDIR/pkginfo"
 
-		sdiff -s "$TEMPDIR/pkginfo-old" "$TEMPDIR/pkginfo"
+		sdiff -s "$TMPDIR/pkginfo-old" "$TMPDIR/pkginfo"
 	fi
 
 	if (( BUILDINFO )); then
-		bsdtar xOqf "$oldpkg" .BUILDINFO > "$TEMPDIR/buildinfo-old"
-		bsdtar xOqf "$newpkg" .BUILDINFO > "$TEMPDIR/buildinfo"
+		bsdtar xOqf "$oldpkg" .BUILDINFO > "$TMPDIR/buildinfo-old"
+		bsdtar xOqf "$newpkg" .BUILDINFO > "$TMPDIR/buildinfo"
 
-		sdiff -s "$TEMPDIR/buildinfo-old" "$TEMPDIR/buildinfo"
+		sdiff -s "$TMPDIR/buildinfo-old" "$TMPDIR/buildinfo"
 	fi
 
 	if (( DIFFOSCOPE )); then
-		diffoscope "$(readlink -e "$oldpkg")" "$(readlink -e "$newpkg")"
+		diffoscope "$oldpkg" "$newpkg"
 	fi
 }
 
-for _pkgname in "${pkgname[@]}"; do
-	comparepkg=$_pkgname
-	pkgurl=
-	target_pkgver=$(get_full_version "$_pkgname")
-	if ! pkgfile=$(find_cached_package "$_pkgname" "$target_pkgver" "$CARCH"); then
-		die 'tarball not found for package: %s' "${_pkgname}-$target_pkgver"
-	fi
+fetch_pkg() {
+	local pkg pkgdest pkgurl
+	case $1 in
+		*://*)
+			pkgurl=$1 ;;
+		/*|*/*)
+			pkgurl=$(readlink -m "$1") ;;
+		*.pkg.tar*)
+			pkgurl=$1 ;;
+		'')
+			;;
+		*)
+			pkg=$1 ;;
+	esac
 
-	ln -s "$pkgfile" "$TEMPDIR"
+	[[ -n $pkgurl ]] || pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm "$pkg") ||
+		die "Couldn't download previous package for %s." "$pkg"
 
-	if (( $# )); then
-		case $1 in
-			*://*)
-				pkgurl=$1 ;;
-			/*|*/*)
-				pkgurl=$(readlink -m "$1") ;;
-			*.pkg.tar*)
-				pkgurl=$1 ;;
-			'')
-				;;
-			*)
-				comparepkg=$1 ;;
-		esac
-		shift
-	fi
-	[[ -n $pkgurl ]] || pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm "$comparepkg") ||
-		die "Couldn't download previous package for %s." "$comparepkg"
-
-	oldpkg=${pkgurl##*/}
-
-	if [[ ${oldpkg} = "${pkgfile##*/}" ]]; then
-		die "The built package (%s) is the one in the repo right now!" "$_pkgname"
-	fi
+	pkg=${pkgurl##*/}
+	pkgdest=$(mktemp -t -d "${pkg}-XXXXXX")/${pkg}
 
 	if [[ $pkgurl = file://* || ( $pkgurl = /* && -f $pkgurl ) ]]; then
-		ln -s "${pkgurl#file://}" "$TEMPDIR/$oldpkg"
-	elif [[ -f "$PKGDEST/$oldpkg" ]]; then
-		ln -s "$PKGDEST/$oldpkg" "$TEMPDIR/$oldpkg"
-	elif [[ -f "$STARTDIR/$oldpkg" ]]; then
-		ln -s "$STARTDIR/$oldpkg" "$TEMPDIR/$oldpkg"
+		ln -sf "${pkgurl#file://}" "$pkgdest"
+	elif [[ -f "$PKGDEST/$pkg" ]]; then
+		ln -sf "$PKGDEST/$pkg" "$pkgdest"
+	elif [[ -f "$STARTDIR/$pkg" ]]; then
+		ln -sf "$STARTDIR/$pkg" "$pkgdest"
+	elif [[ $pkgurl = *://* ]]; then
+		curl -fsLC - --retry 3 --retry-delay 3 -o "$pkgdest" "$pkgurl" || \
+			die "Couldn't download %s" "$pkgurl"
 	else
-		curl -fsLC - --retry 3 --retry-delay 3 -o "$TEMPDIR/$oldpkg" "$pkgurl"
+		die "File not found: %s" "$pkgurl"
 	fi
 
-	diff_pkgs "$TEMPDIR/$oldpkg" "$pkgfile"
-done
+	echo "$pkgdest"
+}
+
+if (( $# < 2 )); then
+	if [[ ! -f PKGBUILD ]]; then
+		die "This must be run in the directory of a built package.\nTry '$(basename "$0") --help' for more information."
+	fi
+
+	# shellcheck source=PKGBUILD.proto
+	. ./PKGBUILD
+	if [[ ${arch[0]} == 'any' ]]; then
+		CARCH='any'
+	fi
+
+	for _pkgname in "${pkgname[@]}"; do
+		comparepkg=$_pkgname
+		pkgurl=
+		target_pkgver=$(get_full_version "$_pkgname")
+		if ! pkgfile=$(find_cached_package "$_pkgname" "$target_pkgver" "$CARCH"); then
+			die 'tarball not found for package: %s' "${_pkgname}-$target_pkgver"
+		fi
+
+		ln -s "$pkgfile" "$TMPDIR"
+
+		if (( $# )); then
+			comparepkg="$1"
+		fi
+
+		oldpkg=$(fetch_pkg "$comparepkg") || exit 1
+
+		diff_pkgs "$oldpkg" "$pkgfile"
+	done
+else
+	file1=$(fetch_pkg "$1") || exit 1
+	file2=$(fetch_pkg "$2") || exit 1
+
+	diff_pkgs "$file1" "$file2"
+fi

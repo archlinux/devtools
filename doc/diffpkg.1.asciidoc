@@ -7,15 +7,22 @@ diffpkg - Compare package files using different modes.
 
 Synopsis
 --------
-diffpkg [OPTIONS] [MODES]
+diffpkg [OPTIONS] [MODES] [FILE|PKGNAME...]
 
 Description
 -----------
 
 Searches for a locally built package corresponding to the PKGBUILD, and
 downloads the last version of that package from the Pacman repositories.
-It then compares them using different modes while using simple tar
-content list by default.
+It then compares the package archives using different modes while using
+simple tar content list by default.
+
+When given one package, use it to diff against the locally built one.
+When given two packages, diff both packages against each other.
+
+In either case, a package name will be converted to a filename from the
+cache, and diffpkg will proceed as though this filename was initially
+specified.
 
 Options
 -------

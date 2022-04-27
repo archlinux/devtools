@@ -49,6 +49,7 @@ _diffpkg_args=(
 	'(-m --makepkg-config)'{-m,--makepkg-config}'[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
 	'(-v --verbose)'{-v,--verbose}'[Provide more detailed/unfiltered output]'
 	'(-h --help)'{-h,--help}'[Display usage]'
+	'*:packages:_devtools_completions_all_packages'
 )
 
 _finddeps_args=(
