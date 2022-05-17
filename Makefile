@@ -3,8 +3,9 @@ BUILDTOOLVER ?= $(V)
 
 PREFIX = /usr/local
 MANDIR = $(PREFIX)/share/man
+BUILDDIR = build
 
-IN_PROGS = \
+BINPROGS = \
 	archco \
 	arch-nspawn \
 	archrelease \
@@ -23,9 +24,7 @@ IN_PROGS = \
 	offload-build \
 	rebuildpkgs \
 	sogrep
-
-BINPROGS = \
-	$(IN_PROGS)
+BINPROGS := $(addprefix $(BUILDDIR)/bin/,$(BINPROGS))
 
 CONFIGFILES = \
 	makepkg-x86_64.conf \
@@ -75,48 +74,57 @@ CROSSREPOMOVE_LINKS = \
 	extra2community \
 	community2extra
 
+COMPLETIONS = \
+	bash_completion \
+	zsh_completion
+COMPLETIONS := $(addprefix $(BUILDDIR)/completion/,$(COMPLETIONS))
+
 BASHCOMPLETION_LINKS = \
 	archco \
 	communityco
 
-
 MANS = \
-	doc/archbuild.1 \
-	doc/arch-nspawn.1 \
-	doc/export-pkgbuild-keys.1 \
-	doc/makechrootpkg.1 \
-	doc/lddd.1 \
-	doc/checkpkg.1 \
-	doc/diffpkg.1 \
-	doc/offload-build.1 \
-	doc/sogrep.1 \
-	doc/makerepropkg.1 \
-	doc/mkarchroot.1 \
-	doc/find-libdeps.1 \
-	doc/find-libprovides.1 \
-	doc/devtools.7
+	archbuild.1 \
+	arch-nspawn.1 \
+	export-pkgbuild-keys.1 \
+	makechrootpkg.1 \
+	lddd.1 \
+	checkpkg.1 \
+	diffpkg.1 \
+	offload-build.1 \
+	sogrep.1 \
+	makerepropkg.1 \
+	mkarchroot.1 \
+	find-libdeps.1 \
+	find-libprovides.1 \
+	devtools.7
+MANS := $(addprefix $(BUILDDIR)/doc/,$(MANS))
 
 
-all: $(BINPROGS) bash_completion zsh_completion man
+all: binprogs completion man
+binprogs: $(BINPROGS)
+completion: $(COMPLETIONS)
 man: $(MANS)
 
 edit = sed -e "s|@pkgdatadir[@]|$(PREFIX)/share/devtools|g"
 
-%: %.in Makefile lib/common.sh
-	@echo "GEN $@"
+$(BUILDDIR)/bin/% $(BUILDDIR)/completion/%: %.in Makefile lib/common.sh
+	@echo "GEN $(notdir $@)"
+	@mkdir -p $(dir $@)
 	@$(RM) "$@"
-	@{ echo -n 'm4_changequote([[[,]]])'; cat $@.in; } | m4 -P --define=m4_devtools_version=$(BUILDTOOLVER) | $(edit) >$@
+	@{ echo -n 'm4_changequote([[[,]]])'; cat $<; } | m4 -P --define=m4_devtools_version=$(BUILDTOOLVER) | $(edit) >$@
 	@chmod a-w "$@"
 	@chmod +x "$@"
 	@bash -O extglob -n "$@"
 
 $(MANS): doc/asciidoc.conf doc/footer.asciidoc
 
-doc/%: doc/%.asciidoc
-	a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage -D doc -a pkgdatadir=$(PREFIX)/share/devtools $<
+$(BUILDDIR)/doc/%: doc/%.asciidoc
+	@mkdir -p $(BUILDDIR)/doc
+	a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage --destination-dir=$(BUILDDIR)/doc -a pkgdatadir=$(PREFIX)/share/devtools $<
 
 clean:
-	rm -f $(IN_PROGS) bash_completion zsh_completion $(MANS)
+	rm -rf $(BUILDDIR)
 
 install:
 	install -dm0755 $(DESTDIR)$(PREFIX)/bin
@@ -128,16 +136,16 @@ install:
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${CROSSREPOMOVE_LINKS}; do ln -sf crossrepomove $(DESTDIR)$(PREFIX)/bin/$$l; done
 	ln -sf find-libdeps $(DESTDIR)$(PREFIX)/bin/find-libprovides
-	install -Dm0644 bash_completion $(DESTDIR)$(PREFIX)/share/bash-completion/completions/devtools
+	install -Dm0644 $(BUILDDIR)/bash_completion $(DESTDIR)$(PREFIX)/share/bash-completion/completions/devtools
 	for l in ${BASHCOMPLETION_LINKS}; do ln -sf devtools $(DESTDIR)$(PREFIX)/share/bash-completion/completions/$$l; done
-	install -Dm0644 zsh_completion $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
+	install -Dm0644 $(BUILDDIR)/zsh_completion $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	ln -sf archco $(DESTDIR)$(PREFIX)/bin/communityco
 	for manfile in $(MANS); do \
 		install -Dm644 $$manfile -t $(DESTDIR)$(MANDIR)/man$${manfile##*.}; \
 	done;
 
 uninstall:
-	for f in ${BINPROGS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$f; done
+	for f in $(notdir $(BINPROGS)); do rm -f $(DESTDIR)$(PREFIX)/bin/$$f; done
 	for f in ${CONFIGFILES}; do rm -f $(DESTDIR)$(PREFIX)/share/devtools/$$f; done
 	for f in ${SETARCH_ALIASES}; do rm -f $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d/$$f; done
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
@@ -148,9 +156,7 @@ uninstall:
 	rm $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	rm -f $(DESTDIR)$(PREFIX)/bin/communityco
 	rm -f $(DESTDIR)$(PREFIX)/bin/find-libprovides
-	for manfile in $(MANS); do \
-		rm -f $(DESTDIR)$(MANDIR)/man$${manfile##*.}/$${manfile#doc/}; \
-	done;
+	for manfile in $(notdir $(MANS)); do rm -f $(DESTDIR)$(MANDIR)/man$${manfile##*.}/$${manfile}; done;
 
 TODAY=$(shell date +"%Y%m%d")
 tag:
@@ -165,8 +171,8 @@ dist:
 upload:
 	scp devtools-$(V).tar.gz devtools-$(V).tar.gz.sig repos.archlinux.org:/srv/ftp/other/devtools/
 
-check: $(BINPROGS) bash_completion makepkg-x86_64.conf PKGBUILD.proto
+check: $(BINPROGS) $(BUILDDIR)/bash_completion makepkg-x86_64.conf PKGBUILD.proto
 	shellcheck $^
 
-.PHONY: all clean install uninstall dist upload check tag
+.PHONY: all completion man clean install uninstall dist upload check tag
 .DELETE_ON_ERROR:
