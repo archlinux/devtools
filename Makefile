@@ -116,8 +116,8 @@ install:
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${CROSSREPOMOVE_LINKS}; do ln -sf crossrepomove $(DESTDIR)$(PREFIX)/bin/$$l; done
 	ln -sf find-libdeps $(DESTDIR)$(PREFIX)/bin/find-libprovides
-	install -Dm0644 bash_completion $(DESTDIR)/usr/share/bash-completion/completions/devtools
-	for l in ${BASHCOMPLETION_LINKS}; do ln -sf devtools $(DESTDIR)/usr/share/bash-completion/completions/$$l; done
+	install -Dm0644 bash_completion $(DESTDIR)$(PREFIX)/share/bash-completion/completions/devtools
+	for l in ${BASHCOMPLETION_LINKS}; do ln -sf devtools $(DESTDIR)$(PREFIX)/share/bash-completion/completions/$$l; done
 	install -Dm0644 zsh_completion $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	ln -sf archco $(DESTDIR)$(PREFIX)/bin/communityco
 	for manfile in $(MANS); do \
@@ -132,7 +132,7 @@ uninstall:
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${CROSSREPOMOVE_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${BASHCOMPLETION_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/share/bash-completion/completions/$$l; done
-	rm $(DESTDIR)/usr/share/bash-completion/completions/devtools
+	rm $(DESTDIR)$(PREFIX)/share/bash-completion/completions/devtools
 	rm $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	rm -f $(DESTDIR)$(PREFIX)/bin/communityco
 	rm -f $(DESTDIR)$(PREFIX)/bin/find-libprovides
