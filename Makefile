@@ -131,6 +131,7 @@ uninstall:
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${CROSSREPOMOVE_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
+	for l in ${BASHCOMPLETION_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/share/bash-completion/completions/$$l; done
 	rm $(DESTDIR)/usr/share/bash-completion/completions/devtools
 	rm $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	rm -f $(DESTDIR)$(PREFIX)/bin/communityco
