@@ -108,7 +108,7 @@ man: $(MANS)
 
 edit = sed -e "s|@pkgdatadir[@]|$(PREFIX)/share/devtools|g"
 
-$(BUILDDIR)/bin/% $(BUILDDIR)/completion/%: %.in Makefile lib/common.sh
+$(BUILDDIR)/bin/% $(BUILDDIR)/completion/%: %.in Makefile $(wildcard lib/*.sh)
 	@echo "GEN $(notdir $@)"
 	@mkdir -p $(dir $@)
 	@$(RM) "$@"
@@ -117,16 +117,14 @@ $(BUILDDIR)/bin/% $(BUILDDIR)/completion/%: %.in Makefile lib/common.sh
 	@chmod +x "$@"
 	@bash -O extglob -n "$@"
 
-$(MANS): doc/asciidoc.conf doc/footer.asciidoc
-
-$(BUILDDIR)/doc/%: doc/%.asciidoc
+$(BUILDDIR)/doc/%: doc/%.asciidoc doc/asciidoc.conf doc/footer.asciidoc
 	@mkdir -p $(BUILDDIR)/doc
 	a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage --destination-dir=$(BUILDDIR)/doc -a pkgdatadir=$(PREFIX)/share/devtools $<
 
 clean:
 	rm -rf $(BUILDDIR)
 
-install:
+install: all
 	install -dm0755 $(DESTDIR)$(PREFIX)/bin
 	install -dm0755 $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d
 	install -m0755 ${BINPROGS} $(DESTDIR)$(PREFIX)/bin
