@@ -3,17 +3,6 @@
 This repository contains tools for the Arch Linux distribution for building
 and maintaining official repository packages.
 
-## Patches
-
-Patches can be send to arch-projects@archlinux.org or via a pull request on
-Github. When sending patches to the mailing list make sure to set a valid
-subjectprefix otherwise the email is denied by mailman. Git can be configured
-as following.
-
-```
-git config format.subjectprefix 'devtools] [PATCH'
-```
-
 ## Building
 
 When building official distro packages the `BUILDTOOLVER` needs to be set to the

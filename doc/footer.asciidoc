@@ -1,9 +1,7 @@
 
 Bugs
 ----
-Bugs can be reported on the bug tracker 'https://bugs.archlinux.org' in the Arch
-Linux category and title prefixed with [devtools] or via
-mailto:arch-projects@archlinux.org[].
+Bugs can be reported on the project's GitLab bug tracker 'https://gitlab.archlinux.org/archlinux/devtools'
 
 
 Authors
