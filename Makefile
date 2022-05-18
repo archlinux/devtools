@@ -74,11 +74,7 @@ CROSSREPOMOVE_LINKS = \
 	extra2community \
 	community2extra
 
-COMPLETIONS = \
-	bash_completion \
-	zsh_completion
-COMPLETIONS := $(addprefix $(BUILDDIR)/completion/,$(COMPLETIONS))
-
+COMPLETIONS = $(addprefix $(BUILDDIR)/,$(patsubst %.in,%,$(wildcard contrib/completion/*/*)))
 BASHCOMPLETION_LINKS = \
 	archco \
 	communityco
@@ -108,14 +104,18 @@ man: $(MANS)
 
 edit = sed -e "s|@pkgdatadir[@]|$(PREFIX)/share/devtools|g"
 
-$(BUILDDIR)/bin/% $(BUILDDIR)/completion/%: %.in Makefile $(wildcard lib/*.sh)
-	@echo "GEN $(notdir $@)"
-	@mkdir -p $(dir $@)
-	@$(RM) "$@"
-	@{ echo -n 'm4_changequote([[[,]]])'; cat $<; } | m4 -P --define=m4_devtools_version=$(BUILDTOOLVER) | $(edit) >$@
-	@chmod a-w "$@"
-	@chmod +x "$@"
-	@bash -O extglob -n "$@"
+define buildInScript
+$(1)/%: $(2)%.in
+	@echo "GEN $$(notdir $$@)"
+	@mkdir -p $$(dir $$@)
+	@$(RM) "$$@"
+	@{ echo -n 'm4_changequote([[[,]]])'; cat $$<; } | m4 -P --define=m4_devtools_version=$$(BUILDTOOLVER) | $(edit) >$$@
+	@chmod $(3) "$$@"
+	@bash -O extglob -n "$$@"
+endef
+
+$(eval $(call buildInScript,build/bin,,555))
+$(foreach completion,$(wildcard contrib/completion/*),$(eval $(call buildInScript,build/$(completion),$(completion)/,444)))
 
 $(BUILDDIR)/doc/%: doc/%.asciidoc doc/asciidoc.conf doc/footer.asciidoc
 	@mkdir -p $(BUILDDIR)/doc
@@ -134,9 +134,9 @@ install: all
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${CROSSREPOMOVE_LINKS}; do ln -sf crossrepomove $(DESTDIR)$(PREFIX)/bin/$$l; done
 	ln -sf find-libdeps $(DESTDIR)$(PREFIX)/bin/find-libprovides
-	install -Dm0644 $(BUILDDIR)/bash_completion $(DESTDIR)$(PREFIX)/share/bash-completion/completions/devtools
+	install -Dm0644 $(BUILDDIR)/contrib/completion/bash/devtools $(DESTDIR)$(PREFIX)/share/bash-completion/completions/devtools
 	for l in ${BASHCOMPLETION_LINKS}; do ln -sf devtools $(DESTDIR)$(PREFIX)/share/bash-completion/completions/$$l; done
-	install -Dm0644 $(BUILDDIR)/zsh_completion $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
+	install -Dm0644 $(BUILDDIR)/contrib/completion/zsh/_devtools $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	ln -sf archco $(DESTDIR)$(PREFIX)/bin/communityco
 	for manfile in $(MANS); do \
 		install -Dm644 $$manfile -t $(DESTDIR)$(MANDIR)/man$${manfile##*.}; \
@@ -155,6 +155,7 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/communityco
 	rm -f $(DESTDIR)$(PREFIX)/bin/find-libprovides
 	for manfile in $(notdir $(MANS)); do rm -f $(DESTDIR)$(MANDIR)/man$${manfile##*.}/$${manfile}; done;
+	rmdir --ignore-fail-on-non-empty $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d $(DESTDIR)$(PREFIX)/share/devtools
 
 TODAY=$(shell date +"%Y%m%d")
 tag:
@@ -169,7 +170,7 @@ dist:
 upload:
 	scp devtools-$(V).tar.gz devtools-$(V).tar.gz.sig repos.archlinux.org:/srv/ftp/other/devtools/
 
-check: $(BINPROGS) $(BUILDDIR)/bash_completion makepkg-x86_64.conf PKGBUILD.proto
+check: $(BINPROGS) $(BUILDDIR)/contrib/completion/bash/devtools makepkg-x86_64.conf PKGBUILD.proto
 	shellcheck $^
 
 .PHONY: all completion man clean install uninstall dist upload check tag
