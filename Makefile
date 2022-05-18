@@ -26,23 +26,9 @@ BINPROGS = \
 	sogrep
 BINPROGS := $(addprefix $(BUILDDIR)/bin/,$(BINPROGS))
 
-CONFIGFILES = \
-	makepkg-x86_64.conf \
-	makepkg-x86_64_v3.conf \
-	pacman-extra.conf \
-	pacman-extra-x86_64_v3.conf \
-	pacman-testing.conf \
-	pacman-testing-x86_64_v3.conf \
-	pacman-staging.conf \
-	pacman-staging-x86_64_v3.conf \
-	pacman-multilib.conf \
-	pacman-multilib-testing.conf \
-	pacman-multilib-staging.conf \
-	pacman-kde-unstable.conf \
-	pacman-gnome-unstable.conf
-
-SETARCH_ALIASES = \
-	x86_64_v3
+MAKEPKG_CONFIGS=$(wildcard config/makepkg/*)
+PACMAN_CONFIGS=$(wildcard config/pacman/*)
+SETARCH_ALIASES = $(wildcard config/setarch-aliases.d/*)
 
 COMMITPKG_LINKS = \
 	extrapkg \
@@ -102,6 +88,18 @@ binprogs: $(BINPROGS)
 completion: $(COMPLETIONS)
 man: $(MANS)
 
+
+ifneq ($(wildcard pacman-*.conf),)
+	$(error Legacy pacman config file found: $(wildcard pacman-*.conf) - please migrate to config/pacman/*)
+endif
+ifneq ($(wildcard makepkg-*.conf),)
+	$(error Legacy makepkg config files found: $(wildcard makepkg-*.conf) -  please migrate to config/makepkg/*)
+endif
+ifneq ($(wildcard setarch-aliases.d/*),)
+	$(error Legacy setarch aliase found: $(wildcard setarch-aliases.d/*) - please migrate to config/setarch-aliases.d/*)
+endif
+
+
 edit = sed -e "s|@pkgdatadir[@]|$(PREFIX)/share/devtools|g"
 
 define buildInScript
@@ -128,8 +126,9 @@ install: all
 	install -dm0755 $(DESTDIR)$(PREFIX)/bin
 	install -dm0755 $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d
 	install -m0755 ${BINPROGS} $(DESTDIR)$(PREFIX)/bin
-	install -m0644 ${CONFIGFILES} $(DESTDIR)$(PREFIX)/share/devtools
-	for a in ${SETARCH_ALIASES}; do install -m0644 setarch-aliases.d/$$a $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d; done
+	for conf in ${MAKEPKG_CONFIGS}; do install -Dm0644 $$conf $(DESTDIR)$(PREFIX)/share/devtools/makepkg-$${conf##*/}; done
+	for conf in ${PACMAN_CONFIGS}; do install -Dm0644 $$conf $(DESTDIR)$(PREFIX)/share/devtools/pacman-$${conf##*/}; done
+	for a in ${SETARCH_ALIASES}; do install -m0644 $$a -t $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d; done
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${CROSSREPOMOVE_LINKS}; do ln -sf crossrepomove $(DESTDIR)$(PREFIX)/bin/$$l; done
@@ -144,8 +143,9 @@ install: all
 
 uninstall:
 	for f in $(notdir $(BINPROGS)); do rm -f $(DESTDIR)$(PREFIX)/bin/$$f; done
-	for f in ${CONFIGFILES}; do rm -f $(DESTDIR)$(PREFIX)/share/devtools/$$f; done
-	for f in ${SETARCH_ALIASES}; do rm -f $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d/$$f; done
+	for conf in ${MAKEPKG_CONFIGS}; do rm -f $(DESTDIR)$(PREFIX)/share/devtools/makepkg-$${conf##*/}; done
+	for conf in ${PACMAN_CONFIGS}; do rm -f $(DESTDIR)$(PREFIX)/share/devtools/pacman-$${conf##*/}; done
+	for f in $(notdir $(SETARCH_ALIASES)); do rm -f $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d/$$f; done
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${CROSSREPOMOVE_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
@@ -170,7 +170,7 @@ dist:
 upload:
 	scp devtools-$(V).tar.gz devtools-$(V).tar.gz.sig repos.archlinux.org:/srv/ftp/other/devtools/
 
-check: $(BINPROGS) $(BUILDDIR)/contrib/completion/bash/devtools makepkg-x86_64.conf PKGBUILD.proto
+check: $(BINPROGS) $(BUILDDIR)/contrib/completion/bash/devtools config/makepkg/x86_64.conf PKGBUILD.proto
 	shellcheck $^
 
 .PHONY: all completion man clean install uninstall dist upload check tag

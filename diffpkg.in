@@ -92,7 +92,7 @@ fi
 
 # Source makepkg.conf; fail if it is not found
 if [[ -r "${MAKEPKG_CONF}" ]]; then
-	# shellcheck source=makepkg-x86_64.conf
+	# shellcheck source=config/makepkg/x86_64.conf
 	source "${MAKEPKG_CONF}"
 else
 	die "${MAKEPKG_CONF} not found!"
