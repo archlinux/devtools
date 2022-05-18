@@ -5,27 +5,7 @@ PREFIX = /usr/local
 MANDIR = $(PREFIX)/share/man
 BUILDDIR = build
 
-BINPROGS = \
-	archco \
-	arch-nspawn \
-	archrelease \
-	archbuild \
-	checkpkg \
-	commitpkg \
-	crossrepomove\
-	diffpkg \
-	export-pkgbuild-keys \
-	finddeps \
-	find-libdeps \
-	lddd \
-	makerepropkg \
-	mkarchroot \
-	makechrootpkg \
-	offload-build \
-	rebuildpkgs \
-	sogrep
-BINPROGS := $(addprefix $(BUILDDIR)/bin/,$(BINPROGS))
-
+BINPROGS = $(addprefix $(BUILDDIR)/,$(patsubst src/%,bin/%,$(patsubst %.in,%,$(wildcard src/*.in))))
 MAKEPKG_CONFIGS=$(wildcard config/makepkg/*)
 PACMAN_CONFIGS=$(wildcard config/pacman/*)
 SETARCH_ALIASES = $(wildcard config/setarch-aliases.d/*)
@@ -89,6 +69,9 @@ completion: $(COMPLETIONS)
 man: $(MANS)
 
 
+ifneq ($(wildcard *.in),)
+	$(error Legacy in prog file found: $(wildcard *.in) - please migrate to src/*)
+endif
 ifneq ($(wildcard pacman-*.conf),)
 	$(error Legacy pacman config file found: $(wildcard pacman-*.conf) - please migrate to config/pacman/*)
 endif
@@ -112,7 +95,7 @@ $(1)/%: $(2)%.in
 	@bash -O extglob -n "$$@"
 endef
 
-$(eval $(call buildInScript,build/bin,,555))
+$(eval $(call buildInScript,build/bin,src/,555))
 $(foreach completion,$(wildcard contrib/completion/*),$(eval $(call buildInScript,build/$(completion),$(completion)/,444)))
 
 $(BUILDDIR)/doc/%: doc/%.asciidoc doc/asciidoc.conf doc/footer.asciidoc
