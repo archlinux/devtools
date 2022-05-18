@@ -9,6 +9,7 @@ BINPROGS = $(addprefix $(BUILDDIR)/,$(patsubst src/%,bin/%,$(patsubst %.in,%,$(w
 MAKEPKG_CONFIGS=$(wildcard config/makepkg/*)
 PACMAN_CONFIGS=$(wildcard config/pacman/*)
 SETARCH_ALIASES = $(wildcard config/setarch-aliases.d/*)
+MANS = $(addprefix $(BUILDDIR)/,$(patsubst %.asciidoc,%,$(filter-out doc/footer.asciidoc,$(wildcard doc/*.asciidoc))))
 
 COMMITPKG_LINKS = \
 	extrapkg \
@@ -44,23 +45,6 @@ COMPLETIONS = $(addprefix $(BUILDDIR)/,$(patsubst %.in,%,$(wildcard contrib/comp
 BASHCOMPLETION_LINKS = \
 	archco \
 	communityco
-
-MANS = \
-	archbuild.1 \
-	arch-nspawn.1 \
-	export-pkgbuild-keys.1 \
-	makechrootpkg.1 \
-	lddd.1 \
-	checkpkg.1 \
-	diffpkg.1 \
-	offload-build.1 \
-	sogrep.1 \
-	makerepropkg.1 \
-	mkarchroot.1 \
-	find-libdeps.1 \
-	find-libprovides.1 \
-	devtools.7
-MANS := $(addprefix $(BUILDDIR)/doc/,$(MANS))
 
 
 all: binprogs completion man
