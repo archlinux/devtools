@@ -137,7 +137,7 @@ dist:
 upload:
 	scp devtools-$(V).tar.gz devtools-$(V).tar.gz.sig repos.archlinux.org:/srv/ftp/other/devtools/
 
-check: $(BINPROGS) $(BUILDDIR)/contrib/completion/bash/devtools config/makepkg/x86_64.conf PKGBUILD.proto
+check: $(BINPROGS) $(BUILDDIR)/contrib/completion/bash/devtools config/makepkg/x86_64.conf contrib/makepkg/PKGBUILD.proto
 	shellcheck $^
 
 .PHONY: all completion man clean install uninstall dist upload check tag

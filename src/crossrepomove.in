@@ -45,7 +45,7 @@ msg "Downloading sources for %s" "${pkgbase}"
 svn -q checkout -N "${target_svn}" target_checkout
 mkdir -p "target_checkout/${pkgbase}/repos"
 svn -q export "${source_svn}/${pkgbase}/trunk" "target_checkout/${pkgbase}/trunk" || die
-# shellcheck source=PKGBUILD.proto
+# shellcheck source=contrib/makepkg/PKGBUILD.proto
 . "target_checkout/${pkgbase}/trunk/PKGBUILD"
 
 msg "Downloading packages for %s" "${pkgbase}"

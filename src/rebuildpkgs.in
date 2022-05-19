@@ -54,7 +54,7 @@ bump_pkgrel() {
 pkg_from_pkgbuild() {
 	# we want the sourcing to be done in a subshell so we don't pollute our current namespace
 	export CARCH PKGEXT
-	# shellcheck source=PKGBUILD.proto
+	# shellcheck source=contrib/makepkg/PKGBUILD.proto
 	(source PKGBUILD; echo "$pkgname-$pkgver-$pkgrel-$CARCH$PKGEXT")
 }
 

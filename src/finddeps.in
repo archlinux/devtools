@@ -20,7 +20,7 @@ fi
 find . -type d -print0 2>/dev/null| while read -r -d '' d; do
 	if [[ -f "$d/PKGBUILD" ]]; then
 		pkgname=() depends=() makedepends=() optdepends=()
-		# shellcheck source=PKGBUILD.proto
+		# shellcheck source=contrib/makepkg/PKGBUILD.proto
 		. "$d/PKGBUILD"
 		for dep in "${depends[@]}"; do
 			# lose the version comparator, if any

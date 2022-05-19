@@ -82,7 +82,7 @@ if [[ ! -f PKGBUILD ]]; then
 	die 'This must be run in the directory of a built package.'
 fi
 
-# shellcheck source=PKGBUILD.proto
+# shellcheck source=contrib/makepkg/PKGBUILD.proto
 . ./PKGBUILD
 if [[ ${arch[0]} == 'any' ]]; then
 	CARCH='any'

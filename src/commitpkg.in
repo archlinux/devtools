@@ -28,7 +28,7 @@ if [[ ! -f PKGBUILD ]]; then
 fi
 
 source=()
-# shellcheck source=PKGBUILD.proto
+# shellcheck source=contrib/makepkg/PKGBUILD.proto
 . ./PKGBUILD
 pkgbase=${pkgbase:-$pkgname}
 
