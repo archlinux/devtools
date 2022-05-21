@@ -68,10 +68,11 @@ endif
 
 
 edit = sed -e "s|@pkgdatadir[@]|$(PREFIX)/share/devtools|g"
+GEN_MSG = @echo "GEN $(patsubst $(BUILDDIR)/%,%,$@)"
 
 define buildInScript
 $(1)/%: $(2)%.in
-	@echo "GEN $$(notdir $$@)"
+	$$(GEN_MSG)
 	@mkdir -p $$(dir $$@)
 	@$(RM) "$$@"
 	@{ echo -n 'm4_changequote([[[,]]])'; cat $$<; } | m4 -P --define=m4_devtools_version=$$(BUILDTOOLVER) | $(edit) >$$@
@@ -83,8 +84,9 @@ $(eval $(call buildInScript,build/bin,src/,555))
 $(foreach completion,$(wildcard contrib/completion/*),$(eval $(call buildInScript,build/$(completion),$(completion)/,444)))
 
 $(BUILDDIR)/doc/%: doc/%.asciidoc doc/asciidoc.conf doc/footer.asciidoc
+	$(GEN_MSG)
 	@mkdir -p $(BUILDDIR)/doc
-	a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage --destination-dir=$(BUILDDIR)/doc -a pkgdatadir=$(PREFIX)/share/devtools $<
+	@a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage --destination-dir=$(BUILDDIR)/doc -a pkgdatadir=$(PREFIX)/share/devtools $<
 
 clean:
 	rm -rf $(BUILDDIR)
