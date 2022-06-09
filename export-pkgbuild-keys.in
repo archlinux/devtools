@@ -40,6 +40,7 @@ mapfile -t validpgpkeys < <(
 	printf "%s\n" "${validpgpkeys[@]}"
 )
 
+msg "Exporting ${#validpgpkeys[@]} PGP keys..."
 if (( ${#validpgpkeys[@]} == 0 )); then
 	exit 0
 fi
@@ -52,6 +53,7 @@ for key in "${validpgpkeys[@]}"; do
 
 	# gpg does not give a non-zero return value if it fails to export...
 	if [[ -f keys/pgp/$key.asc.tmp ]]; then
+		msg2 "Exported $key"
 		mv "keys/pgp/$key.asc.tmp" "keys/pgp/$key.asc"
 	else
 		if [[ -f keys/pgp/$key.asc ]]; then
