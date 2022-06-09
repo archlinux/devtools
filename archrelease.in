@@ -51,11 +51,6 @@ fi
 pushd .. >/dev/null
 mapfile -t known_files < <(svn ls -r HEAD "$trunk")
 wait $! || die "failed to discover committed files"
-for file in "${known_files[@]}"; do
-	if [[ ${file:(-1)} = '/' ]]; then
-		die "archrelease: subdirectories are not supported in package directories!"
-	fi
-done
 
 # gracefully handle files containing an "@" character
 known_files=("${known_files[@]/%/@}")
@@ -67,7 +62,7 @@ for tag in "$@"; do
 	stat_busy "Copying %s to %s" "${trunk}" "${tag}"
 
 	if [[ -d repos/$tag ]]; then
-		mapfile -t trash < <(svn ls "repos/$tag")
+		mapfile -t trash < <(svn ls --recursive "repos/$tag")
 		wait $! || die "failed to discover existing files"
 		if (( ${#trash[@]} )); then
 			trash=("${trash[@]/#/repos/$tag/}")
