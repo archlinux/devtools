@@ -45,16 +45,19 @@ if (( ${#validpgpkeys[@]} == 0 )); then
 	exit 0
 fi
 
+trap 'rm -rf $TEMPDIR' EXIT INT TERM QUIT
+TEMPDIR=$(mktemp -d --tmpdir export-pkgbuild-keys.XXXXXXXXXX)
+
 mkdir -p keys/pgp
 error=0
 
 for key in "${validpgpkeys[@]}"; do
-	gpg --output "keys/pgp/$key.asc.tmp" --armor --export --export-options export-minimal "$key" 2>/dev/null
+	gpg --output "$TEMPDIR/$key.asc" --armor --export --export-options export-minimal "$key" 2>/dev/null
 
 	# gpg does not give a non-zero return value if it fails to export...
-	if [[ -f keys/pgp/$key.asc.tmp ]]; then
+	if [[ -f $TEMPDIR/$key.asc ]]; then
 		msg2 "Exported $key"
-		mv "keys/pgp/$key.asc.tmp" "keys/pgp/$key.asc"
+		mv "$TEMPDIR/$key.asc" "keys/pgp/$key.asc"
 	else
 		if [[ -f keys/pgp/$key.asc ]]; then
 			warning "Failed to update key: $key"
