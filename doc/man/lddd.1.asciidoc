@@ -22,4 +22,4 @@ See Also
 
 linkman:ldd[1]
 
-include::footer.asciidoc[]
+include::include/footer.asciidoc[]

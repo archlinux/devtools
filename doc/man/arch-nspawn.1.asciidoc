@@ -37,4 +37,4 @@ Options
 *-h*::
 	Show this usage message
 
-include::footer.asciidoc[]
+include::include/footer.asciidoc[]

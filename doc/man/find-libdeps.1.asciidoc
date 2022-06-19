@@ -21,4 +21,4 @@ Options
 	Ignore internal libraries.
 
 
-include::footer.asciidoc[]
+include::include/footer.asciidoc[]

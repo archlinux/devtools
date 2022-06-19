@@ -40,4 +40,4 @@ See Also
 
 linkman:find-libprovides[1]
 
-include::footer.asciidoc[]
+include::include/footer.asciidoc[]

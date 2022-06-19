@@ -46,4 +46,4 @@ See Also
 
 linkman:pacman[1]
 
-include::footer.asciidoc[]
+include::include/footer.asciidoc[]

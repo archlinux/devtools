@@ -44,4 +44,4 @@ See Also
 
 linkman:devtools[7]
 
-include::footer.asciidoc[]
+include::include/footer.asciidoc[]

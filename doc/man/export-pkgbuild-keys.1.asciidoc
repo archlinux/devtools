@@ -22,4 +22,4 @@ Options
 *-h, --help*::
 	Show a help text.
 
-include::footer.asciidoc[]
+include::include/footer.asciidoc[]

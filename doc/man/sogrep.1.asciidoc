@@ -45,4 +45,4 @@ Environment Variables
 	directory set by the **XDG_CACHE_HOME** environment variable or the
 	**HOME** environment variable if **XDG_CACHE_HOME** is not set.
 
-include::footer.asciidoc[]
+include::include/footer.asciidoc[]

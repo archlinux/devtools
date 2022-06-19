@@ -9,7 +9,7 @@ BINPROGS = $(addprefix $(BUILDDIR)/,$(patsubst src/%,bin/%,$(patsubst %.in,%,$(w
 MAKEPKG_CONFIGS=$(wildcard config/makepkg/*)
 PACMAN_CONFIGS=$(wildcard config/pacman/*)
 SETARCH_ALIASES = $(wildcard config/setarch-aliases.d/*)
-MANS = $(addprefix $(BUILDDIR)/,$(patsubst %.asciidoc,%,$(filter-out doc/footer.asciidoc,$(wildcard doc/*.asciidoc))))
+MANS = $(addprefix $(BUILDDIR)/,$(patsubst %.asciidoc,%,$(wildcard doc/man/*.asciidoc)))
 
 COMMITPKG_LINKS = \
 	extrapkg \
@@ -83,10 +83,10 @@ endef
 $(eval $(call buildInScript,build/bin,src/,555))
 $(foreach completion,$(wildcard contrib/completion/*),$(eval $(call buildInScript,build/$(completion),$(completion)/,444)))
 
-$(BUILDDIR)/doc/%: doc/%.asciidoc doc/asciidoc.conf doc/footer.asciidoc
+$(BUILDDIR)/doc/man/%: doc/man/%.asciidoc doc/asciidoc.conf doc/man/include/footer.asciidoc
 	$(GEN_MSG)
-	@mkdir -p $(BUILDDIR)/doc
-	@a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage --destination-dir=$(BUILDDIR)/doc -a pkgdatadir=$(PREFIX)/share/devtools $<
+	@mkdir -p $(BUILDDIR)/doc/man
+	@a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage --destination-dir=$(BUILDDIR)/doc/man -a pkgdatadir=$(PREFIX)/share/devtools $<
 
 clean:
 	rm -rf $(BUILDDIR)

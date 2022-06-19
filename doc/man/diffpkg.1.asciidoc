@@ -54,4 +54,4 @@ Modes
 See Also
 --------
 
-include::footer.asciidoc[]
+include::include/footer.asciidoc[]

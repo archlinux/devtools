@@ -49,4 +49,4 @@ Example: To use a second `testing-x86_64-build` instance with another copydir:
 
 	`offload-build -r testing -- -- -l <chroot_copy>`
 
-include::footer.asciidoc[]
+include::include/footer.asciidoc[]

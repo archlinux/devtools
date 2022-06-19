@@ -52,4 +52,4 @@ linkman:offload-build[1]
 linkman:sogrep[1]
 	Find packages using a linked to a given shared library
 
-include::footer.asciidoc[]
+include::include/footer.asciidoc[]
