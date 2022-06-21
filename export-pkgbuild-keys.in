@@ -37,7 +37,9 @@ fi
 mapfile -t validpgpkeys < <(
 	# shellcheck source=PKGBUILD.proto
 	. ./PKGBUILD
-	printf "%s\n" "${validpgpkeys[@]}"
+	if (( ${#validpgpkeys[@]} )); then
+		printf "%s\n" "${validpgpkeys[@]}"
+	fi
 )
 
 msg "Exporting ${#validpgpkeys[@]} PGP keys..."
