@@ -25,7 +25,7 @@ linkman:arch-nspawn[1]
 	Run a command or OS in a light-weight namespace container
 
 linkman:checkpkg[1]
-	Compare the current build pakcage with the repository version
+	Compare the current build package with the repository version
 
 linkman:find-libdeps[1]
 	Find soname dependencies for a package
