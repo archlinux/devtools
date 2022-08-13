@@ -57,9 +57,14 @@ for _arch in "${arch[@]}"; do
 	fi
 	for _pkgname in "${pkgname[@]}"; do
 		fullver=$(get_full_version "$_pkgname")
-		pkgpath="/srv/ftp/$source_repo/os/$repo_arch/$_pkgname-$fullver-${_arch}.pkg.tar.*"
+		pkgpath="/srv/ftp/${source_repo}/os/${repo_arch}/${_pkgname}-${fullver}-${_arch}.pkg.tar.*"
+		debugpath="/srv/ftp/${source_repo}-debug/os/${repo_arch}/${_pkgname}-debug-${fullver}-${_arch}.pkg.tar.*"
+		# Fail if $pkgpath doesn't match but keep $debugpath optional
 		# shellcheck disable=2029
-		ssh "$server" "cp $pkgpath staging/$target_repo" || die
+		ssh "${server}" "bash -c '
+			install ${pkgpath} -Dt staging/${target_repo} &&
+			(install ${debugpath} -Dt staging/${target_repo} 2>/dev/null || true)
+		'" || die
 	done
 done
 
