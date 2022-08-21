@@ -28,6 +28,8 @@ usage() {
 		    -h, --help           Show this help text
 
 		OUTPUT OPTIONS
+		    --color[=WHEN]       Color output; WHEN is 'never', 'always', or 'auto';
+		                         Plain --color means --color='auto'
 		    -u, -U, --unified    Output 3 lines of unified context
 		    -y, --side-by-side   Output in two columns
 
@@ -47,6 +49,7 @@ PKGINFO=0
 BUILDINFO=0
 
 DIFFMODE=--side-by-side
+DIFFCOLOR=--color
 DIFFOPTIONS=(--expand-tabs)
 
 # option checking
@@ -88,6 +91,15 @@ while (( $# )); do
 			DIFFMODE=--side-by-side
 			shift
 			;;
+		--color|--color=*)
+			if [[ $2 == never || $2 == always || $2 == auto ]]; then
+				DIFFCOLOR="--color=$2"
+				shift 2
+				continue
+			fi
+			DIFFCOLOR="$1"
+			shift
+			;;
 		--)
 			shift
 			break
@@ -108,7 +120,7 @@ if (( VERBOSE )); then
 else
 	DIFFOPTIONS+=(--suppress-common-lines)
 fi
-DIFFOPTIONS+=("${DIFFMODE}")
+DIFFOPTIONS+=("${DIFFMODE}" "${DIFFCOLOR}")
 
 if ! (( DIFFOSCOPE || TARLIST || PKGINFO || BUILDINFO )); then
 	TARLIST=1

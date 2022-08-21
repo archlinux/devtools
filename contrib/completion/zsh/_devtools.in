@@ -6,6 +6,7 @@ m4_include(lib/valid-tags.sh)
 m4_include(lib/valid-repos.sh)
 
 _binary_arch=${_arch[*]:0:-1}
+_colors=(never always auto)
 
 _archbuild_args=(
 	'-c[Recreate the chroot before building]'
@@ -49,6 +50,7 @@ _diffpkg_args=(
 	'(-m --makepkg-config)'{-m,--makepkg-config}'[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
 	'(-u -U --unified)'{-u,-U,--unified}'[Output 3 lines of unified context]'
 	'(-y --side-by-side)'{-y,--side-by-side}'[Output in two columns]'
+	'--color=[Color output]:when:($_colors[*])'
 	'(-v --verbose)'{-v,--verbose}'[Provide more detailed/unfiltered output]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:packages:_devtools_completions_all_packages'

@@ -39,6 +39,9 @@ Options
 Output Options
 --------------
 
+*--color*[='WHEN']::
+	Color output; 'WHEN' is `'never'`, `'always'`, or `'auto'`; Plain *--color* means *--color='auto'*
+
 *-u, -U, --unified*::
 	Output 3 lines of unified context
 
