@@ -47,6 +47,8 @@ _diffpkg_args=(
 	'(-p --pkginfo)'{-p,--pkginfo}'[.PKGINFO diff mode]'
 	'(-b --buildinfo)'{-b,--buildinfo}'[.BUILDINFO diff mode]'
 	'(-m --makepkg-config)'{-m,--makepkg-config}'[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
+	'(-u -U --unified)'{-u,-U,--unified}'[Output 3 lines of unified context]'
+	'(-y --side-by-side)'{-y,--side-by-side}'[Output in two columns]'
 	'(-v --verbose)'{-v,--verbose}'[Provide more detailed/unfiltered output]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:packages:_devtools_completions_all_packages'

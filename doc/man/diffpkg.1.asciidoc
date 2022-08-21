@@ -36,6 +36,15 @@ Options
 *-h, --help*::
 	Show a help text
 
+Output Options
+--------------
+
+*-u, -U, --unified*::
+	Output 3 lines of unified context
+
+*-y, --side-by-side*::
+	Output in two columns
+
 Modes
 -----
 

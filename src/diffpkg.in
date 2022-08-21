@@ -27,6 +27,10 @@ usage() {
 		    -v, --verbose        Provide more detailed/unfiltered output
 		    -h, --help           Show this help text
 
+		OUTPUT OPTIONS
+		    -u, -U, --unified    Output 3 lines of unified context
+		    -y, --side-by-side   Output in two columns
+
 		MODES
 		    -l, --list           Activate content list diff mode (default)
 		    -d, --diffoscope     Activate diffoscope diff mode
@@ -41,6 +45,9 @@ TARLIST=0
 DIFFOSCOPE=0
 PKGINFO=0
 BUILDINFO=0
+
+DIFFMODE=--side-by-side
+DIFFOPTIONS=(--expand-tabs)
 
 # option checking
 while (( $# )); do
@@ -73,6 +80,14 @@ while (( $# )); do
 			VERBOSE=1
 			shift
 			;;
+		-u|-U|--unified)
+			DIFFMODE=--unified
+			shift
+			;;
+		-y|--side-by-side)
+			DIFFMODE=--side-by-side
+			shift
+			;;
 		--)
 			shift
 			break
@@ -85,6 +100,15 @@ while (( $# )); do
 			;;
 	esac
 done
+
+if (( VERBOSE )); then
+	if [[ $DIFFMODE == --unified ]]; then
+		DIFFMODE="--unified=99999"
+	fi
+else
+	DIFFOPTIONS+=(--suppress-common-lines)
+fi
+DIFFOPTIONS+=("${DIFFMODE}")
 
 if ! (( DIFFOSCOPE || TARLIST || PKGINFO || BUILDINFO )); then
 	TARLIST=1
@@ -128,25 +152,27 @@ diff_pkgs() {
 	[[ -f $oldpkg ]] || die "No such file: %s" "${oldpkg}"
 	[[ -f $newpkg ]] || die "No such file: %s" "${newpkg}"
 
+	DIFFOPTIONS+=(--label "${oldpkg}" --label "${newpkg}")
+
 	if (( TARLIST )); then
 		tar_list "$oldpkg" > "$TMPDIR/filelist-old"
 		tar_list "$newpkg" > "$TMPDIR/filelist"
 
-		sdiff -s "$TMPDIR/filelist-old" "$TMPDIR/filelist"
+		diff "${DIFFOPTIONS[@]}" "$TMPDIR/filelist-old" "$TMPDIR/filelist"
 	fi
 
 	if (( PKGINFO )); then
 		bsdtar xOqf "$oldpkg" .PKGINFO > "$TMPDIR/pkginfo-old"
 		bsdtar xOqf "$newpkg" .PKGINFO > "$TMPDIR/pkginfo"
 
-		sdiff -s "$TMPDIR/pkginfo-old" "$TMPDIR/pkginfo"
+		diff "${DIFFOPTIONS[@]}" "$TMPDIR/pkginfo-old" "$TMPDIR/pkginfo"
 	fi
 
 	if (( BUILDINFO )); then
 		bsdtar xOqf "$oldpkg" .BUILDINFO > "$TMPDIR/buildinfo-old"
 		bsdtar xOqf "$newpkg" .BUILDINFO > "$TMPDIR/buildinfo"
 
-		sdiff -s "$TMPDIR/buildinfo-old" "$TMPDIR/buildinfo"
+		diff "${DIFFOPTIONS[@]}" "$TMPDIR/buildinfo-old" "$TMPDIR/buildinfo"
 	fi
 
 	if (( DIFFOSCOPE )); then
