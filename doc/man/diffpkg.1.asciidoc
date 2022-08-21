@@ -48,6 +48,10 @@ Output Options
 *-y, --side-by-side*::
 	Output in two columns
 
+*-W, --width*[='NUM']::
+	Output at most 'NUM' (default `'auto'`) print columns; 'NUM' can be `'auto'`, `'columns'` or a number.
+	`'auto'` will be resolved to the maximum line length of both files, guaranteeing the diff to be uncut.
+
 Modes
 -----
 
