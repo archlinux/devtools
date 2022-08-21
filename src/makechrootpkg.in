@@ -314,9 +314,10 @@ makepkg_args+=("${@:$OPTIND}")
 # See if -R or -e was passed to makepkg
 for arg in "${@:$OPTIND}"; do
 	case ${arg%%=*} in
-		--skip*|--holdver) verifysource_args+=("$arg") ;;
+		--skip*|--holdver|--ignorearch) verifysource_args+=("$arg") ;;
 		--repackage|--noextract) keepbuilddir=1 ;;
 		--*) ;;
+		-*A*) verifysource_args+=(-A) ;;
 		-*R*|-*e*) keepbuilddir=1 ;;
 	esac
 done
