@@ -22,16 +22,8 @@ elif [[ -r "$HOME/.makepkg.conf" ]]; then
 fi
 
 cmd=${0##*/}
-
-if [[ ! -f PKGBUILD ]]; then
-	die 'No PKGBUILD file'
-fi
-
-source=()
-# shellcheck source=contrib/makepkg/PKGBUILD.proto
-. ./PKGBUILD
-pkgbase=${pkgbase:-$pkgname}
-
+rsyncopts=(-e ssh -p '--chmod=ug=rw,o=r' -c -h -L --progress --partial -y)
+archreleaseopts=()
 case "$cmd" in
 	commitpkg)
 		if (( $# == 0 )); then
@@ -47,7 +39,26 @@ case "$cmd" in
 		die 'Usage: commitpkg <reponame> [-f] [-s server] [-l limit] [-a arch] [commit message]'
 		;;
 esac
+while getopts ':l:a:s:f' flag; do
+	case $flag in
+		f) archreleaseopts+=('-f') ;;
+		s) server=$OPTARG ;;
+		l) rsyncopts+=("--bwlimit=$OPTARG") ;;
+		a) commit_arch=$OPTARG ;;
+		:) die "Option requires an argument -- '%s'" "$OPTARG" ;;
+		\?) die "Invalid option -- '%s'" "$OPTARG" ;;
+	esac
+done
+shift $(( OPTIND - 1 ))
 
+if [[ ! -f PKGBUILD ]]; then
+	die 'No PKGBUILD file'
+fi
+
+source=()
+# shellcheck source=contrib/makepkg/PKGBUILD.proto
+. ./PKGBUILD
+pkgbase=${pkgbase:-$pkgname}
 
 if (( ${#validpgpkeys[@]} != 0 )); then
 	if [[ -d keys ]]; then
@@ -87,20 +98,6 @@ if (( ${#needsversioning[*]} )); then
 	done < <(svn status -v "${needsversioning[@]}")
 	(( ${#unversioned[*]} )) && die "%s is not under version control" "${unversioned[@]}"
 fi
-
-rsyncopts=(-e ssh -p '--chmod=ug=rw,o=r' -c -h -L --progress --partial -y)
-archreleaseopts=()
-while getopts ':l:a:s:f' flag; do
-	case $flag in
-		f) archreleaseopts+=('-f') ;;
-		s) server=$OPTARG ;;
-		l) rsyncopts+=("--bwlimit=$OPTARG") ;;
-		a) commit_arch=$OPTARG ;;
-		:) die "Option requires an argument -- '%s'" "$OPTARG" ;;
-		\?) die "Invalid option -- '%s'" "$OPTARG" ;;
-	esac
-done
-shift $(( OPTIND - 1 ))
 
 # check packages for validity
 for _arch in "${arch[@]}"; do
