@@ -52,7 +52,7 @@ while (( $# )); do
 			shift
 			break
 			;;
-		-*,--*)
+		-*|--*)
 			die "invalid argument: %s" "$1"
 			;;
 		*)
