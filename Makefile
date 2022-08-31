@@ -6,6 +6,7 @@ MANDIR = $(PREFIX)/share/man
 BUILDDIR = build
 
 BINPROGS = $(addprefix $(BUILDDIR)/,$(patsubst src/%,bin/%,$(patsubst %.in,%,$(wildcard src/*.in))))
+LIBUTILS = $(wildcard lib/*)
 MAKEPKG_CONFIGS=$(wildcard config/makepkg/*)
 PACMAN_CONFIGS=$(wildcard config/pacman/*)
 SETARCH_ALIASES = $(wildcard config/setarch-aliases.d/*)
@@ -71,13 +72,13 @@ edit = sed -e "s|@pkgdatadir[@]|$(PREFIX)/share/devtools|g"
 GEN_MSG = @echo "GEN $(patsubst $(BUILDDIR)/%,%,$@)"
 
 define buildInScript
-$(1)/%: $(2)%.in
+$(1)/%: $(2)%.in $(LIBUTILS)
 	$$(GEN_MSG)
 	@mkdir -p $$(dir $$@)
 	@$(RM) "$$@"
 	@{ echo -n 'm4_changequote([[[,]]])'; cat $$<; } | m4 -P --define=m4_devtools_version=$$(BUILDTOOLVER) | $(edit) >$$@
 	@chmod $(3) "$$@"
-	@bash -O extglob -n "$$@"
+	@bash -n "$$@"
 endef
 
 $(eval $(call buildInScript,build/bin,src/,555))
