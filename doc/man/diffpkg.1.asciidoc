@@ -21,7 +21,7 @@ When given one package, use it to diff against the locally built one.
 When given two packages, diff both packages against each other.
 
 In either case, a package name will be converted to a filename from the
-cache, and diffpkg will proceed as though this filename was initially
+cache or pool, and diffpkg will proceed as though this filename was initially
 specified.
 
 Options
@@ -29,6 +29,10 @@ Options
 
 *-M, --makepkg-config*::
 	Set an alternate makepkg configuration file
+
+
+*-P, --pool*='DIR'::
+	Search diff target in pool dir (default `'/srv/ftp/pool'`)
 
 *-v, --verbose*::
 	Provide more detailed/unfiltered output

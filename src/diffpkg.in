@@ -24,6 +24,7 @@ usage() {
 
 		OPTIONS
 		    -M, --makepkg-config Set an alternate makepkg configuration file
+		    -P, --pool=DIR       Search diff target in pool dir (default '/srv/ftp/pool')
 		    -v, --verbose        Provide more detailed/unfiltered output
 		    -h, --help           Show this help text
 
@@ -44,6 +45,8 @@ _EOF_
 }
 
 MAKEPKG_CONF=/etc/makepkg.conf
+POOLDIR=/srv/ftp/pool
+
 VERBOSE=0
 TARLIST=0
 DIFFOSCOPE=0
@@ -63,6 +66,7 @@ while (( $# )); do
 			exit 0
 			;;
 		-M|--makepkg-config)
+			(( $# <= 1 )) && die "missing argument for %s" "$1"
 			MAKEPKG_CONF="$2"
 			shift 2
 			;;
@@ -110,6 +114,15 @@ while (( $# )); do
 			;;
 		--width=*)
 			DIFFWIDTH="$1"
+			shift
+			;;
+		-P|--pool)
+			(( $# <= 1 )) && die "missing argument for %s" "$1"
+			POOLDIR="$2"
+			shift 2
+			;;
+		--pool=*)
+			POOLDIR="${1#*=}"
 			shift
 			;;
 		--)
@@ -248,8 +261,19 @@ fetch_pkg() {
 			pkg=$1 ;;
 	esac
 
-	[[ -n $pkgurl ]] || pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm "$pkg") ||
-		die "Couldn't download previous package for %s." "$pkg"
+	if [[ -z ${pkgurl} ]]; then
+		# Try to find latest package in pool dir
+		if [[ -d ${POOLDIR} ]]; then
+			shopt -s extglob nullglob
+			pkgurl=$(printf "%s\n" "${POOLDIR}"/*/"${_pkgname}"-!(*-*)-!(*-*)-!(*-*).pkg.tar!(*.sig)|sort -Vr|head -1)
+			shopt -u extglob nullglob
+		fi
+		# Search via pacman database if no pool file exists
+		if [[ ! -f ${pkgurl} ]]; then
+			pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm "$pkg") ||
+				die "Couldn't download previous package for %s." "$pkg"
+		fi
+	fi
 
 	pkg=${pkgurl##*/}
 	pkgdest=$(mktemp -t -d "${pkg}-XXXXXX")/${pkg}

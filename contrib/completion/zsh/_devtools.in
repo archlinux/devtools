@@ -52,6 +52,7 @@ _diffpkg_args=(
 	'(-y --side-by-side)'{-y,--side-by-side}'[Output in two columns]'
 	'--color=[Color output]:when:($_colors[*])'
 	'(-W --width=)'{-W,--width=}'[Output at most NUM print columns]:num:(auto columns)'
+	'(-P --pool=)'{-P,--pool=}'[pool directory]:dir:_files -/'
 	'(-v --verbose)'{-v,--verbose}'[Provide more detailed/unfiltered output]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:packages:_devtools_completions_all_packages'
