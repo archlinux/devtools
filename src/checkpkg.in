@@ -2,8 +2,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-shopt -s extglob
-
 m4_include(lib/common.sh)
 
 usage() {

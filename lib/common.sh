@@ -19,8 +19,6 @@ export LANG=C
 export BUILDTOOL=devtools
 export BUILDTOOLVER=m4_devtools_version
 
-shopt -s extglob
-
 # check if messages are to be printed using color
 if [[ -t 2 && "$TERM" != dumb ]]; then
 	colorize
@@ -142,12 +140,16 @@ pkgver_equal() {
 find_cached_package() {
 	local searchdirs=("$PWD" "$PKGDEST") results=()
 	local targetname=$1 targetver=$2 targetarch=$3
-	local dir pkg pkgbasename name ver rel arch r results
+	local dir pkg packages pkgbasename name ver rel arch r results
 
 	for dir in "${searchdirs[@]}"; do
 		[[ -d $dir ]] || continue
 
-		for pkg in "$dir"/*.pkg.tar?(.!(sig|*.*)); do
+		shopt -s extglob nullglob
+		mapfile -t packages < <(printf "%s\n" "$dir"/*.pkg.tar?(.!(sig|*.*)))
+		shopt -u extglob nullglob
+
+		for pkg in "${packages[@]}"; do
 			[[ -f $pkg ]] || continue
 
 			# avoid adding duplicates of the same inode

@@ -5,7 +5,6 @@
 m4_include(lib/common.sh)
 
 set -e
-shopt -s extglob
 
 IGNORE_INTERNAL=0
 
@@ -43,7 +42,9 @@ fi
 
 process_sofile() {
 	# extract the library name: libfoo.so
+	shopt -s extglob nullglob
 	soname="${sofile%.so?(+(.+([0-9])))}".so
+	shopt -u extglob nullglob
 	# extract the major version: 1
 	soversion="${sofile##*\.so\.}"
 	if [[ "$soversion" = "$sofile" ]] && ((IGNORE_INTERNAL)); then
