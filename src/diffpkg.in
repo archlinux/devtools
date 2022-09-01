@@ -54,7 +54,7 @@ PKGINFO=0
 BUILDINFO=0
 
 DIFFMODE=--side-by-side
-DIFFCOLOR=--color
+DIFFCOLOR=--color=auto
 DIFFWIDTH=--width=auto
 DIFFOPTIONS=(--expand-tabs)
 
@@ -104,7 +104,11 @@ while (( $# )); do
 				shift 2
 				continue
 			fi
-			DIFFCOLOR="$1"
+			if [[ $1 == --color ]]; then
+				DIFFCOLOR="--color=auto"
+			else
+				DIFFCOLOR="$1"
+			fi
 			shift
 			;;
 		-W|--width)
@@ -242,7 +246,7 @@ diff_pkgs() {
 	fi
 
 	if (( DIFFOSCOPE )); then
-		diffoscope "$oldpkg" "$newpkg"
+		diffoscope "${DIFFCOLOR/--color/--text-color}" "$oldpkg" "$newpkg"
 	fi
 }
 
