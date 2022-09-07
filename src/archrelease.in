@@ -57,5 +57,5 @@ fi
 stat_busy "Releasing package"
 printf -v tag_list ", %s" "$@"; tag_list="${tag_list#, }"
 git tag -s -m "archrelease: released $pkgbase-$pkgver to $tag_list"  "$tag_pkgver" || abort
-git push --tags || abort
+git push --tags main || abort
 stat_done
