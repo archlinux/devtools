@@ -139,7 +139,7 @@ if [[ -n $(git status --short --untracked-files=no) ]]; then
 	done
 	stat_done
 
-	msgtemplate="upgpkg: $pkgbase $(get_full_version)"
+	msgtemplate="upgpkg: $(get_full_version)"
 	if [[ -n $1 ]]; then
 		stat_busy 'Committing changes'
 		git commit -q -m "${msgtemplate}: ${1}" || die
