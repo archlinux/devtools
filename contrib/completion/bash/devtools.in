@@ -29,7 +29,7 @@ _archco() {
   _archco_pkg Slq
   true
 } &&
-complete -F _archco archco communityco
+complete -F _archco archco
 
 _makechrootpkg() {
   local cur
