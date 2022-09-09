@@ -38,14 +38,7 @@ ARCHBUILD_LINKS = \
 	kde-unstable-x86_64-build \
 	gnome-unstable-x86_64-build
 
-CROSSREPOMOVE_LINKS = \
-	extra2community \
-	community2extra
-
 COMPLETIONS = $(addprefix $(BUILDDIR)/,$(patsubst %.in,%,$(wildcard contrib/completion/*/*)))
-BASHCOMPLETION_LINKS = \
-	archco \
-	communityco
 
 
 all: binprogs completion man
@@ -101,12 +94,9 @@ install: all
 	for a in ${SETARCH_ALIASES}; do install -m0644 $$a -t $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d; done
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
-	for l in ${CROSSREPOMOVE_LINKS}; do ln -sf crossrepomove $(DESTDIR)$(PREFIX)/bin/$$l; done
 	ln -sf find-libdeps $(DESTDIR)$(PREFIX)/bin/find-libprovides
 	install -Dm0644 $(BUILDDIR)/contrib/completion/bash/devtools $(DESTDIR)$(PREFIX)/share/bash-completion/completions/devtools
-	for l in ${BASHCOMPLETION_LINKS}; do ln -sf devtools $(DESTDIR)$(PREFIX)/share/bash-completion/completions/$$l; done
 	install -Dm0644 $(BUILDDIR)/contrib/completion/zsh/_devtools $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
-	ln -sf archco $(DESTDIR)$(PREFIX)/bin/communityco
 	for manfile in $(MANS); do \
 		install -Dm644 $$manfile -t $(DESTDIR)$(MANDIR)/man$${manfile##*.}; \
 	done;
@@ -118,11 +108,8 @@ uninstall:
 	for f in $(notdir $(SETARCH_ALIASES)); do rm -f $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d/$$f; done
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
-	for l in ${CROSSREPOMOVE_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
-	for l in ${BASHCOMPLETION_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/share/bash-completion/completions/$$l; done
 	rm $(DESTDIR)$(PREFIX)/share/bash-completion/completions/devtools
 	rm $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
-	rm -f $(DESTDIR)$(PREFIX)/bin/communityco
 	rm -f $(DESTDIR)$(PREFIX)/bin/find-libprovides
 	for manfile in $(notdir $(MANS)); do rm -f $(DESTDIR)$(MANDIR)/man$${manfile##*.}/$${manfile}; done;
 	rmdir --ignore-fail-on-non-empty $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d $(DESTDIR)$(PREFIX)/share/devtools
