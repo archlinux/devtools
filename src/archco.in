@@ -13,14 +13,12 @@ fi
 
 case $scriptname in
 	archco)
-		SVNURL="svn+ssh://svn-packages@repos.archlinux.org/srv/repos/svn-packages/svn";;
-	communityco)
-		SVNURL="svn+ssh://svn-community@repos.archlinux.org/srv/repos/svn-community/svn";;
+		GITURL="ssh://git@gitlab.archlinux.org:222/bot-test/packages";;
 	*)
-		die "Couldn't find svn url for %s" "$scriptname"
+		die "Couldn't find Git url for %s" "$scriptname"
 		;;
 esac
 
-for i in "$@"; do
-	svn co "$SVNURL/$i"
+for pkgbase in "$@"; do
+	git clone --origin origin --config commit.gpgsign=true "${GITURL}/${pkgbase}.git"
 done
