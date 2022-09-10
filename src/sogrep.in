@@ -9,7 +9,7 @@
 m4_include(lib/common.sh)
 
 # globals
-: ${SOLINKS_MIRROR:="https://mirror.pkgbuild.com"}
+fallback_mirror='https://geo.mirror.pkgbuild.com'
 : ${SOCACHE_DIR:="${XDG_CACHE_HOME:-${HOME}/.cache}/sogrep"}
 
 m4_include(lib/valid-repos.sh)
@@ -23,11 +23,16 @@ source /usr/share/makepkg/util/parseopts.sh
 source /usr/share/makepkg/util/util.sh
 
 recache() {
-    local repo arch verbosity=-s
+    local repo arch fallback_linksdburl linksdburl mirror verbosity=-s
 
     (( VERBOSE )) && verbosity=--progress-bar
 
     for repo in "${_repos[@]}"; do
+        if [[ -n "$SOLINKS_MIRROR" ]]; then
+            mirror="$SOLINKS_MIRROR"
+        elif ! mirror="$(set -o pipefail; pacman-conf --repo "$repo" Server 2>/dev/null | head -n1)"; then
+            mirror="$fallback_mirror"
+        fi
         for arch in "${arches[@]}"; do
             # delete extracted tarballs from previous sogrep versions
             rm -rf "${SOCACHE_DIR}/${arch}/${repo}"
@@ -36,8 +41,20 @@ recache() {
             local dbpath=${SOCACHE_DIR}/${arch}/${repo}.links.tar.gz
             mkdir -p "${dbpath%/*}"
             (( VERBOSE )) && echo "Fetching ${repo}.links.tar.gz..."
-            if ! curl -fLR "${verbosity}" -o "${dbpath}" -z "${dbpath}" \
-                    "${SOLINKS_MIRROR}/${repo}/os/${arch}/${repo}.links.tar.gz"; then
+
+            if [[ "$mirror" == *"/${repo}/os/${arch}" ]]; then
+                linksdburl="${mirror}/${repo}.links.tar.gz"
+            else
+                linksdburl="${mirror}/${repo}/os/${arch}/${repo}.links.tar.gz"
+            fi
+            fallback_linksdburl="${fallback_mirror}/${repo}/os/${arch}/${repo}.links.tar.gz"
+
+            if curl -fLR "${verbosity}" -o "${dbpath}" -z "${dbpath}" "$linksdburl"; then
+                :
+            elif [[ "$linksdburl" != "$fallback_linksdburl" ]] \
+                && curl -fLR "${verbosity}" -o "${dbpath}" -z "${dbpath}" "$fallback_linksdburl"; then
+                :
+            else
                 echo "error: failed to download links database for repo ${repo}"
                 exit 1
             fi
