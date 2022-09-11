@@ -1,0 +1,42 @@
+pkgctl-repo-clone(1)
+======================
+
+Name
+----
+pkgctl-repo-clone - Clone a package repository
+
+Synopsis
+--------
+pkgctl repo clone [OPTIONS] [PKGNAME...]
+
+Description
+-----------
+
+Clone Git packaging repositories from the canonical namespace.
+
+The configure command is subsequently invoked to synchronize the distro
+specs and makepkg.conf settings. The unprivileged option can be used
+for cloning packaging repositories without SSH access using read-only
+HTTPS.
+
+Options
+-------
+
+*-m, --maintainer* 'NAME'::
+	Clone all packages of the named maintainer
+
+*-u, --unprivileged*::
+	Clone package with read-only access and without packager info as Git author
+
+*--universe*::
+	Clone all existing packages, useful for cache warming
+
+*-h, --help*::
+	Show a help text
+
+See Also
+--------
+
+linkman:pkgctl-repo-configure[1]
+
+include::include/footer.asciidoc[]

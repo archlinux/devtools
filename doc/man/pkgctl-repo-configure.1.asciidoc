@@ -1,0 +1,32 @@
+pkgctl-repo-configure(1)
+========================
+
+Name
+----
+pkgctl-repo-configure - Configure a clone according to distro specs
+
+Synopsis
+--------
+pkgctl repo configure [OPTIONS] [PATH...]
+
+Description
+-----------
+
+Configure Git packaging repositories according to distro specs and
+'makepkg.conf' settings.
+
+Git author information and the used signing key is set up from
+'makepkg.conf' read from any valid location like '/etc' or 'XDG_CONFIG_HOME'.
+The unprivileged option can be used for cloning packaging repositories
+without SSH access using read-only HTTPS.
+
+Options
+-------
+
+*-u, --unprivileged*::
+	Configure read-only repo without packager info as Git author
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]

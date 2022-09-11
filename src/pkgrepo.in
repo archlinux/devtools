@@ -9,10 +9,11 @@ source /usr/share/makepkg/util/message.sh
 
 set -e
 
+COMMAND=${_DEVTOOLS_COMMAND:-${BASH_SOURCE[0]##*/}}
 
 usage() {
     cat <<- _EOF_
-		Usage: ${BASH_SOURCE[0]##*/} [COMMAND] [OPTIONS]
+		Usage: ${COMMAND} [COMMAND] [OPTIONS]
 
 		Manage Git packaging repositories and helps with their configuration
 		according to distro specs.
@@ -37,7 +38,7 @@ _EOF_
 
 usage_clone() {
     cat <<- _EOF_
-		Usage: ${BASH_SOURCE[0]##*/} clone [OPTIONS] [PKGNAME...]
+		Usage: ${COMMAND} clone [OPTIONS] [PKGNAME...]
 
 		Clone Git packaging repositories from the canonical namespace.
 
@@ -57,7 +58,7 @@ _EOF_
 
 usage_configure() {
     cat <<- _EOF_
-		Usage: ${BASH_SOURCE[0]##*/} configure [OPTIONS] [PATH...]
+		Usage: ${COMMAND} configure [OPTIONS] [PATH...]
 
 		Configure Git packaging repositories according to distro specs and
 		makepkg.conf settings.

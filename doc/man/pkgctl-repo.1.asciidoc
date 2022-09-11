@@ -1,0 +1,51 @@
+pkgctl-repo(1)
+================
+
+Name
+----
+pkgctl-repo - Manage Git packaging repositories and their configuration
+
+Synopsis
+--------
+pkgctl repo [OPTIONS] [SUBCOMMAND]
+
+Description
+-----------
+
+Manage Git packaging repositories and helps with their configuration
+according to distro specs.
+
+Git author information and the used signing key is set up from
+'makepkg.conf' read from any valid location like '/etc' or 'XDG_CONFIG_HOME'.
+The configure command can be used to synchronize the distro specs and
+makepkg.conf settings for previously cloned repositories.
+
+The unprivileged option can be used for cloning packaging repositories
+without SSH access using read-only HTTPS.
+
+Options
+-------
+
+*-h, --help*::
+	Show a help text
+
+Subcommands
+-----------
+
+pkgctl repo clone::
+	Clone a package repository
+
+pkgctl repo configure::
+	Configure a clone according to distro specs
+
+pkgctl repo web::
+	Open the packaging repository's website
+
+See Also
+--------
+
+linkman:pkgctl-repo-clone[1]
+linkman:pkgctl-repo-configure[1]
+linkman:pkgctl-repo-web[1]
+
+include::include/footer.asciidoc[]

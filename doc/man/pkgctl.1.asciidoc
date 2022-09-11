@@ -1,0 +1,32 @@
+pkgctl(1)
+=========
+
+Name
+----
+pkgctl - Unified command-line frontend for devtools
+
+Synopsis
+--------
+pkgctl [SUBCOMMAND] [OPTIONS]
+
+Description
+-----------
+
+TODO
+
+Subcommands
+-----------
+
+pkgctl diff::
+	Compare package files using different modes
+
+pkgctl repo::
+	Manage Git packaging repositories and their configuration
+
+See Also
+--------
+
+linkman:pkgctl-diff[1]
+linkman:pkgctl-repo[1]
+
+include::include/footer.asciidoc[]
