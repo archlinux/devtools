@@ -255,6 +255,16 @@ getpkgdesc() {
 }
 
 
+get_tag_from_pkgver() {
+	local pkgver=$1
+	local tag=${pkgver}
+
+	tag=${tag/:/-}
+	tag=${tag//~/.}
+	echo "${tag}"
+}
+
+
 is_debug_package() {
 	local pkgfile=${1} pkgbase pkgname pkgdesc
 	pkgbase="$(getpkgbase "${pkgfile}")"
