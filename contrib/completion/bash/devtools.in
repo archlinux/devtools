@@ -14,22 +14,22 @@ _devtools_compgen() {
   done
 }
 
-_archco_pkg() {
+_pkgrepo_pkg() {
   _devtools_compgen "$(
       command pacman "-$1"
   )"
 }
 
-_archco() {
-  local cur prev 
+_pkgrepo() {
+  local cur prev
   COMPREPLY=()
   cur=$(_get_cword)
   prev=${COMP_WORDS[COMP_CWORD-1]}
 
-  _archco_pkg Slq
+  _pkgrepo_pkg Slq
   true
 } &&
-complete -F _archco archco
+complete -F _pkgrepo pkgrepo
 
 _makechrootpkg() {
   local cur

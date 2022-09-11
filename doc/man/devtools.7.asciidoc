@@ -11,7 +11,7 @@ Description
 Devtools contains tools for package maintenance in Arch Linux. The toolset
 varies from tools for building packages in a clean chroot ('mkarchroot',...),
 packaging related tools for sonames ('sogrep', 'lddd') and tools for
-repository management such as ('archco')
+repository management such as ('pkgrepo')
 
 Programs
 --------
