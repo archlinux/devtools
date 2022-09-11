@@ -22,6 +22,7 @@ _archco_cmds=(
 )
 
 _archco_clone_args=(
+	'(-m --maintainer=)'{-m,--maintainer=}'[Clone all packages of the named maintainer]:maintainer:'
 	'(-u --unprivileged)'{-u,--unprivileged}'[Read-only access without packager info as Git author]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:packages:_devtools_completions_all_packages'

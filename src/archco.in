@@ -46,6 +46,7 @@ usage_clone() {
 		HTTPS.
 
 		OPTIONS
+		    -m, --maintainer=NAME  Clone all packages of the named maintainer
 		    -u, --unprivileged     Clone package with read-only access and without
 		                           packager info as Git author.
 		    -h, --help             Show this help text
@@ -127,6 +128,15 @@ if (( CLONE )); then
 				UNPRIVILEGED=1
 				shift
 				;;
+			-m|--maintainer)
+				(( $# <= 1 )) && die "missing argument for %s" "$1"
+				MAINTAINER="$2"
+				shift 2
+				;;
+			--maintainer=*)
+				MAINTAINER="${1#*=}"
+				shift
+				;;
 			--)
 				shift
 				break
@@ -170,6 +180,8 @@ elif (( CONFIGURE )); then
 	done
 fi
 
+pkgbases=("$@")
+
 # Load makepkg.conf variables to be available
 load_makepkg_config
 
@@ -191,7 +203,17 @@ if (( ! UNPRIVILEGED )); then
 	fi
 fi
 
-pkgbases=("$@")
+# Query packages of a maintainer
+if [[ -n ${MAINTAINER} ]]; then
+	stat_busy "Query packages for ${MAINTAINER}"
+	max_pages=$(curl --silent --location --fail --retry 3 --retry-delay 3 "https://archlinux.org/packages/search/json/?sort=name&maintainer=${MAINTAINER}" | jq -r '.num_pages')
+	mapfile -t pkgbases < <(for page in $(seq "${max_pages}"); do
+		curl --silent --location --fail --retry 3 --retry-delay 3 "https://archlinux.org/packages/search/json/?sort=name&maintainer=${MAINTAINER}&page=${page}" | jq -r '.results[].pkgbase'
+		stat_progress
+	done | sort --unique)
+	stat_done
+fi
+
 for pkgbase in "${pkgbases[@]}"; do
 	if (( CLONE )); then
 		if [[ ! -d ${pkgbase} ]]; then
