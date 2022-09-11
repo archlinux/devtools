@@ -8,15 +8,21 @@ devtools - Developer tools for the Arch Linux distribution
 Description
 -----------
 
-Devtools contains tools for package maintenance in Arch Linux. The toolset
-varies from tools for building packages in a clean chroot ('mkarchroot',...),
-packaging related tools for sonames ('sogrep', 'lddd') and tools for
-repository management such as ('pkgrepo')
+Devtools contains tools for package maintenance in Arch Linux. It comes with a
+unified command-line frontend called 'pkgctl' that aids to conveniently
+interact with all the different tools this collection provides.
+
+The toolset varies from tools for building packages in a clean chroot
+('mkarchroot', 'archbuild', ...), packaging related tools ('sogrep', 'diffpkg',
+'lddd') and tools for repository management such as ('pkgrepo').
 
 Programs
 --------
 The list below gives a short overview; see the respective documentation
 for details.
+
+linkman:pkgctl[1]
+	Unified command-line frontend for devtools
 
 linkman:archbuild[1]
 	Build an Arch Linux package inside a clean chroot
@@ -26,6 +32,12 @@ linkman:arch-nspawn[1]
 
 linkman:checkpkg[1]
 	Compare the current build package with the repository version
+
+linkman:diffpkg[1]
+	Compare package files using different modes
+
+linkman:export-pkgbuild-keys[1]
+	Export valid source signing keys from a PKGBUILD
 
 linkman:find-libdeps[1]
 	Find soname dependencies for a package

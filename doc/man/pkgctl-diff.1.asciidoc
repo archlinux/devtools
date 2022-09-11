@@ -1,13 +1,13 @@
-diffpkg(1)
-===========
+pkgctl-diff(1)
+==============
 
 Name
 ----
-diffpkg - Compare package files using different modes.
+pkgctl-diff - Compare package files using different modes.
 
 Synopsis
 --------
-diffpkg [OPTIONS] [MODES] [FILE|PKGNAME...]
+pkgctl diff [OPTIONS] [MODES] [FILE|PKGNAME...]
 
 Description
 -----------
@@ -20,8 +20,8 @@ simple tar content list by default.
 When given one package, use it to diff against the locally built one.
 When given two packages, diff both packages against each other.
 
-In either case, a package name will be converted to a filename from the
-cache or pool, and diffpkg will proceed as though this filename was initially
+In either case, a package name will be converted to a filename from the cache
+or pool, and 'pkgctl diff' will proceed as though this filename was initially
 specified.
 
 Options
