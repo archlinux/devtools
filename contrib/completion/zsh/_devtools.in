@@ -15,8 +15,22 @@ _archbuild_args=(
 	'--[Introduce makechrootpkg options]:*::makechrootpkg options:=  _dispatch makechrootpkg makechrootpkg'
 )
 
-_archco_args=(
+_archco_cmds=(
+	"archco command"
+	"clone[Clone a package repository]"
+	"configure[Configure a clone according to distro specs]"
+)
+
+_archco_clone_args=(
+	'(-u --unprivileged)'{-u,--unprivileged}'[Read-only access without packager info as Git author]'
+	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:packages:_devtools_completions_all_packages'
+)
+
+_archco_configure_args=(
+	'(-u --unprivileged)'{-u,--unprivileged}'[Configure read-only repo without packager info as Git author]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'*:git_dir:_files -/'
 )
 
 _arch_nspawn_args=(
@@ -128,8 +142,30 @@ _devtools_completions_all_packages() {
 }
 
 _devtools() {
-	local argname="_${service//-/_}_args[@]"
+	local service_func=_${service//-/_}
+	local service_cmds=${service_func}_cmds
+	if typeset -p ${service_cmds} &> /dev/null; then
+		_arguments -C \
+			"1: :->cmds" \
+			'*::arg:->args'
+		case $state in
+			cmds)
+				local service_cmds_array=${service_cmds}[@]
+				_values "${(P)service_cmds_array}"
+				;;
+			args)
+				local cmd_args_array=${service_func}_$line[1]_args
+				if typeset -p ${cmd_args_array} &> /dev/null; then
+					local cmd_args=${cmd_args_array}[@]
+					_arguments -s "${(P)cmd_args}"
+				fi
+				;;
+		esac
+		return 0
+	fi
+	local argname="${service_func}_args[@]"
 	_arguments -s "${(P)argname}"
+
 }
 
 _devtools
