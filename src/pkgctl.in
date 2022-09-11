@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+m4_include(lib/common.sh)
+
+set -e
+
+
+usage() {
+	local -r COMMAND=${BASH_SOURCE[0]##*/}
+	cat <<- _EOF_
+		Usage: ${COMMAND} [COMMAND] [OPTIONS]
+
+		Unified command-line frontend for devtools.
+
+		COMMANDS
+		    diff    Compare package files using different modes
+		    repo    Manage Git packaging repositories and their configuration
+
+		OPTIONS
+		    -h, --help     Show this help text
+_EOF_
+}
+
+if (( $# < 1 )); then
+	usage
+	exit 1
+fi
+
+export _DEVTOOLS_COMMAND='pkgctl'
+
+# command checking
+while (( $# )); do
+	case $1 in
+		-h|--help)
+			usage
+			exit 0
+			;;
+		repo)
+			_DEVTOOLS_COMMAND+=" $1"
+			shift
+			pkgrepo "$@"
+			exit 0
+			;;
+		diff)
+			_DEVTOOLS_COMMAND+=" $1"
+			shift
+			diffpkg "$@"
+			exit 0
+			;;
+		*)
+			die "invalid command: %s" "$1"
+			;;
+	esac
+done

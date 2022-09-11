@@ -5,8 +5,9 @@
 m4_include(lib/common.sh)
 
 usage() {
-    cat <<- _EOF_
-		Usage: ${BASH_SOURCE[0]##*/} [OPTIONS] [MODES] [FILE|PKGNAME...]
+	local -r COMMAND=${_DEVTOOLS_COMMAND:-${BASH_SOURCE[0]##*/}}
+	cat <<- _EOF_
+		Usage: ${COMMAND} [OPTIONS] [MODES] [FILE|PKGNAME...]
 
 		Searches for a locally built package corresponding to the PKGBUILD, and
 		downloads the last version of that package from the Pacman repositories.
@@ -17,8 +18,8 @@ usage() {
 		When given two packages, diff both packages against each other.
 
 		In either case, a package name will be converted to a filename from the
-		cache, and diffpkg will proceed as though this filename was initially
-		specified.
+		cache, and '${COMMAND}' will proceed as though this filename was
+		initially specified.
 
 		OPTIONS
 		    -M, --makepkg-config Set an alternate makepkg configuration file
@@ -300,7 +301,7 @@ shopt -u extglob
 
 if (( $# < 2 )); then
 	if [[ ! -f PKGBUILD ]]; then
-		die "This must be run in the directory of a built package.\nTry '$(basename "$0") --help' for more information."
+		die "This must be run in the directory of a built package.\nTry '${COMMAND} --help' for more information."
 	fi
 
 	# shellcheck source=contrib/makepkg/PKGBUILD.proto

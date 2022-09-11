@@ -1,0 +1,24 @@
+pkgctl-repo-web(1)
+==================
+
+Name
+----
+pkgctl-repo-web - Open the packaging repository's website
+
+Synopsis
+--------
+pkgctl repo web [OPTIONS] [PKGBASE...]
+
+Description
+-----------
+
+Open the packaging repository's website via xdg-open. If called with
+no arguments, open the package cloned in the current working directory.
+
+Options
+-------
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]
