@@ -49,6 +49,7 @@ usage_clone() {
 		    -m, --maintainer=NAME  Clone all packages of the named maintainer
 		    -u, --unprivileged     Clone package with read-only access and without
 		                           packager info as Git author.
+		    --universe             Clone all existing packages, useful for cache warming
 		    -h, --help             Show this help text
 _EOF_
 }
@@ -83,6 +84,7 @@ CONFIGURE=0
 # options
 GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_SSH}
 UNPRIVILEGED=0
+CLONE_ALL=0
 MAINTAINER=
 PACKAGER_NAME=
 PACKAGER_EMAIL=
@@ -135,6 +137,10 @@ if (( CLONE )); then
 				;;
 			--maintainer=*)
 				MAINTAINER="${1#*=}"
+				shift
+				;;
+			--all)
+				CLONE_ALL=1
 				shift
 				;;
 			--)
@@ -209,6 +215,17 @@ if [[ -n ${MAINTAINER} ]]; then
 	max_pages=$(curl --silent --location --fail --retry 3 --retry-delay 3 "https://archlinux.org/packages/search/json/?sort=name&maintainer=${MAINTAINER}" | jq -r '.num_pages')
 	mapfile -t pkgbases < <(for page in $(seq "${max_pages}"); do
 		curl --silent --location --fail --retry 3 --retry-delay 3 "https://archlinux.org/packages/search/json/?sort=name&maintainer=${MAINTAINER}&page=${page}" | jq -r '.results[].pkgbase'
+		stat_progress
+	done | sort --unique)
+	stat_done
+fi
+
+# Query all released packages
+if (( CLONE_ALL )); then
+	stat_busy "Query all released packages"
+	max_pages=$(curl --silent --location --fail --retry 3 --retry-delay 3 "https://archlinux.org/packages/search/json/?sort=name" | jq -r '.num_pages')
+	mapfile -t pkgbases < <(for page in $(seq "${max_pages}"); do
+		curl --silent --location --fail --retry 3 --retry-delay 3 "https://archlinux.org/packages/search/json/?sort=name&page=${page}" | jq -r '.results[].pkgbase'
 		stat_progress
 	done | sort --unique)
 	stat_done
