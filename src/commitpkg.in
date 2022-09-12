@@ -92,6 +92,8 @@ if (( ${#needsversioning[*]} )); then
 	done
 fi
 
+
+server=${PACKAGING_REPO_RELEASE_HOST}
 rsyncopts=(-e ssh -p '--chmod=ug=rw,o=r' -c -h -L --progress --partial -y)
 archreleaseopts=()
 while getopts ':l:a:s:f' flag; do
@@ -124,10 +126,6 @@ for _arch in "${arch[@]}"; do
 		check_package_validity "$pkgfile"
 	fi
 done
-
-if [[ -z $server ]]; then
-	server='repos.archlinux.org'
-fi
 
 if [[ -n $(git status --short --untracked-files=no) ]]; then
 	stat_busy 'Staging files'
