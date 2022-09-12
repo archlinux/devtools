@@ -19,6 +19,7 @@ _pkgrepo_cmds=(
 	"pkgrepo command"
 	"clone[Clone a package repository]"
 	"configure[Configure a clone according to distro specs]"
+	"web[Open the packaging repository's website]"
 )
 
 _pkgrepo_clone_args=(
@@ -31,6 +32,11 @@ _pkgrepo_clone_args=(
 
 _pkgrepo_configure_args=(
 	'(-u --unprivileged)'{-u,--unprivileged}'[Configure read-only repo without packager info as Git author]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'*:git_dir:_files -/'
+)
+
+_pkgrepo_web_args=(
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:git_dir:_files -/'
 )
