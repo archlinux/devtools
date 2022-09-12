@@ -22,12 +22,12 @@ export BUILDTOOLVER=@buildtoolver@
 # Set common properties
 export PACMAN_KEYRING_DIR=/etc/pacman.d/gnupg
 export GITLAB_HOST=gitlab.archlinux.org
-export GIT_REPO_SPEC_VERSION=1
-export GIT_PACKAGING_NAMESPACE=archlinux/packaging/packages
+export GIT_REPO_SPEC_VERSION=0
+export GIT_PACKAGING_NAMESPACE=bot-test/packages
 export GIT_PACKAGING_NAMESPACE_ID=11233
 export GIT_PACKAGING_URL_SSH="ssh://git@${GITLAB_HOST}:222/${GIT_PACKAGING_NAMESPACE}"
 export GIT_PACKAGING_URL_HTTPS="https://${GITLAB_HOST}/${GIT_PACKAGING_NAMESPACE}"
-export PACKAGING_REPO_RELEASE_HOST=repos.archlinux.org
+export PACKAGING_REPO_RELEASE_HOST=repos.sandbox.archlinux.org
 
 # check if messages are to be printed using color
 if [[ -t 2 && "$TERM" != dumb ]]; then
