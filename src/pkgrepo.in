@@ -28,6 +28,7 @@ usage() {
 		COMMANDS
 		    clone          Clone a package repository
 		    configure      Configure a clone according to distro specs
+		    web            Opens the packaging repository's website
 
 		OPTIONS
 		    -h, --help     Show this help text
@@ -72,6 +73,18 @@ usage_configure() {
 _EOF_
 }
 
+usage_web() {
+    cat <<- _EOF_
+		Usage: ${COMMAND} web [PKGNAME...]
+
+		Opens the packaging repository's website via xdg-open. If called with
+		no arguments, open the package cloned in the current working directory.
+
+		OPTIONS
+		    -h, --help           Show this help text
+_EOF_
+}
+
 if (( $# < 1 )); then
 	usage
 	exit 1
@@ -104,6 +117,11 @@ while (( $# )); do
 			;;
 		configure)
 			CONFIGURE=1
+			shift
+			break
+			;;
+		web)
+			WEB=1
 			shift
 			break
 			;;
@@ -184,6 +202,26 @@ elif (( CONFIGURE )); then
 				;;
 		esac
 	done
+elif (( WEB )); then
+	# option checking
+	while (( $# )); do
+		case $1 in
+			-h|--help)
+				usage_web
+				exit 0
+				;;
+			--)
+				shift
+				break
+				;;
+			-*)
+				die "invalid argument: %s" "$1"
+				;;
+			*)
+				break
+				;;
+		esac
+	done
 fi
 
 pkgbases=("$@")
@@ -231,6 +269,31 @@ if (( CLONE_ALL )); then
 	stat_done
 fi
 
+# Check web mode requirements and current directory shorthand
+if (( WEB )); then
+	# Check if web mode has xdg-open
+	if ! command -v xdg-open &>/dev/null; then
+		die "The web command requires 'xdg-open'"
+	fi
+
+	# Check if used without pkgnames in a packaging directory
+	if (( ! $# )); then
+		path=${PWD}
+		if [[ ! -d "${path}/.git" ]]; then
+			die "Not a Git repository: ${path}"
+		fi
+
+		giturl=$(git -C "${path}" remote get-url origin)
+		if [[ ${giturl} != *${GIT_PACKAGING_NAMESPACE}* ]]; then
+			die "Not a packaging repository: ${path}"
+		fi
+
+		pkgbase=$(basename "${giturl}")
+		pkgbase=${pkgbase%.git}
+		pkgbases=("${pkgbase}")
+	fi
+fi
+
 for pkgbase in "${pkgbases[@]}"; do
 	if (( CLONE )); then
 		if [[ ! -d ${pkgbase} ]]; then
@@ -273,5 +336,9 @@ for pkgbase in "${pkgbases[@]}"; do
 				git -C "${path}" config user.signingKey "${GPGKEY}"
 			fi
 		fi
+	fi
+
+	if (( WEB )); then
+		xdg-open "${GIT_PACKAGING_URL_HTTPS}/${pkgbase}"
 	fi
 done
