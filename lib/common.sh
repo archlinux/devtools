@@ -27,6 +27,7 @@ export GIT_PACKAGING_NAMESPACE=archlinux/packaging/packages
 export GIT_PACKAGING_NAMESPACE_ID=11233
 export GIT_PACKAGING_URL_SSH="ssh://git@${GITLAB_HOST}:222/${GIT_PACKAGING_NAMESPACE}"
 export GIT_PACKAGING_URL_HTTPS="https://${GITLAB_HOST}/${GIT_PACKAGING_NAMESPACE}"
+export PACKAGING_REPO_RELEASE_HOST=repos.archlinux.org
 
 # check if messages are to be printed using color
 if [[ -t 2 && "$TERM" != dumb ]]; then
