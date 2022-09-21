@@ -63,6 +63,7 @@ nspawn_args=(
 	--slice="devtools-$(systemd-escape "${SUDO_USER:-$USER}")"
 	--machine="arch-nspawn-$$"
 	--as-pid2
+	--console=autopipe
 )
 
 if (( ${#cache_dirs[@]} == 0 )); then
