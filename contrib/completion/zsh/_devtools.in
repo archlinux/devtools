@@ -1,9 +1,12 @@
-#compdef archbuild pkgrepo arch-nspawn archrelease commitpkg pkgctl diffpkg finddeps makechrootpkg mkarchroot rebuildpkgs extrapkg=commitpkg corepkg=commitpkg testingpkg=commitpkg stagingpkg=commitpkg communitypkg=commitpkg community-testingpkg=commitpkg community-stagingpkg=commitpkg multilibpkg=commitpkg multilib-testingpkg=commitpkg extra-x86_64-build=archbuild testing-x86_64-build=archbuild staging-x86_64-build=archbuild multilib-build=archbuild multilib-testing-build=archbuild multilib-staging-build=archbuild kde-unstable-x86_64-build=archbuild gnome-unstable-x86_64-build=archbuild checkpkg sogrep offload-build makerepropkg
+#compdef archbuild arch-nspawn archrelease commitpkg pkgctl diffpkg finddeps makechrootpkg mkarchroot rebuildpkgs extrapkg=commitpkg corepkg=commitpkg testingpkg=commitpkg stagingpkg=commitpkg communitypkg=commitpkg community-testingpkg=commitpkg community-stagingpkg=commitpkg multilibpkg=commitpkg multilib-testingpkg=commitpkg extra-x86_64-build=archbuild testing-x86_64-build=archbuild staging-x86_64-build=archbuild multilib-build=archbuild multilib-testing-build=archbuild multilib-staging-build=archbuild kde-unstable-x86_64-build=archbuild gnome-unstable-x86_64-build=archbuild checkpkg sogrep offload-build makerepropkg
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-m4_include(lib/valid-tags.sh)
-m4_include(lib/valid-repos.sh)
+_DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
+# shellcheck source=src/lib/valid-tags.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
+# shellcheck source=src/lib/valid-repos.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 
 _binary_arch=${_arch[*]:0:-1}
 _colors=(never always auto)
@@ -15,14 +18,14 @@ _archbuild_args=(
 	'--[Introduce makechrootpkg options]:*::makechrootpkg options:=  _dispatch makechrootpkg makechrootpkg'
 )
 
-_pkgrepo_cmds=(
-	"pkgrepo command"
+_pkgctl_repo_cmds=(
+	"pkgctl repo command"
 	"clone[Clone a package repository]"
 	"configure[Configure a clone according to distro specs]"
 	"web[Open the packaging repository's website]"
 )
 
-_pkgrepo_clone_args=(
+_pkgctl_repo_clone_args=(
 	'(-m --maintainer=)'{-m,--maintainer=}'[Clone all packages of the named maintainer]:maintainer:'
 	'(-u --unprivileged)'{-u,--unprivileged}'[Read-only access without packager info as Git author]'
 	'--universe[Clone all existing packages, useful for cache warming]'
@@ -30,13 +33,13 @@ _pkgrepo_clone_args=(
 	'*:packages:_devtools_completions_all_packages'
 )
 
-_pkgrepo_configure_args=(
+_pkgctl_repo_configure_args=(
 	'(-u --unprivileged)'{-u,--unprivileged}'[Configure read-only repo without packager info as Git author]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:git_dir:_files -/'
 )
 
-_pkgrepo_web_args=(
+_pkgctl_repo_web_args=(
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:git_dir:_files -/'
 )
@@ -156,10 +159,6 @@ _pkgctl_cmds=(
 )
 
 _pkgctl_diff_args=("${_diffpkg_args[@]}")
-
-_pkgctl_repo_cmds=("${_pkgrepo_cmds[@]}")
-_pkgctl_repo_clone_args=("${_pkgrepo_clone_args[@]}")
-_pkgctl_repo_configure_args=("${_pkgrepo_configure_args[@]}")
 
 _handle_subcommands() {
 	local service_name=${1}

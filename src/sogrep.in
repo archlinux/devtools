@@ -6,13 +6,17 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-m4_include(lib/common.sh)
+_DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
+# shellcheck source=src/lib/common.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+# shellcheck source=src/lib/valid-repos.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
+
 
 # globals
 : ${SOLINKS_MIRROR:="https://mirror.pkgbuild.com"}
 : ${SOCACHE_DIR:="${XDG_CACHE_HOME:-${HOME}/.cache}/sogrep"}
 
-m4_include(lib/valid-repos.sh)
 arches=('x86_64')
 
 # options
