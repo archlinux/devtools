@@ -1,12 +1,19 @@
+SHELL=/bin/bash
+
 V=20230307
 BUILDTOOLVER ?= $(V)
 
 PREFIX = /usr/local
 MANDIR = $(PREFIX)/share/man
+DATADIR = $(PREFIX)/share/devtools
 BUILDDIR = build
 
-BINPROGS = $(addprefix $(BUILDDIR)/,$(patsubst src/%,bin/%,$(patsubst %.in,%,$(wildcard src/*.in))))
-LIBUTILS = $(wildcard lib/*)
+rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+
+BINPROGS_SRC = $(wildcard src/*.in)
+BINPROGS = $(addprefix $(BUILDDIR)/,$(patsubst src/%,bin/%,$(patsubst %.in,%,$(BINPROGS_SRC))))
+LIBRARY_SRC = $(call rwildcard,src/lib,*.sh)
+LIBRARY = $(addprefix $(BUILDDIR)/,$(patsubst src/%,%,$(patsubst %.in,%,$(LIBRARY_SRC))))
 MAKEPKG_CONFIGS=$(wildcard config/makepkg/*)
 PACMAN_CONFIGS=$(wildcard config/pacman/*)
 SETARCH_ALIASES = $(wildcard config/setarch-aliases.d/*)
@@ -41,8 +48,9 @@ ARCHBUILD_LINKS = \
 COMPLETIONS = $(addprefix $(BUILDDIR)/,$(patsubst %.in,%,$(wildcard contrib/completion/*/*)))
 
 
-all: binprogs completion man
+all: binprogs library completion man
 binprogs: $(BINPROGS)
+library: $(LIBRARY)
 completion: $(COMPLETIONS)
 man: $(MANS)
 
@@ -61,37 +69,40 @@ ifneq ($(wildcard setarch-aliases.d/*),)
 endif
 
 
-edit = sed -e "s|@pkgdatadir[@]|$(PREFIX)/share/devtools|g"
+edit = sed -e "s|@pkgdatadir[@]|$(DATADIR)|g"
 GEN_MSG = @echo "GEN $(patsubst $(BUILDDIR)/%,%,$@)"
 
 define buildInScript
-$(1)/%: $(2)%.in $(LIBUTILS)
+$(1)/%: $(2)%$(3)
 	$$(GEN_MSG)
 	@mkdir -p $$(dir $$@)
 	@$(RM) "$$@"
 	@{ echo -n 'm4_changequote([[[,]]])'; cat $$<; } | m4 -P --define=m4_devtools_version=$$(BUILDTOOLVER) | $(edit) >$$@
-	@chmod $(3) "$$@"
+	@chmod $(4) "$$@"
 	@bash -O extglob -n "$$@"
 endef
 
-$(eval $(call buildInScript,build/bin,src/,555))
-$(foreach completion,$(wildcard contrib/completion/*),$(eval $(call buildInScript,build/$(completion),$(completion)/,444)))
+$(eval $(call buildInScript,build/bin,src/,.in,755))
+$(eval $(call buildInScript,build/lib,src/lib/,,644))
+$(foreach completion,$(wildcard contrib/completion/*),$(eval $(call buildInScript,build/$(completion),$(completion)/,.in,444)))
 
 $(BUILDDIR)/doc/man/%: doc/man/%.asciidoc doc/asciidoc.conf doc/man/include/footer.asciidoc
 	$(GEN_MSG)
 	@mkdir -p $(BUILDDIR)/doc/man
-	@a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage --destination-dir=$(BUILDDIR)/doc/man -a pkgdatadir=$(PREFIX)/share/devtools $<
+	@a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage --destination-dir=$(BUILDDIR)/doc/man -a pkgdatadir=$(DATADIR) $<
 
 clean:
 	rm -rf $(BUILDDIR)
 
 install: all
 	install -dm0755 $(DESTDIR)$(PREFIX)/bin
-	install -dm0755 $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d
+	install -dm0755 $(DESTDIR)$(DATADIR)/setarch-aliases.d
 	install -m0755 ${BINPROGS} $(DESTDIR)$(PREFIX)/bin
-	for conf in ${MAKEPKG_CONFIGS}; do install -Dm0644 $$conf $(DESTDIR)$(PREFIX)/share/devtools/makepkg-$${conf##*/}; done
-	for conf in ${PACMAN_CONFIGS}; do install -Dm0644 $$conf $(DESTDIR)$(PREFIX)/share/devtools/pacman-$${conf##*/}; done
-	for a in ${SETARCH_ALIASES}; do install -m0644 $$a -t $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d; done
+	install -dm0755 $(DESTDIR)$(DATADIR)/lib
+	cp -ra $(BUILDDIR)/lib/* $(DESTDIR)$(DATADIR)/lib
+	for conf in ${MAKEPKG_CONFIGS}; do install -Dm0644 $$conf $(DESTDIR)$(DATADIR)/makepkg-$${conf##*/}; done
+	for conf in ${PACMAN_CONFIGS}; do install -Dm0644 $$conf $(DESTDIR)$(DATADIR)/pacman-$${conf##*/}; done
+	for a in ${SETARCH_ALIASES}; do install -m0644 $$a -t $(DESTDIR)$(DATADIR)/setarch-aliases.d; done
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
 	ln -sf find-libdeps $(DESTDIR)$(PREFIX)/bin/find-libprovides
@@ -103,16 +114,20 @@ install: all
 
 uninstall:
 	for f in $(notdir $(BINPROGS)); do rm -f $(DESTDIR)$(PREFIX)/bin/$$f; done
-	for conf in ${MAKEPKG_CONFIGS}; do rm -f $(DESTDIR)$(PREFIX)/share/devtools/makepkg-$${conf##*/}; done
-	for conf in ${PACMAN_CONFIGS}; do rm -f $(DESTDIR)$(PREFIX)/share/devtools/pacman-$${conf##*/}; done
-	for f in $(notdir $(SETARCH_ALIASES)); do rm -f $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d/$$f; done
+	for f in $(notdir $(LIBRARY)); do rm -f $(DESTDIR)$(DATADIR)/lib/$$f; done
+	for conf in ${MAKEPKG_CONFIGS}; do rm -f $(DESTDIR)$(DATADIR)/makepkg-$${conf##*/}; done
+	for conf in ${PACMAN_CONFIGS}; do rm -f $(DESTDIR)$(DATADIR)/pacman-$${conf##*/}; done
+	for f in $(notdir $(SETARCH_ALIASES)); do rm -f $(DESTDIR)$(DATADIR)/setarch-aliases.d/$$f; done
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
-	rm $(DESTDIR)$(PREFIX)/share/bash-completion/completions/devtools
-	rm $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
+	rm -f $(DESTDIR)$(PREFIX)/share/bash-completion/completions/devtools
+	rm -f $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	rm -f $(DESTDIR)$(PREFIX)/bin/find-libprovides
 	for manfile in $(notdir $(MANS)); do rm -f $(DESTDIR)$(MANDIR)/man$${manfile##*.}/$${manfile}; done;
-	rmdir --ignore-fail-on-non-empty $(DESTDIR)$(PREFIX)/share/devtools/setarch-aliases.d $(DESTDIR)$(PREFIX)/share/devtools
+	rmdir --ignore-fail-on-non-empty \
+		$(DESTDIR)$(DATADIR)/setarch-aliases.d \
+		$(DESTDIR)$(DATADIR)/lib \
+		$(DESTDIR)$(DATADIR)
 
 TODAY=$(shell date +"%Y%m%d")
 tag:
@@ -127,8 +142,8 @@ dist:
 upload:
 	scp devtools-$(V).tar.gz devtools-$(V).tar.gz.sig repos.archlinux.org:/srv/ftp/other/devtools/
 
-check: $(BINPROGS) $(BUILDDIR)/contrib/completion/bash/devtools config/makepkg/x86_64.conf contrib/makepkg/PKGBUILD.proto
+check: $(BINPROGS_SRC) $(LIBRARY_SRC) contrib/completion/bash/devtools.in config/makepkg/x86_64.conf contrib/makepkg/PKGBUILD.proto
 	shellcheck $^
 
-.PHONY: all completion man clean install uninstall dist upload check tag
+.PHONY: all binprogs library completion man clean install uninstall tag dist upload check
 .DELETE_ON_ERROR:
