@@ -2,7 +2,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-m4_include(lib/common.sh)
+_DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
+# shellcheck source=src/lib/common.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+
 
 usage() {
 	cat <<- _EOF_
@@ -35,7 +38,7 @@ if [[ ! -f PKGBUILD ]]; then
 fi
 
 mapfile -t validpgpkeys < <(
-	# shellcheck source=PKGBUILD.proto
+	# shellcheck source=contrib/makepkg/PKGBUILD.proto
 	. ./PKGBUILD
 	if (( ${#validpgpkeys[@]} )); then
 		printf "%s\n" "${validpgpkeys[@]}"

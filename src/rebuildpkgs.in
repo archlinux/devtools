@@ -12,7 +12,10 @@
 # Currently uses $(pwd)/rebuilds as the directory for rebuilding...
 # TODO make this work for community too
 
-m4_include(lib/common.sh)
+_DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
+# shellcheck source=src/lib/common.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+
 
 if (( $# < 1 )); then
 	printf 'Usage: %s <chrootdir> <packages to rebuild>\n' "$(basename "${BASH_SOURCE[0]}")"
