@@ -146,7 +146,7 @@ find_cached_package() {
 		[[ -d $dir ]] || continue
 
 		shopt -s extglob nullglob
-		mapfile -t packages < <(printf "%s\n" "$dir"/${targetname}-${targetver}-*${targetarch}.pkg.tar?(.!(sig|*.*)))
+		mapfile -t packages < <(printf "%s\n" "$dir"/"${targetname}"-"${targetver}"-*"${targetarch}".pkg.tar?(.!(sig|*.*)))
 		shopt -u extglob nullglob
 
 		for pkg in "${packages[@]}"; do
