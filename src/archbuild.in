@@ -23,6 +23,22 @@ if [[ -f "@pkgdatadir@/setarch-aliases.d/${arch}" ]]; then
 else
 	set_arch="${arch}"
 fi
+
+# Architecture-specific Mount
+arch_mounts=()
+if [[ -f "@pkgdatadir@/mount.d/${arch}" ]]; then
+	mapfile -t arch_mounts < "@pkgdatadir@/mount.d/${arch}"
+fi
+for arch_mount in "${arch_mounts[@]}"; do
+	if [[ $arch_mount = rw* ]]; then
+		arch_mount=${arch_mount#rw }
+		in_array "$arch_mount" "${makechrootpkg_args[@]}" || makechrootpkg_args+=("-d" "$arch_mount")
+	elif [[ $arch_mount = ro* ]]; then
+		arch_mount=${arch_mount#ro }
+		in_array "$arch_mount" "${makechrootpkg_args[@]}" || makechrootpkg_args+=("-D" "$arch_mount")
+	fi
+done
+
 chroots='/var/lib/archbuild'
 clean_first=false
 
