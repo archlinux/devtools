@@ -86,13 +86,14 @@ get_pkgfile() {
 
 get_makepkg_conf() {
     local fname=${1}
-    local makepkg_conf="${2}"
+    local arch="${2}"
+    local makepkg_conf="${3}"
     if ! buildtool_file=$(get_pkgfile "${fname}"); then
         error "failed to retrieve ${fname}"
         return 1
     fi
     msg2 "using makepkg.conf from ${fname}"
-    bsdtar xOqf "${buildtool_file/file:\/\//}" usr/share/devtools/makepkg-x86_64.conf > "${makepkg_conf}"
+    bsdtar xOqf "${buildtool_file/file:\/\//}" "usr/share/devtools/makepkg-${arch}.conf" > "${makepkg_conf}"
     return 0
 }
 
@@ -213,17 +214,17 @@ TEMPDIR=$(mktemp -d --tmpdir makerepropkg.XXXXXXXXXX)
 makepkg_conf="${TEMPDIR}/makepkg.conf"
 # anything before buildtool support is pinned to the last none buildtool aware release
 if [[ -z "${BUILDTOOL}" ]]; then
-    get_makepkg_conf "devtools-20210202-3-any" "${makepkg_conf}" || exit 1
+    get_makepkg_conf "devtools-20210202-3-any" "${CARCH}" "${makepkg_conf}" || exit 1
 # prefere to assume devtools up until matching makepkg version so repository packages remain reproducible
 elif [[ "${BUILDTOOL}" = makepkg ]] && (( $(vercmp "${BUILDTOOLVER}" 6.0.1) <= 0 )); then
-    get_makepkg_conf "devtools-20210202-3-any" "${makepkg_conf}" || exit 1
+    get_makepkg_conf "devtools-20210202-3-any" "${CARCH}" "${makepkg_conf}" || exit 1
 # all devtools builds
-elif [[ "${BUILDTOOL}" = devtools ]] && get_makepkg_conf "${BUILDTOOL}-${BUILDTOOLVER}" "${makepkg_conf}"; then
+elif [[ "${BUILDTOOL}" = devtools ]] && get_makepkg_conf "${BUILDTOOL}-${BUILDTOOLVER}" "${CARCH}" "${makepkg_conf}"; then
     true
 # fallback to current makepkg.conf
 else
     warning "Unknown buildtool (${BUILDTOOL}-${BUILDTOOLVER}), using fallback"
-    makepkg_conf=@pkgdatadir@/makepkg-x86_64.conf
+    makepkg_conf=@pkgdatadir@/makepkg-${CARCH}.conf
 fi
 printf '%s\n' "${allpkgfiles[@]}" | mkarchroot -M "${makepkg_conf}" -U "${archroot_args[@]}" "${namespace}/root" - || exit 1
 
