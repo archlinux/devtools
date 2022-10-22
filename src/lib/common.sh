@@ -53,6 +53,30 @@ stat_done() {
 	printf "${BOLD}done${ALL_OFF}\n" >&2
 }
 
+msg_success() {
+	local msg=$1
+	local padding
+	padding=$(echo "${msg}"|sed -E 's/( *).*/\1/')
+	msg=$(echo "${msg}"|sed -E 's/ *(.*)/\1/')
+	printf "%s %s\n" "${padding}${GREEN}✓${ALL_OFF}" "${msg}" >&2
+}
+
+msg_error() {
+	local msg=$1
+	local padding
+	padding=$(echo "${msg}"|sed -E 's/( *).*/\1/')
+	msg=$(echo "${msg}"|sed -E 's/ *(.*)/\1/')
+	printf "%s %s\n" "${padding}${RED}x${ALL_OFF}" "${msg}" >&2
+}
+
+msg_warn() {
+	local msg=$1
+	local padding
+	padding=$(echo "${msg}"|sed -E 's/( *).*/\1/')
+	msg=$(echo "${msg}"|sed -E 's/ *(.*)/\1/')
+	printf "%s %s\n" "${padding}${YELLOW}!${ALL_OFF}" "${msg}" >&2
+}
+
 _setup_workdir=false
 setup_workdir() {
 	[[ -z ${WORKDIR:-} ]] && WORKDIR=$(mktemp -d --tmpdir "${0##*/}.XXXXXXXXXX")
