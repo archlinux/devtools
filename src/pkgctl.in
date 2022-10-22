@@ -5,6 +5,8 @@
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 # shellcheck source=src/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+# shellcheck source=src/lib/config.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/config.sh
 
 set -e
 
@@ -31,6 +33,8 @@ if (( $# < 1 )); then
 fi
 
 export _DEVTOOLS_COMMAND='pkgctl'
+
+load_devtools_config
 
 # command checking
 while (( $# )); do
