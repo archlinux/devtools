@@ -18,6 +18,22 @@ _archbuild_args=(
 	'--[Introduce makechrootpkg options]:*::makechrootpkg options:=  _dispatch makechrootpkg makechrootpkg'
 )
 
+_pkgctl_auth_cmds=(
+	"pkgctl auth command"
+	"login[Authenticate with the GitLab instance]"
+	"status[View authentication status]"
+)
+
+_pkgctl_auth_login_args=(
+	'(-g --gen-access-token)'{-g,--gen-access-token}'[Open the URL to generate a new personal access token]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+)
+
+_pkgctl_auth_status_args=(
+	'(-t --show-token)'{-t,--show-token}'[Display the auth token]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+)
+
 _pkgctl_repo_cmds=(
 	"pkgctl repo command"
 	"clone[Clone a package repository]"
@@ -154,6 +170,7 @@ _devtools_completions_all_packages() {
 
 _pkgctl_cmds=(
 	"pkgctl command"
+	"auth[Authenticate with services like GitLab]"
 	"diff[Compare package files using different modes]"
 	"repo[Manage Git packaging repositories and their configuration]"
 )
