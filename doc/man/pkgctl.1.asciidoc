@@ -17,6 +17,9 @@ TODO
 Subcommands
 -----------
 
+pkgctl auth::
+	Authenticate with services like GitLab
+
 pkgctl diff::
 	Compare package files using different modes
 
@@ -26,6 +29,7 @@ pkgctl repo::
 See Also
 --------
 
+linkman:pkgctl-auth[1]
 linkman:pkgctl-diff[1]
 linkman:pkgctl-repo[1]
 

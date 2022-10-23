@@ -1,0 +1,38 @@
+pkgctl-auth(1)
+==============
+
+Name
+----
+pkgctl-auth - Authenticate with serivces like GitLab.
+
+Synopsis
+--------
+pkgctl auth [OPTIONS] [SUBCOMMAND]
+
+Description
+-----------
+
+Manage the authorization for the GitLab instance and show its current status.
+
+Options
+-------
+
+*-h, --help*::
+	Show a help text
+
+Subcommands
+-----------
+
+pkgctl auth login::
+	Authenticate with the GitLab instance
+
+pkgctl auth status::
+	View authentication status
+
+See Also
+--------
+
+linkman:pkgctl-auth-login[1]
+linkman:pkgctl-auth-status[1]
+
+include::include/footer.asciidoc[]
