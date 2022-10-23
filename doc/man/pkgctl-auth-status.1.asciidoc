@@ -1,0 +1,32 @@
+pkgctl-auth-status(1)
+=====================
+
+Name
+----
+pkgctl-auth-status - View authentication status
+
+Synopsis
+--------
+pkgctl auth status [OPTIONS]
+
+Description
+-----------
+
+Verifies and displays information about your authentication state of
+services like the GitLab instance and reports issues if any.
+
+Options
+-------
+
+*-t, --show-token*::
+	Display the auth token
+
+*-h, --help*::
+	Show a help text
+
+See Also
+--------
+
+linkman:pkgctl-auth-login[1]
+
+include::include/footer.asciidoc[]

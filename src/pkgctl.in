@@ -19,6 +19,7 @@ usage() {
 		Unified command-line frontend for devtools.
 
 		COMMANDS
+		    auth    Authenticate with services like GitLab
 		    diff    Compare package files using different modes
 		    repo    Manage Git packaging repositories and their configuration
 
@@ -49,6 +50,14 @@ while (( $# )); do
 			# shellcheck source=src/lib/repo.sh
 			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo.sh
 			pkgctl_repo "$@"
+			exit 0
+			;;
+		auth)
+			_DEVTOOLS_COMMAND+=" $1"
+			shift
+			# shellcheck source=src/lib/auth.sh
+			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/auth.sh
+			pkgctl_auth "$@"
 			exit 0
 			;;
 		diff)

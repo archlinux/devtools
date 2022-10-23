@@ -1,0 +1,33 @@
+pkgctl-auth-login(1)
+====================
+
+Name
+----
+pkgctl-auth-login - Authenticate with the GitLab instance
+
+Synopsis
+--------
+pkgctl auth login [OPTIONS]
+
+Description
+-----------
+
+Interactively authenticate with the GitLab instance.
+
+The minimum required scopes for the token are: 'api', 'write_repository'.
+
+Options
+-------
+
+*-g, --gen-access-token*::
+	Open the URL to generate a new personal access token
+
+*-h, --help*::
+	Show a help text
+
+See Also
+--------
+
+linkman:pkgctl-auth-status[1]
+
+include::include/footer.asciidoc[]
