@@ -1,0 +1,40 @@
+pkgctl-repo-create(1)
+======================
+
+Name
+----
+pkgctl-repo-create - Create a new GitLab package repository
+
+Synopsis
+--------
+pkgctl repo create [OPTIONS] [PKGBASE...]
+
+Description
+-----------
+
+Create a new Git packaging repository in the canonical GitLab namespace.
+
+This command requires a valid GitLab API authentication. To setup a new
+GitLab token or check the currently configured one please consult the
+'auth' subcommand for further instructions.
+
+If invoked without a parameter, try to create a packaging repository
+based on the 'PKGBUILD' from the current working directory.
+
+Options
+-------
+
+*-c, --clone*::
+	Clone the Git repository after creation
+
+*-h, --help*::
+	Show a help text
+
+See Also
+--------
+
+linkman:pkgctl-auth[1]
+linkman:pkgctl-repo-clone[1]
+linkman:pkgctl-repo-configure[1]
+
+include::include/footer.asciidoc[]
