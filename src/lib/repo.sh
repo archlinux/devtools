@@ -29,6 +29,7 @@ pkgctl_repo_usage() {
 		COMMANDS
 		    clone          Clone a package repository
 		    configure      Configure a clone according to distro specs
+		    create         Create a new GitLab package repository
 		    web            Open the packaging repository's website
 
 		OPTIONS
@@ -38,6 +39,7 @@ pkgctl_repo_usage() {
 		    $ ${COMMAND} clone libfoo linux libbar
 		    $ ${COMMAND} clone --maintainer mynickname
 		    $ ${COMMAND} configure *
+		    $ ${COMMAND} create libfoo
 		    $ ${COMMAND} web linux
 _EOF_
 }
@@ -69,6 +71,14 @@ pkgctl_repo() {
 				# shellcheck source=src/lib/repo/configure.sh
 				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo/configure.sh
 				pkgctl_repo_configure "$@"
+				exit 0
+				;;
+			create)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/repo/create.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo/create.sh
+				pkgctl_repo_create "$@"
 				exit 0
 				;;
 			web)

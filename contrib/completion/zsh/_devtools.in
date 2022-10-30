@@ -38,6 +38,7 @@ _pkgctl_repo_cmds=(
 	"pkgctl repo command"
 	"clone[Clone a package repository]"
 	"configure[Configure a clone according to distro specs]"
+	"create[Create a new GitLab package repository]"
 	"web[Open the packaging repository's website]"
 )
 
@@ -53,6 +54,12 @@ _pkgctl_repo_configure_args=(
 	'(-u --unprivileged)'{-u,--unprivileged}'[Configure read-only repo without packager info as Git author]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:git_dir:_files -/'
+)
+
+_pkgctl_repo_create_args=(
+	'(-c --clone)'{-c,--clone}'[Clone the Git repository after creation]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'1:pkgbase'
 )
 
 _pkgctl_repo_web_args=(
