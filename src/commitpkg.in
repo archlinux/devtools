@@ -96,7 +96,7 @@ if (( ${#validpgpkeys[@]} != 0 )); then
 		export-pkgbuild-keys || die 'Failed to export valid PGP keys for source files'
 	fi
 
-	svn add --parents --force keys/pgp/*
+	git add --force -- keys/pgp/*
 fi
 
 # find files which should be under source control
