@@ -81,7 +81,7 @@ for file in "${files[@]}"; do
 	cp "$file" "$working_dir$file"
 done
 
-unshare --mount pacstrap -${umode}Mcd ${pac_conf:+-C "$pac_conf"} "$working_dir" \
+unshare --mount pacstrap -${umode}Mc ${pac_conf:+-C "$pac_conf"} "$working_dir" \
 	"${cache_dirs[@]/#/--cachedir=}" "$@" || die 'Failed to install all packages'
 
 printf '%s.UTF-8 UTF-8\n' C en_US de_DE > "$working_dir/etc/locale.gen"
