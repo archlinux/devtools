@@ -20,6 +20,9 @@ Subcommands
 pkgctl auth::
 	Authenticate with services like GitLab
 
+pkgctl db::
+	Pacman database modification for packge update, move etc
+
 pkgctl diff::
 	Compare package files using different modes
 
@@ -30,6 +33,7 @@ See Also
 --------
 
 linkman:pkgctl-auth[1]
+linkman:pkgctl-db[1]
 linkman:pkgctl-diff[1]
 linkman:pkgctl-repo[1]
 
