@@ -34,6 +34,31 @@ _pkgctl_auth_status_args=(
 	'(-h --help)'{-h,--help}'[Display usage]'
 )
 
+_pkgctl_db_cmds=(
+	"pkgctl db command"
+	"move[Move packages between pacman repositories]"
+	"remove[Remove packages from pacman repositories]"
+	"update[Update the pacman database as final release step]"
+)
+
+_pkgctl_db_move_args=(
+	'(-h --help)'{-h,--help}'[Display usage]'
+	"1:src-repo:($_repos[*])"
+	"2:target-repo:($_repos[*])"
+	'*:pkgbase:_devtools_completions_all_packages'
+)
+
+_pkgctl_db_remove_args=(
+	'(-a --arch=)'{-a,--arch=}"[Override the architecture (disables auto-detection)]:arch:($_arch[*])"
+	'(-h --help)'{-h,--help}'[Display usage]'
+	"1:repo:($_repos[*])"
+	'*:pkgbase:_devtools_completions_all_packages'
+)
+
+_pkgctl_db_update_args=(
+	'(-h --help)'{-h,--help}'[Display usage]'
+)
+
 _pkgctl_repo_cmds=(
 	"pkgctl repo command"
 	"clone[Clone a package repository]"
@@ -178,6 +203,7 @@ _devtools_completions_all_packages() {
 _pkgctl_cmds=(
 	"pkgctl command"
 	"auth[Authenticate with services like GitLab]"
+	"db[Pacman database modification for packge update, move etc]"
 	"diff[Compare package files using different modes]"
 	"repo[Manage Git packaging repositories and their configuration]"
 )

@@ -20,6 +20,7 @@ usage() {
 
 		COMMANDS
 		    auth    Authenticate with services like GitLab
+		    db      Pacman database modification for packge update, move etc
 		    diff    Compare package files using different modes
 		    repo    Manage Git packaging repositories and their configuration
 
@@ -58,6 +59,14 @@ while (( $# )); do
 			# shellcheck source=src/lib/auth.sh
 			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/auth.sh
 			pkgctl_auth "$@"
+			exit 0
+			;;
+		db)
+			_DEVTOOLS_COMMAND+=" $1"
+			shift
+			# shellcheck source=src/lib/auth.sh
+			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/db.sh
+			pkgctl_db "$@"
 			exit 0
 			;;
 		diff)
