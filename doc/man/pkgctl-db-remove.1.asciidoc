@@ -1,0 +1,26 @@
+pkgctl-db-remove(1)
+===================
+
+Name
+----
+pkgctl-db-remove - Remove packages from binary repositories
+
+Synopsis
+--------
+pkgctl db remove [OPTIONS] [REPO] [PKGBASE]...
+
+Description
+-----------
+
+Remove packages from pacman repositories.
+
+Options
+-------
+
+*-a, --arch* 'ARCH'::
+	Override the architecture (disables auto-detection)
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]

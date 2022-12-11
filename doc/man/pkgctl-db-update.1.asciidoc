@@ -1,0 +1,23 @@
+pkgctl-db-move(1)
+=================
+
+Name
+----
+pkgctl-db-move - Move packages between binary repositories
+
+Synopsis
+--------
+pkgctl db move [OPTIONS] [SOURCE_REPO] [TARGET_REPO] [PKGBASE]...
+
+Description
+-----------
+
+Move packages between pacman repositories.
+
+Options
+-------
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]

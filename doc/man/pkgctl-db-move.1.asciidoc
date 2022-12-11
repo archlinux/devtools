@@ -1,0 +1,24 @@
+pkgctl-db-move(1)
+=================
+
+Name
+----
+pkgctl-db-update - Update the binary repository as final release step
+
+Synopsis
+--------
+pkgctl db update [OPTIONS]
+
+Description
+-----------
+
+Update the pacman database as final release step for packages that
+have been transfered and staged on 'repos.archlinux.org'.
+
+Options
+-------
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]
