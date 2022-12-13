@@ -20,12 +20,11 @@ SETARCH_ALIASES = $(wildcard config/setarch-aliases.d/*)
 MANS = $(addprefix $(BUILDDIR)/,$(patsubst %.asciidoc,%,$(wildcard doc/man/*.asciidoc)))
 
 COMMITPKG_LINKS = \
+	core-testingpkg \
+	core-stagingpkg \
 	extrapkg \
-	testingpkg \
-	stagingpkg \
-	communitypkg \
-	community-testingpkg \
-	community-stagingpkg \
+	extra-testingpkg \
+	extra-stagingpkg \
 	multilibpkg \
 	multilib-testingpkg \
 	multilib-stagingpkg \
