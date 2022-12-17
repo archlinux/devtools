@@ -59,6 +59,16 @@ _pkgctl_db_update_args=(
 	'(-h --help)'{-h,--help}'[Display usage]'
 )
 
+_pkgctl_release_args=(
+	'(-m --message=)'{-m,--message=}"[Use the given <msg> as the commit message]:message:"
+	'(-r --repo=)'{-r,--repo=}"[Specify a target repository (disables auto-detection)]:repo:($_repos[*])"
+	'(-s --staging)'{-s,--staging}'[Release to the staging counterpart of the auto-detected repo]'
+	'(-t --testing)'{-t,--testing}'[Release to the testing counterpart of the auto-detected repo]'
+	'(-u --db-update)'{-u,--db-update}'[Automatically update the pacman database after uploading]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'*:git_dir:_files -/'
+)
+
 _pkgctl_repo_cmds=(
 	"pkgctl repo command"
 	"clone[Clone a package repository]"
@@ -205,6 +215,7 @@ _pkgctl_cmds=(
 	"auth[Authenticate with services like GitLab]"
 	"db[Pacman database modification for packge update, move etc]"
 	"diff[Compare package files using different modes]"
+	"release[Release step to commit, tag and upload build artifacts]"
 	"repo[Manage Git packaging repositories and their configuration]"
 )
 
