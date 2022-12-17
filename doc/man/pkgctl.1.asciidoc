@@ -26,6 +26,9 @@ pkgctl db::
 pkgctl diff::
 	Compare package files using different modes
 
+pkgctl release::
+	Release step to commit, tag and upload build artifacts
+
 pkgctl repo::
 	Manage Git packaging repositories and their configuration
 
@@ -35,6 +38,7 @@ See Also
 linkman:pkgctl-auth[1]
 linkman:pkgctl-db[1]
 linkman:pkgctl-diff[1]
+linkman:pkgctl-release[1]
 linkman:pkgctl-repo[1]
 
 include::include/footer.asciidoc[]
