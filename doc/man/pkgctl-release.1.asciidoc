@@ -1,0 +1,49 @@
+pkgctl-release(1)
+=================
+
+Name
+----
+pkgctl-release - Release step to commit, tag and upload build artifacts
+
+Synopsis
+--------
+pkgctl release [OPTIONS] [PATH...]
+
+Description
+-----------
+
+Modified version controlled files will first be staged for commit,
+afterwards a Git tag matching the pkgver will be created and finally
+all build artifacts will be uploaded.
+
+By default the target pacman repository will be auto-detected by querying
+the repo it is currently released in. When initially adding a new package
+to the repositories, the target repo must be specified manually.
+
+Options
+-------
+
+*-m, --message* 'MSG'::
+	Use the given <msg> as the commit message
+
+*-r, --repo* 'REPO'::
+	Specify a target repository (disables auto-detection)
+
+*-s, --staging*::
+	Build against the staging counterpart of the auto-detected repo
+
+*-t, --testing*::
+	Build against the testing counterpart of the auto-detected repo
+
+*-u, --db-update*::
+	Automatically update the pacman database after uploading
+
+*-h, --help*::
+	Show a help text
+
+See Also
+--------
+
+linkman:pkgctl-db-update[1]
+
+include::include/footer.asciidoc[]
