@@ -23,7 +23,7 @@ Description
 * staging-x86_64-build
 * testing-x86_64-build
 
-The symlink used to run it will be inspected by archbuild, to determine which target you want it to use. It will load the available pacman configuration from 'pacman-reponame-arch.conf' with a fallback to 'pacman-reponame.conf' from {pkgdatadir}. The makepkg configuration is loaded from 'makepkg-repo-arch.conf' with a fallback to 'makepkg-reponame.conf' from {pkgdatadir}.
+The symlink used to run it will be inspected by archbuild, to determine which target you want it to use. It will load the available pacman configuration from 'reponame-arch.conf' with a fallback to 'reponame.conf' from {pkgdatadir}/pacman.conf.d. The makepkg configuration is loaded from 'repo-arch.conf' with a fallback to 'reponame.conf' from {pkgdatadir}/makepkg.conf.d.
 
 
 Options
