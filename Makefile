@@ -47,7 +47,7 @@ ARCHBUILD_LINKS = \
 COMPLETIONS = $(addprefix $(BUILDDIR)/,$(patsubst %.in,%,$(wildcard contrib/completion/*/*)))
 
 
-all: binprogs library completion man
+all: binprogs library conf completion man
 binprogs: $(BINPROGS)
 library: $(LIBRARY)
 completion: $(COMPLETIONS)
@@ -90,17 +90,24 @@ $(BUILDDIR)/doc/man/%: doc/man/%.asciidoc doc/asciidoc.conf doc/man/include/foot
 	@mkdir -p $(BUILDDIR)/doc/man
 	@a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage --destination-dir=$(BUILDDIR)/doc/man -a pkgdatadir=$(DATADIR) $<
 
+conf:
+	@install -d $(BUILDDIR)/makepkg.conf.d $(BUILDDIR)/pacman.conf.d
+	@cp -a $(MAKEPKG_CONFIGS) $(BUILDDIR)/makepkg.conf.d
+	@cp -a $(PACMAN_CONFIGS) $(BUILDDIR)/pacman.conf.d
+
 clean:
 	rm -rf $(BUILDDIR)
 
 install: all
 	install -dm0755 $(DESTDIR)$(PREFIX)/bin
 	install -dm0755 $(DESTDIR)$(DATADIR)/setarch-aliases.d
+	install -dm0755 $(DESTDIR)$(DATADIR)/makepkg.conf.d
+	install -dm0755 $(DESTDIR)$(DATADIR)/pacman.conf.d
 	install -m0755 ${BINPROGS} $(DESTDIR)$(PREFIX)/bin
 	install -dm0755 $(DESTDIR)$(DATADIR)/lib
 	cp -ra $(BUILDDIR)/lib/* $(DESTDIR)$(DATADIR)/lib
-	for conf in ${MAKEPKG_CONFIGS}; do install -Dm0644 $$conf $(DESTDIR)$(DATADIR)/makepkg-$${conf##*/}; done
-	for conf in ${PACMAN_CONFIGS}; do install -Dm0644 $$conf $(DESTDIR)$(DATADIR)/pacman-$${conf##*/}; done
+	for conf in $(notdir $(MAKEPKG_CONFIGS)); do install -Dm0644 $(BUILDDIR)/makepkg.conf.d/$$conf $(DESTDIR)$(DATADIR)/makepkg.conf.d/$${conf##*/}; done
+	for conf in $(notdir $(PACMAN_CONFIGS)); do install -Dm0644 $(BUILDDIR)/pacman.conf.d/$$conf $(DESTDIR)$(DATADIR)/pacman.conf.d/$${conf##*/}; done
 	for a in ${SETARCH_ALIASES}; do install -m0644 $$a -t $(DESTDIR)$(DATADIR)/setarch-aliases.d; done
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
@@ -114,8 +121,8 @@ install: all
 uninstall:
 	for f in $(notdir $(BINPROGS)); do rm -f $(DESTDIR)$(PREFIX)/bin/$$f; done
 	for f in $(notdir $(LIBRARY)); do rm -f $(DESTDIR)$(DATADIR)/lib/$$f; done
-	for conf in ${MAKEPKG_CONFIGS}; do rm -f $(DESTDIR)$(DATADIR)/makepkg-$${conf##*/}; done
-	for conf in ${PACMAN_CONFIGS}; do rm -f $(DESTDIR)$(DATADIR)/pacman-$${conf##*/}; done
+	for conf in $(notdir $(MAKEPKG_CONFIGS)); do rm -f $(DESTDIR)$(DATADIR)/makepkg.conf.d/$${conf##*/}; done
+	for conf in $(notdir $(PACMAN_CONFIGS)); do rm -f $(DESTDIR)$(DATADIR)/pacman.conf.d/$${conf##*/}; done
 	for f in $(notdir $(SETARCH_ALIASES)); do rm -f $(DESTDIR)$(DATADIR)/setarch-aliases.d/$$f; done
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
@@ -125,6 +132,8 @@ uninstall:
 	for manfile in $(notdir $(MANS)); do rm -f $(DESTDIR)$(MANDIR)/man$${manfile##*.}/$${manfile}; done;
 	rmdir --ignore-fail-on-non-empty \
 		$(DESTDIR)$(DATADIR)/setarch-aliases.d \
+		$(DESTDIR)$(DATADIR)/makepkg.conf.d \
+		$(DESTDIR)$(DATADIR)/pacman.conf.d \
 		$(DESTDIR)$(DATADIR)/lib \
 		$(DESTDIR)$(DATADIR)
 
@@ -144,5 +153,5 @@ upload:
 check: $(BINPROGS_SRC) $(LIBRARY_SRC) contrib/completion/bash/devtools.in config/makepkg/x86_64.conf contrib/makepkg/PKGBUILD.proto
 	shellcheck $^
 
-.PHONY: all binprogs library completion man clean install uninstall tag dist upload check
+.PHONY: all binprogs library completion conf man clean install uninstall tag dist upload check
 .DELETE_ON_ERROR:
