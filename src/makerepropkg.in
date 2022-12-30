@@ -97,7 +97,9 @@ get_makepkg_conf() {
         return 1
     fi
     msg2 "using makepkg.conf from ${fname}"
-    bsdtar xOqf "${buildtool_file/file:\/\//}" "usr/share/devtools/makepkg-${arch}.conf" > "${makepkg_conf}"
+	if ! bsdtar xOqf "${buildtool_file/file:\/\//}" "usr/share/devtools/makepkg.conf.d/${arch}.conf" > "${makepkg_conf}"; then
+		bsdtar xOqf "${buildtool_file/file:\/\//}" "usr/share/devtools/makepkg-${arch}.conf" > "${makepkg_conf}"
+	fi
     return 0
 }
 
@@ -228,7 +230,7 @@ elif [[ "${BUILDTOOL}" = devtools ]] && get_makepkg_conf "${BUILDTOOL}-${BUILDTO
 # fallback to current makepkg.conf
 else
     warning "Unknown buildtool (${BUILDTOOL}-${BUILDTOOLVER}), using fallback"
-    makepkg_conf=@pkgdatadir@/makepkg-${CARCH}.conf
+    makepkg_conf=@pkgdatadir@/makepkg.conf.d/${CARCH}.conf
 fi
 printf '%s\n' "${allpkgfiles[@]}" | mkarchroot -M "${makepkg_conf}" -U "${archroot_args[@]}" "${namespace}/root" - || exit 1
 
