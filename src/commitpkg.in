@@ -4,6 +4,33 @@
 
 m4_include(lib/common.sh)
 
+check_pkgbuild_validity() {
+	# shellcheck source=contrib/makepkg/PKGBUILD.proto
+	. ./PKGBUILD
+
+	# skip when there are no sources available
+	if (( ! ${#source[@]} )); then
+		return
+	fi
+
+	# validate sources hash algo is at least > sha1
+	local bad_algos=("cksums" "md5sums" "sha1sums")
+	local good_hash_algo=false
+
+	# from makepkg libmakepkg/util/schema.sh
+	for integ in "${known_hash_algos[@]}"; do
+		local sumname="${integ}sums"
+		if [[ -n ${!sumname} ]] && ! in_array "${sumname}" "${bad_algos[@]}"; then
+			good_hash_algo=true
+			break
+		fi
+	done
+
+	if ! $good_hash_algo; then
+		die "PKGBUILD lacks a secure cryptographic checksum, insecure algorithms: ${bad_algos[*]}"
+	fi
+}
+
 # Source makepkg.conf; fail if it is not found
 if [[ -r '/etc/makepkg.conf' ]]; then
 	# shellcheck source=config/makepkg/x86_64.conf
@@ -120,6 +147,9 @@ for _arch in "${arch[@]}"; do
 		check_package_validity "$pkgfile"
 	fi
 done
+
+# check for PKGBUILD standards
+check_pkgbuild_validity
 
 if [[ -z $server ]]; then
 	server='repos.archlinux.org'
