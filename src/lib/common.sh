@@ -17,7 +17,7 @@ export LANG=C
 
 # Set buildtool properties
 export BUILDTOOL=devtools
-export BUILDTOOLVER=m4_devtools_version
+export BUILDTOOLVER=@buildtoolver@
 
 # Set common properties
 export PACMAN_KEYRING_DIR=/etc/pacman.d/gnupg
