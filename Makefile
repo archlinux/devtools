@@ -68,7 +68,9 @@ ifneq ($(wildcard setarch-aliases.d/*),)
 endif
 
 
-edit = sed -e "s|@pkgdatadir[@]|$(DATADIR)|g"
+edit = sed \
+	-e "s|@pkgdatadir[@]|$(DATADIR)|g" \
+	-e "s|@buildtoolver[@]|$(BUILDTOOLVER)|g"
 GEN_MSG = @echo "GEN $(patsubst $(BUILDDIR)/%,%,$@)"
 
 define buildInScript
@@ -76,7 +78,7 @@ $(1)/%: $(2)%$(3)
 	$$(GEN_MSG)
 	@mkdir -p $$(dir $$@)
 	@$(RM) "$$@"
-	@{ echo -n 'm4_changequote([[[,]]])'; cat $$<; } | m4 -P --define=m4_devtools_version=$$(BUILDTOOLVER) | $(edit) >$$@
+	@cat $$< | $(edit) >$$@
 	@chmod $(4) "$$@"
 	@bash -O extglob -n "$$@"
 endef
