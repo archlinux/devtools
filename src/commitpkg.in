@@ -132,7 +132,8 @@ if [[ -n $(svn status -q) ]]; then
 		svn commit -q -m "${msgtemplate}: ${1}" || die
 		stat_done
 	else
-		msgfile="$(mktemp)"
+		[[ -z ${WORKDIR:-} ]] && setup_workdir
+		msgfile=$(mktemp --tmpdir="${WORKDIR}" commitpkg.XXXXXXXXXX)
 		echo "$msgtemplate" > "$msgfile"
 		if [[ -n $SVN_EDITOR ]]; then
 			$SVN_EDITOR "$msgfile"
