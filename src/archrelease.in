@@ -11,6 +11,11 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
 set -e
 
 
+# Deprecation warning
+if [[ -z $_DEVTOOLS_COMMAND ]]; then
+	warning "${0##*/} is deprecated and will be removed. Use 'pkgctl release' instead"
+fi
+
 # parse command line options
 FORCE=
 while getopts ':f' flag; do
