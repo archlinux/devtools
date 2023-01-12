@@ -8,6 +8,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 # shellcheck source=src/lib/valid-tags.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
 
+set -e
+
 
 # parse command line options
 FORCE=
@@ -38,13 +40,36 @@ if [[ ! -f PKGBUILD ]]; then
 	die 'archrelease: PKGBUILD not found'
 fi
 
+# shellcheck source=contrib/makepkg/PKGBUILD.proto
 . ./PKGBUILD
 pkgbase=${pkgbase:-$pkgname}
 pkgver=$(get_full_version "$pkgbase")
 gittag=$(get_tag_from_pkgver "$pkgver")
 
-if git rev-parse "$gittag" >/dev/null 2>&1; then
-	die "archrelease: the tag $gittag for version $pkgver already exists in the repository!"
+# Check if releasing from a branch
+if ! branchname=$(git symbolic-ref --short HEAD); then
+	die 'not on any branch'
+fi
+if [[ "${branchname}" != main ]]; then
+	die 'must be run from the main branch'
+fi
+
+# Check if remote origin is setup properly
+if ! giturl=$(git remote get-url origin) || [[ ${giturl} != *${GIT_PACKAGING_URL_SSH}* ]]; then
+	die "remote origin is not configured, run 'pkgctl repo configure'"
+fi
+if ! git ls-remote origin >/dev/null; then
+	die "configured remote origin may not exist, run 'pkgctl repo create ${pkgbase}' to create it"
+fi
+
+msg 'Fetching remote changes'
+git fetch --prune --prune-tags origin || die 'failed to fetch remote changes'
+
+# Check if local branch is up to date and contains the latest origin commit
+if remoteref=$(git rev-parse "origin/${branchname}" 2>/dev/null); then
+	if [[ $(git branch "${branchname}" --contains "${remoteref}" --format '%(refname:short)') != "${branchname}" ]]; then
+		die "local branch is out of date, run 'git pull --rebase'"
+	fi
 fi
 
 # If the tag exists we check if it's properly signed and that it
@@ -55,10 +80,11 @@ if git tag --verify "$gittag" &> /dev/null; then
 	if [[ "$cwd_checksum" != "$tag_checksum" ]]; then
 		die "tagged PKGBUILD is not the same as the working dir PKGBUILD"
 	fi
+	git push --tags --set-upstream origin main || abort
 	exit 0
 fi
 
 stat_busy "Releasing package"
 git tag --sign --message="Package release ${pkgver}" "$gittag" || abort
-git push --tags main || abort
+git push --tags --set-upstream origin main || abort
 stat_done
