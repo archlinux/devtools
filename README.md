@@ -14,6 +14,15 @@ files like `makepkg.conf`.
 BUILDTOOLVER="${pkgver}-${pkgrel}-${arch}" make all
 ```
 
+## Development
+
+For local development testing, there is a convenience wrapper for `pkgctl` that
+will automatically build the project and proxy all calls to the local build directory:
+
+```sh
+./test/bin/pkgctl --help
+```
+
 ## Releasing
 
 1. bump the version in the Makefile
