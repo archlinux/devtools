@@ -55,6 +55,11 @@ fi
 
 cmd=${0##*/}
 
+# Deprecation warning
+if [[ -z $_DEVTOOLS_COMMAND ]]; then
+	warning "${cmd} is deprecated and will be removed. Use 'pkgctl release' instead"
+fi
+
 if [[ ! -f PKGBUILD ]]; then
 	die 'No PKGBUILD file'
 fi
