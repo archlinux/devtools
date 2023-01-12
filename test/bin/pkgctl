@@ -1,0 +1,12 @@
+#!/usr/bin/bash
+set -e
+
+root="$(dirname -- "$(readlink -f -- "$0")")/../.."
+
+# always build everything so we use an up-to-date state
+make -C "${root}" -j --no-print-directory --silent
+
+# run pkgctl from the build directory
+export PATH="${root}/build/bin:${PATH}"
+export _DEVTOOLS_LIBRARY_DIR="${root}/build"
+"${root}/build/bin/pkgctl" "$@"
