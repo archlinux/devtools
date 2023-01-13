@@ -222,6 +222,7 @@ _makechrootpkg_args=(
 	'-c[Clean the chroot before building]'
 	'*-d[Bind directory into build chroot as read-write]:bind_dir_rw:_files -/'
 	'*-D[Bind directory into build chroot as read-only]:bind_dir_ro:_files -/'
+	'*-t[Mount a tmpfs at directory]:tmpfs_dir:_files -/'
 	'-u[Update the working copy of the chroot before building]'
 	'-r[The chroot dir to use]:chroot_dir:_files -/'
 	'*-I[Install a package into the working copy]:target:_files -g "*.pkg.tar.*(.)"'

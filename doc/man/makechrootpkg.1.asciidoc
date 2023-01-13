@@ -45,6 +45,9 @@ Options
 *-D* <dir>::
 	Bind directory into build chroot as read-only
 
+*-t* <dir>[:opts]::
+	Mount a tmpfs at 'dir'. See the '--tmpfs' argument in systemd-nspawn(1) for more details.
+
 *-u*::
 	Update the working copy of the chroot before building
 	This is useful for rebuilds without dirtying the pristine
@@ -76,5 +79,9 @@ Options
 *-x* <when>::
 	Inspect chroot after build, possible modes are 'never' (default), 'always' or 'failure'
 
+See Also
+--------
+
+systemd-nspawn(1)
 
 include::include/footer.asciidoc[]

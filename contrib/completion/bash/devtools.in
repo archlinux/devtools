@@ -27,6 +27,7 @@ _makechrootpkg_args=(
 	-I
 	-l
 	-n
+	-t
 	-T
 	-U
 	-x
@@ -36,6 +37,7 @@ _makechrootpkg_args_D_opts() { _filedir -d; }
 _makechrootpkg_args_r_opts() { _filedir -d; }
 _makechrootpkg_args_I_opts() { _filedir '*.pkg.tar.*'; }
 _makechrootpkg_args_l_opts() { _filedir -d; }
+_makechrootpkg_args_t_opts() { _filedir -d; }
 _makechrootpkg_args_U_opts() { :; }
 _makechrootpkg_args_x_opts() { _devtools_completions_inspect; }
 _makechrootpkg() { __devtools_complete _makechrootpkg; }
