@@ -20,6 +20,9 @@ Subcommands
 pkgctl auth::
 	Authenticate with services like GitLab
 
+pkgctl build::
+	Build packages inside a clean chroot
+
 pkgctl db::
 	Pacman database modification for packge update, move etc
 
@@ -36,6 +39,7 @@ See Also
 --------
 
 linkman:pkgctl-auth[1]
+linkman:pkgctl-build[1]
 linkman:pkgctl-db[1]
 linkman:pkgctl-diff[1]
 linkman:pkgctl-release[1]
