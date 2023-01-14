@@ -34,6 +34,25 @@ _pkgctl_auth_status_args=(
 	'(-h --help)'{-h,--help}'[Display usage]'
 )
 
+_pkgctl_build_args=(
+	"--arch=[Specify architectures to build for (disables auto-detection)]:arch:($_arch[*])"
+	"--repo=[Specify a target repository (disables auto-detection)]:repo:($_repos[*])"
+	'(-s --staging)'{-s,--staging}'[Build against the staging counterpart of the auto-detected repo]'
+	'(-t --testing)'{-t,--testing}'[Build against the testing counterpart of the auto-detected repo]'
+	'(-o --offload)'{-o,--offload}'[Build on a remote server and transfer artifacts afterwards]'
+	'(-c --clean)'{-c,--clean}'[Recreate the chroot before building]'
+	'(-I --install)'{-I,--install}'[Install a package into the working copy of the chroot]:target:_files -g "*.pkg.tar.*(.)"'
+	'--pkgver=[Set pkgver, reset pkgrel and update checksums]:pkgver:'
+	'--pkgrel=[Set pkgrel to a given value]:pkgrel:'
+	'--rebuild[Increment the pkgrel variable]'
+	'(-e --edit)'{-e,--edit}'[Edit the PKGBUILD before building]'
+	'(-r --release)'{-r,--release}'[Automatically commit, tag and release after building]'
+	'(-m --message=)'{-m,--message=}"[Use the given <msg> as the commit message]:message:"
+	'(-u --db-update)'{-u,--db-update}'[Automatically update the pacman database as last action]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'*:git_dir:_files -/'
+)
+
 _pkgctl_db_cmds=(
 	"pkgctl db command"
 	"move[Move packages between pacman repositories]"
@@ -213,6 +232,7 @@ _devtools_completions_all_packages() {
 _pkgctl_cmds=(
 	"pkgctl command"
 	"auth[Authenticate with services like GitLab]"
+	"build[Build packages inside a clean chroot]"
 	"db[Pacman database modification for packge update, move etc]"
 	"diff[Compare package files using different modes]"
 	"release[Release step to commit, tag and upload build artifacts]"
