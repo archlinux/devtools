@@ -1,0 +1,80 @@
+pkgctl-build(1)
+===============
+
+Name
+----
+pkgctl-build - Build packages inside a clean chroot
+
+Synopsis
+--------
+pkgctl build [OPTIONS] [PATH...]
+
+Description
+-----------
+
+TODO
+
+Build Options
+-------------
+
+*--arch* 'ARCH'::
+	Specify architectures to build for (disables auto-detection)
+
+*--repo* 'REPO'::
+	Specify a target repository (disables auto-detection)
+
+*-s, --staging*::
+	Build against the staging counterpart of the auto-detected repo
+
+*-t, --testing*::
+	Build against the testing counterpart of the auto-detected repo
+
+*-o, --offload*::
+	Build on a remote server and transfer artifacts afterwards
+
+*-c, --clean*::
+	Recreate the chroot before building
+
+*-I, --install* 'FILE'::
+	Install a package into the working copy of the chroot
+
+PKGBUILD Options
+----------------
+
+*--pkgver*='PKGVER'::
+	Set pkgver, reset pkgrel and update checksums
+
+*--pkgrel*='PKGREL'::
+	Set pkgrel to a given value
+
+*--rebuild*::
+	Increment the current pkgrel variable
+
+*-e, --edit*::
+	Edit the PKGBUILD before building
+
+Release Options
+---------------
+
+*-r, --release*::
+	Automatically commit, tag and release after building
+
+*-m, --message* 'MSG'::
+	Use the given <msg> as the commit message
+
+*-u, --db-update*::
+	Automatically update the pacman database as last action
+
+Options
+-------
+
+*-h, --help*::
+	Show a help text
+
+See Also
+--------
+
+linkman:pkgctl-release[1]
+linkman:pkgctl-db-update[1]
+
+include::include/footer.asciidoc[]
