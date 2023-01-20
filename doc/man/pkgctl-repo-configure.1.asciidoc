@@ -17,14 +17,13 @@ Configure Git packaging repositories according to distro specs and
 
 Git author information and the used signing key is set up from
 'makepkg.conf' read from any valid location like '/etc' or 'XDG_CONFIG_HOME'.
-The unprivileged option can be used for cloning packaging repositories
-without SSH access using read-only HTTPS.
+
+The remote protocol is automatically determined from the author email
+address by choosing SSH for all official packager identities and
+read-only HTTPS otherwise.
 
 Options
 -------
-
-*-u, --unprivileged*::
-	Configure read-only repo without packager info as Git author
 
 *-h, --help*::
 	Show a help text

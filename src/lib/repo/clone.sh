@@ -32,8 +32,6 @@ pkgctl_repo_clone_usage() {
 
 		OPTIONS
 		    -m, --maintainer=NAME  Clone all packages of the named maintainer
-		    -u, --unprivileged     Clone package with read-only access and without
-		                           packager info as Git author
 		    --universe             Clone all existing packages, useful for cache warming
 		    -h, --help             Show this help text
 

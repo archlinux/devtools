@@ -98,14 +98,12 @@ _pkgctl_repo_cmds=(
 
 _pkgctl_repo_clone_args=(
 	'(-m --maintainer=)'{-m,--maintainer=}'[Clone all packages of the named maintainer]:maintainer:'
-	'(-u --unprivileged)'{-u,--unprivileged}'[Read-only access without packager info as Git author]'
 	'--universe[Clone all existing packages, useful for cache warming]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:packages:_devtools_completions_all_packages'
 )
 
 _pkgctl_repo_configure_args=(
-	'(-u --unprivileged)'{-u,--unprivileged}'[Configure read-only repo without packager info as Git author]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:git_dir:_files -/'
 )
