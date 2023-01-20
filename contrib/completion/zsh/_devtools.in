@@ -105,7 +105,6 @@ _pkgctl_repo_clone_args=(
 )
 
 _pkgctl_repo_configure_args=(
-	'(-u --unprivileged)'{-u,--unprivileged}'[Configure read-only repo without packager info as Git author]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:git_dir:_files -/'
 )
