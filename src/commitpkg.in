@@ -64,6 +64,12 @@ if [[ ! -f PKGBUILD ]]; then
 	die 'No PKGBUILD file'
 fi
 
+if ! repo_spec=$(git config --local devtools.version) || [[ ${repo_spec} != "${GIT_REPO_SPEC_VERSION}" ]]; then
+	error "repository specs are out of date, try:"
+	msg2 'pkgctl repo configure'
+	exit 1
+fi
+
 if [[ "$(git symbolic-ref --short HEAD)" != main ]]; then
 	die 'must be run from the main branch'
 fi
