@@ -27,11 +27,12 @@ pkgctl_repo_configure_usage() {
 
 		Git author information and the used signing key is set up from
 		makepkg.conf read from any valid location like /etc or XDG_CONFIG_HOME.
-		The unprivileged option can be used for cloning packaging repositories
-		without SSH access using read-only HTTPS.
+
+		The remote protocol is automatically determined from the author email
+		address by choosing SSH for all official packager identities and
+		read-only HTTPS otherwise.
 
 		OPTIONS
-		    -u, --unprivileged   Configure read-only repo without packager info as Git author
 		    -h, --help           Show this help text
 
 		EXAMPLES
@@ -39,27 +40,70 @@ pkgctl_repo_configure_usage() {
 _EOF_
 }
 
+get_packager_name() {
+	local packager=$1
+	local packager_pattern="(.+) <(.+@.+)>"
+	local name
+
+	if [[ ! $packager =~ $packager_pattern ]]; then
+		return 1
+	fi
+
+	name=$(echo "${packager}"|sed -E "s/${packager_pattern}/\1/")
+	printf "%s" "${name}"
+}
+
+get_packager_email() {
+	local packager=$1
+	local packager_pattern="(.+) <(.+@.+)>"
+	local email
+
+	if [[ ! $packager =~ $packager_pattern ]]; then
+		return 1
+	fi
+
+	email=$(echo "${packager}"|sed -E "s/${packager_pattern}/\2/")
+	printf "%s" "${email}"
+}
+
+is_packager_name_valid() {
+	local packager_name=$1
+	if [[ -z ${packager_name} ]]; then
+		return 1
+	elif [[ ${packager_name} == "John Doe" ]]; then
+		return 1
+	elif [[ ${packager_name} == "Unknown Packager" ]]; then
+		return 1
+	fi
+	return 0
+}
+
+is_packager_email_official() {
+	local packager_email=$1
+	if [[ -z ${packager_email} ]]; then
+		return 1
+	elif [[ $packager_email =~ .+@archlinux.org ]]; then
+		return 0
+	fi
+	return 1
+}
+
 pkgctl_repo_configure() {
 	# options
-	local GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_SSH}
-	local UNPRIVILEGED=0
-	local PACKAGER_NAME=
-	local PACKAGER_EMAIL=
+	local GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_HTTPS}
+	local official=0
+	local proto=https
 	local paths=()
 
 	# variables
 	local path realpath pkgbase remote_url
+	local PACKAGER GPGKEY packager_name packager_email
 
 	while (( $# )); do
 		case $1 in
 			-h|--help)
 				pkgctl_repo_configure_usage
 				exit 0
-				;;
-			-u|--unprivileged)
-				GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_HTTPS}
-				UNPRIVILEGED=1
-				shift
 				;;
 			--)
 				shift
@@ -85,34 +129,33 @@ pkgctl_repo_configure() {
 		fi
 	fi
 
-	# Load makepkg.conf variables to be available
+	# Load makepkg.conf variables to be available for packager identity
+	msg "Collecting packager identity from makepkg.conf"
 	# shellcheck disable=2119
 	load_makepkg_config
-
-	# Check official packaging identity before setting Git author
-	if (( ! UNPRIVILEGED )); then
-		if [[ $PACKAGER == *"Unknown Packager"* ]]; then
-			die "Packager must be set in makepkg.conf"
+	if [[ -n ${PACKAGER} ]]; then
+		if ! packager_name=$(get_packager_name "${PACKAGER}") || \
+		   ! packager_email=$(get_packager_email "${PACKAGER}"); then
+			die "invalid PACKAGER format '${PACKAGER}' in makepkg.conf"
 		fi
-		packager_pattern="(.+) <(.+@.+)>"
-		if [[ ! $PACKAGER =~ $packager_pattern ]]; then
-			die "Invalid Packager format '${PACKAGER}' in makepkg.conf"
+		if ! is_packager_name_valid "${packager_name}"; then
+			die "invalid PACKAGER '${PACKAGER}' in makepkg.conf"
 		fi
-
-		PACKAGER_NAME=$(echo "${PACKAGER}"|sed -E "s/${packager_pattern}/\1/")
-		PACKAGER_EMAIL=$(echo "${PACKAGER}"|sed -E "s/${packager_pattern}/\2/")
-
-		if [[ ! $PACKAGER_EMAIL =~ .+@archlinux.org ]]; then
-			die "Packager email '${PACKAGER_EMAIL}' is not an @archlinux.org address"
+		if is_packager_email_official "${packager_email}"; then
+			official=1
+			proto=ssh
+			GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_SSH}
 		fi
 	fi
 
-	msg "Collected packager settings"
-	msg2 "name    : ${PACKAGER_NAME}"
-	msg2 "email   : ${PACKAGER_EMAIL}"
-	msg2 "gpg-key : ${GPGKEY:-undefined}"
-
-	# TODO: print which protocol got auto detected, ssh https
+	msg2 "name    : ${packager_name:-${YELLOW}undefined${ALL_OFF}}"
+	msg2 "email   : ${packager_email:-${YELLOW}undefined${ALL_OFF}}"
+	msg2 "gpg-key : ${GPGKEY:-${YELLOW}undefined${ALL_OFF}}"
+	if [[ ${proto} == ssh ]]; then
+		msg2 "protocol: ${GREEN}${proto}${ALL_OFF}"
+	else
+		msg2 "protocol: ${YELLOW}${proto}${ALL_OFF}"
+	fi
 
 	for path in "${paths[@]}"; do
 		if ! realpath=$(realpath -e "${path}"); then
@@ -129,41 +172,51 @@ pkgctl_repo_configure() {
 			continue
 		fi
 
+		pushd "${path}" >/dev/null
+
 		remote_url="${GIT_REPO_BASE_URL}/${pkgbase}.git"
-		if ! git -C "${path}" remote add origin "${remote_url}" &>/dev/null; then
-			git -C "${path}" remote set-url origin "${remote_url}"
+		if ! git remote add origin "${remote_url}" &>/dev/null; then
+			git remote set-url origin "${remote_url}"
 		fi
 
 		# move the master branch to main
-		if [[ $(git -C "${path}" symbolic-ref --short HEAD) == master ]]; then
-			git -C "${path}" branch --move main
-			git -C "${path}" config branch.main.merge refs/heads/main
+		if [[ $(git symbolic-ref --short HEAD) == master ]]; then
+			git branch --move main
+			git config branch.main.merge refs/heads/main
 		fi
 
-		git -C "${path}" config devtools.version "${GIT_REPO_SPEC_VERSION}"
-		git -C "${path}" config pull.rebase true
-		git -C "${path}" config branch.autoSetupRebase always
-		git -C "${path}" config branch.main.remote origin
-		git -C "${path}" config branch.main.rebase true
+		git config devtools.version "${GIT_REPO_SPEC_VERSION}"
+		git config pull.rebase true
+		git config branch.autoSetupRebase always
+		git config branch.main.remote origin
+		git config branch.main.rebase true
 
-		git -C "${path}" config transfer.fsckobjects true
-		git -C "${path}" config fetch.fsckobjects true
-		git -C "${path}" config receive.fsckobjects true
+		git config transfer.fsckobjects true
+		git config fetch.fsckobjects true
+		git config receive.fsckobjects true
 
-		if (( ! UNPRIVILEGED )); then
-			git -C "${path}" config user.name "${PACKAGER_NAME}"
-			git -C "${path}" config user.email "${PACKAGER_EMAIL}"
-			git -C "${path}" config commit.gpgsign true
-			if [[ -n $GPGKEY ]]; then
-				git -C "${path}" config user.signingKey "${GPGKEY}"
-			else
-				warning "Missing makepkg.conf configuration: GPGKEY"
-			fi
+		# setup author identity
+		if [[ -n ${packager_name} ]]; then
+			git config user.name "${packager_name}"
+			git config user.email "${packager_email}"
+		fi
+
+		# force gpg for official packagers
+		if (( official )); then
+			git config commit.gpgsign true
+		fi
+
+		# set custom pgp key from makepkg.conf
+		if [[ -n $GPGKEY ]]; then
+			git config commit.gpgsign true
+			git config user.signingKey "${GPGKEY}"
 		fi
 
 		if ! git ls-remote origin &>/dev/null; then
 			warning "configured remote origin may not exist, run:"
 			msg2 "pkgctl repo create ${pkgbase}"
 		fi
+
+		popd >/dev/null
 	done
 }
