@@ -145,6 +145,11 @@ pkgctl_release() {
 			fi
 		fi
 
+		# TODO: REMOVE AFTER POC
+		if [[ ${repo} == community ]]; then
+			repo=extra
+		fi
+
 		if (( TESTING )); then
 			repo="${repo}-testing"
 		elif (( STAGING )); then
