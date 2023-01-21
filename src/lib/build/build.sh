@@ -278,6 +278,11 @@ pkgctl_build() {
 			fi
 		fi
 
+		# TODO: REMOVE AFTER POC
+		if [[ ${pkgrepo} == community ]]; then
+			pkgrepo=extra
+		fi
+
 		# special cases to resolve final build target
 		if (( TESTING )); then
 			pkgrepo="${pkgrepo}-testing"
@@ -370,8 +375,18 @@ pkgctl_build() {
 				BUILDTOOL="${pkgrepo}-build"
 			fi
 
+			# TODO: REMOVE AFTER POC
+			offload_tool=${pkgrepo}
+			if [[ ${pkgrepo} == core-* ]]; then
+				BUILDTOOL=${BUILDTOOL/core-/}
+				offload_tool=${offload_tool/core-/}
+			elif [[ ${pkgrepo} == extra-* ]]; then
+				BUILDTOOL=${BUILDTOOL/extra-/}
+				offload_tool=${offload_tool/extra-/}
+			fi
+
 			if (( OFFLOAD )); then
-				offload-build --repo "${pkgrepo}" -- "${BUILD_OPTIONS[@]}" -- "${MAKECHROOT_OPTIONS[@]}" -l "${WORKER}" -- "${MAKEPKG_OPTIONS[@]}"
+				offload-build --repo "${offload_tool}" -- "${BUILD_OPTIONS[@]}" -- "${MAKECHROOT_OPTIONS[@]}" -l "${WORKER}" -- "${MAKEPKG_OPTIONS[@]}"
 			else
 				"${BUILDTOOL}" "${BUILD_OPTIONS[@]}" -- "${MAKECHROOT_OPTIONS[@]}" -l "${WORKER}" -- "${MAKEPKG_OPTIONS[@]}"
 			fi
