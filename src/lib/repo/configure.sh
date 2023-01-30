@@ -96,7 +96,7 @@ pkgctl_repo_configure() {
 	local paths=()
 
 	# variables
-	local path realpath pkgbase remote_url
+	local path realpath pkgbase remote_url project_path
 	local PACKAGER GPGKEY packager_name packager_email
 
 	while (( $# )); do
@@ -174,7 +174,8 @@ pkgctl_repo_configure() {
 
 		pushd "${path}" >/dev/null
 
-		remote_url="${GIT_REPO_BASE_URL}/${pkgbase}.git"
+		project_path=$(gitlab_project_name_to_path "${pkgbase}")
+		remote_url="${GIT_REPO_BASE_URL}/${project_path}.git"
 		if ! git remote add origin "${remote_url}" &>/dev/null; then
 			git remote set-url origin "${remote_url}"
 		fi
