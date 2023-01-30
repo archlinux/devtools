@@ -1,27 +1,7 @@
 
-Bugs
-----
-Bugs can be reported on the project's GitLab bug tracker 'https://gitlab.archlinux.org/archlinux/devtools'
+Homepage
+--------
 
+'https://gitlab.archlinux.org/archlinux/devtools'
 
-Authors
--------
-
-Maintainers:
-
-* Aaron Griffin <aaronmgriffin@gmail.com>
-* Allan McRae <allan@archlinux.org>
-* Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
-* Dan McGee <dan@archlinux.org>
-* Dave Reisner <dreisner@archlinux.org>
-* Evangelos Foutras <evangelos@foutrelis.com>
-* Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
-* Jelle van der Waa <jelle@archlinux.org>
-* Levente Polyak <anthraxx@archlinux.org>
-* Pierre Schmitz <pierre@archlinux.de>
-* Sébastien Luttringer <seblu@seblu.net>
-* Sven-Hendrik Haase <svenstaro@gmail.com>
-* Thomas Bächler <thomas@archlinux.org>
-
-For additional contributors, use `git shortlog -s` on the devtools.git
-repository.
+Please report bugs and feature requests in the issue tracker. Please do your best to provide a reproducible test case for bugs.
