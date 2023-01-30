@@ -81,16 +81,30 @@ gitlab_api_get_user() {
 	return 0
 }
 
+# 1. replace single '+' between word boundaries with '-'
+# 2. replace any other '+' with literal 'plus'
+# 3. replace any special chars other than '_', '-' and '.' with '-'
+gitlab_project_name_to_path() {
+	local name=$1
+	printf "%s" "${name}" \
+		| sed -E 's/([a-zA-Z0-9]+)\+([a-zA-Z]+)/\1-\2/g' \
+		| sed -E 's/\+/plus/g' \
+		| sed -E 's/[^a-zA-Z0-9_\-\.]/-/g'
+}
+
 gitlab_api_create_project() {
 	local pkgbase=$1
-	local outfile data path
+	local outfile data path project_path
 
 	[[ -z ${WORKDIR:-} ]] && setup_workdir
 	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
 
+	project_path=$(gitlab_project_name_to_path "${pkgbase}")
+
 	# create GitLab project
 	data='{
 		"name": "'"${pkgbase}"'",
+		"path": "'"${project_path}"'",
 		"namespace_id": "'"${GIT_PACKAGING_NAMESPACE_ID}"'",
 		"request_access_enabled": "false"
 	}'

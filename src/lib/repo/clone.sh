@@ -54,6 +54,9 @@ pkgctl_repo_clone() {
 	local CONFIGURE_OPTIONS=()
 	local pkgbases
 
+	# variables
+	local project_path
+
 	while (( $# )); do
 		case $1 in
 			-h|--help)
@@ -126,7 +129,8 @@ pkgctl_repo_clone() {
 	for pkgbase in "${pkgbases[@]}"; do
 		if [[ ! -d ${pkgbase} ]]; then
 			msg "Cloning ${pkgbase} ..."
-			remote_url="${GIT_REPO_BASE_URL}/${pkgbase}.git"
+			project_path=$(gitlab_project_name_to_path "${pkgbase}")
+			remote_url="${GIT_REPO_BASE_URL}/${project_path}.git"
 			git clone --origin origin "${remote_url}" "${pkgbase}"
 		else
 			warning "Skip cloning ${pkgbase}: Directory exists"
