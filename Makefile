@@ -78,7 +78,7 @@ $(1)/%: $(2)%.in $(LIBUTILS)
 	@$(RM) "$$@"
 	@{ echo -n 'm4_changequote([[[,]]])'; cat $$<; } | m4 -P --define=m4_devtools_version=$$(BUILDTOOLVER) | $(edit) >$$@
 	@chmod $(3) "$$@"
-	@bash -n "$$@"
+	@bash -O extglob -n "$$@"
 endef
 
 $(eval $(call buildInScript,build/bin,src/,555))

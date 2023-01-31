@@ -248,6 +248,7 @@ diff_pkgs() {
 	fi
 }
 
+shopt -s extglob
 fetch_pkg() {
 	local pkg pkgdest pkgurl
 	case $1 in
@@ -295,6 +296,7 @@ fetch_pkg() {
 
 	echo "$pkgdest"
 }
+shopt -u extglob
 
 if (( $# < 2 )); then
 	if [[ ! -f PKGBUILD ]]; then

@@ -137,6 +137,7 @@ pkgver_equal() {
 #    $pkgver can be supplied with or without a pkgrel appended.
 #    If not supplied, any pkgrel will be matched.
 ##
+shopt -s extglob
 find_cached_package() {
 	local searchdirs=("$PWD" "$PKGDEST") results=()
 	local targetname=$1 targetver=$2 targetarch=$3
@@ -191,7 +192,7 @@ find_cached_package() {
 			return 1
 	esac
 }
-
+shopt -u extglob
 
 check_package_validity(){
 	local pkgfile=$1
