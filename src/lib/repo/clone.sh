@@ -34,6 +34,7 @@ pkgctl_repo_clone_usage() {
 		    -m, --maintainer=NAME  Clone all packages of the named maintainer
 		    --switch VERSION       Switch the current working tree to a specified version
 		    --universe             Clone all existing packages, useful for cache warming
+		    -j, --jobs N           Run up to N jobs in parallel (default: $(nproc))
 		    -h, --help             Show this help text
 
 		EXAMPLES
@@ -55,9 +56,11 @@ pkgctl_repo_clone() {
 	local MAINTAINER=
 	local VERSION=
 	local CONFIGURE_OPTIONS=()
-	local pkgbases
+	local jobs=
+	jobs=$(nproc)
 
 	# variables
+	local command=${_DEVTOOLS_COMMAND:-${BASH_SOURCE[0]##*/}}
 	local project_path
 
 	while (( $# )); do
@@ -96,6 +99,11 @@ pkgctl_repo_clone() {
 			--universe)
 				CLONE_ALL=1
 				shift
+				;;
+			-j|--jobs)
+				(( $# <= 1 )) && die "missing argument for %s" "$1"
+				jobs=$2
+				shift 2
 				;;
 			--)
 				shift
@@ -142,12 +150,31 @@ pkgctl_repo_clone() {
 		stat_done
 	fi
 
+	# parallelization
+	if [[ ${jobs} != 1 ]] && (( ${#pkgbases[@]} > 1 )); then
+		# force colors in parallel if parent process is colorized
+		if [[ -n ${BOLD} ]]; then
+			export DEVTOOLS_COLOR=always
+		fi
+		# assign command options
+		if [[ -n "${VERSION}" ]]; then
+			command+=" --switch '${VERSION}'"
+		fi
+		if ! parallel --bar --jobs "${jobs}" "${command}" ::: "${pkgbases[@]}"; then
+			die 'Failed to clone some packages, please check the output'
+			exit 1
+		fi
+		exit 0
+	fi
+
 	for pkgbase in "${pkgbases[@]}"; do
 		if [[ ! -d ${pkgbase} ]]; then
 			msg "Cloning ${pkgbase} ..."
 			project_path=$(gitlab_project_name_to_path "${pkgbase}")
 			remote_url="${GIT_REPO_BASE_URL}/${project_path}.git"
-			git clone --origin origin "${remote_url}" "${pkgbase}"
+			if ! git clone --origin origin "${remote_url}" "${pkgbase}"; then
+				die 'failed to clone %s' "${pkgbase}"
+			fi
 		else
 			warning "Skip cloning ${pkgbase}: Directory exists"
 		fi

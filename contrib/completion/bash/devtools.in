@@ -268,17 +268,23 @@ _pkgctl_repo_clone_args=(
 	--switch
 	-u --unprivileged
 	--universe
+	-j --jobs
 	-h --help
 )
 _pkgctl_repo_clone_args__maintainer_opts() { :; }
 _pkgctl_repo_clone_args_m_opts() { _pkgctl_repo_clone_args__maintainer_opts; }
 _pkgctl_repo_clone_args__switch_opts() { :; }
+_pkgctl_repo_clone_args__jobs_opts() { :; }
+_pkgctl_repo_clone_args_j_opts() { _pkgctl_repo_clone_args__jobs_opts; }
 _pkgctl_repo_clone_opts() { _devtools_completions_all_packages; }
 
 
 _pkgctl_repo_configure_args=(
+	-j --jobs
 	-h --help
 )
+_pkgctl_repo_configure_args__jobs_opts() { :; }
+_pkgctl_repo_configure_args_j_opts() { _pkgctl_repo_clone_args__jobs_opts; }
 _pkgctl_repo_configure_opts() { _filedir -d; }
 
 

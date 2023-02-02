@@ -25,6 +25,11 @@ read-only HTTPS otherwise.
 Options
 -------
 
+*-j, --jobs* 'N'::
+	Run up to N jobs in parallel. By default the number of jobs is equal to the
+	number of available processing units. For sequential processing this option
+	needs to be passed with 1.
+
 *-h, --help*::
 	Show a help text
 

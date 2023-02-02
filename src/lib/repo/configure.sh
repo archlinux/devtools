@@ -33,6 +33,7 @@ pkgctl_repo_configure_usage() {
 		read-only HTTPS otherwise.
 
 		OPTIONS
+		    -j, --jobs N         Run up to N jobs in parallel (default: $(nproc))
 		    -h, --help           Show this help text
 
 		EXAMPLES
@@ -93,9 +94,12 @@ pkgctl_repo_configure() {
 	local GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_HTTPS}
 	local official=0
 	local proto=https
+	local jobs=
+	jobs=$(nproc)
 	local paths=()
 
 	# variables
+	local -r command=${_DEVTOOLS_COMMAND:-${BASH_SOURCE[0]##*/}}
 	local path realpath pkgbase remote_url project_path
 	local PACKAGER GPGKEY packager_name packager_email
 
@@ -104,6 +108,11 @@ pkgctl_repo_configure() {
 			-h|--help)
 				pkgctl_repo_configure_usage
 				exit 0
+				;;
+			-j|--jobs)
+				(( $# <= 1 )) && die "missing argument for %s" "$1"
+				jobs=$2
+				shift 2
 				;;
 			--)
 				shift
@@ -157,10 +166,21 @@ pkgctl_repo_configure() {
 		msg2 "protocol: ${YELLOW}${proto}${ALL_OFF}"
 	fi
 
+	# parallelization
+	if [[ ${jobs} != 1 ]] && (( ${#paths[@]} > 1 )); then
+		if [[ -n ${BOLD} ]]; then
+			export DEVTOOLS_COLOR=always
+		fi
+		if ! parallel --bar --jobs "${jobs}" "${command}" ::: "${paths[@]}"; then
+			die 'Failed to configure some packages, please check the output'
+			exit 1
+		fi
+		exit 0
+	fi
+
 	for path in "${paths[@]}"; do
 		if ! realpath=$(realpath -e "${path}"); then
-			error "No such directory: ${path}"
-			continue
+			die "No such directory: ${path}"
 		fi
 
 		pkgbase=$(basename "${realpath}")
@@ -168,8 +188,7 @@ pkgctl_repo_configure() {
 		msg "Configuring ${pkgbase}"
 
 		if [[ ! -d "${path}/.git" ]]; then
-			error "Not a Git repository: ${path}"
-			continue
+			die "Not a Git repository: ${path}"
 		fi
 
 		pushd "${path}" >/dev/null
