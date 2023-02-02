@@ -30,7 +30,7 @@ export GIT_PACKAGING_URL_HTTPS="https://${GITLAB_HOST}/${GIT_PACKAGING_NAMESPACE
 export PACKAGING_REPO_RELEASE_HOST=repos.sandbox.archlinux.org
 
 # check if messages are to be printed using color
-if [[ -t 2 && "$TERM" != dumb ]]; then
+if [[ -t 2 && "$TERM" != dumb ]] || [[ ${DEVTOOLS_COLOR} == always ]]; then
 	colorize
 else
 	# shellcheck disable=2034

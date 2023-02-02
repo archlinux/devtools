@@ -157,6 +157,14 @@ pkgctl_repo_configure() {
 		msg2 "protocol: ${YELLOW}${proto}${ALL_OFF}"
 	fi
 
+	if (( ${#paths[@]} > 1 )); then
+		if [[ -n ${BOLD} ]]; then
+			export DEVTOOLS_COLOR=always
+		fi
+		parallel --bar --jobs 200% pkgctl repo configure ::: "${paths[@]}"
+		exit 0
+	fi
+
 	for path in "${paths[@]}"; do
 		if ! realpath=$(realpath -e "${path}"); then
 			error "No such directory: ${path}"

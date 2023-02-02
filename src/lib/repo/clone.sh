@@ -35,6 +35,8 @@ pkgctl_repo_clone_usage() {
 		    -u, --unprivileged     Clone package with read-only access and without
 		                           packager info as Git author
 		    --universe             Clone all existing packages, useful for cache warming
+			--protocol PROTO       Change git protocol; PROTO is 'ssh' or 'https' (disables auto-detection)
+			-j, --jobs N           Run up to N jobs via parallel (default: 200%)
 		    -h, --help             Show this help text
 
 		EXAMPLES
@@ -54,9 +56,11 @@ pkgctl_repo_clone() {
 	local CLONE_ALL=0
 	local MAINTAINER=
 	local CONFIGURE_OPTIONS=()
+	local JOBS="200%"
 	local pkgbases
 
 	# variables
+	local -r command=${_DEVTOOLS_COMMAND:-${BASH_SOURCE[0]##*/}}
 	local project_path
 
 	while (( $# )); do
@@ -81,6 +85,11 @@ pkgctl_repo_clone() {
 				;;
 			--universe)
 				CLONE_ALL=1
+				shift
+				;;
+			-j|--jobs)
+				(( $# <= 1 )) && die "missing argument for %s" "$1"
+				JOBS=$2
 				shift
 				;;
 			--)
@@ -128,12 +137,26 @@ pkgctl_repo_clone() {
 		stat_done
 	fi
 
+	# parallelization
+	if (( ${#pkgbases[@]} > 1 )); then
+		if [[ -n ${BOLD} ]]; then
+			export DEVTOOLS_COLOR=always
+		fi
+		if ! parallel --bar --jobs "${JOBS}" "${command}" ::: "${pkgbases[@]}"; then
+			die 'Failed to clone some packages, please check the output'
+			exit 1
+		fi
+		exit 0
+	fi
+
 	for pkgbase in "${pkgbases[@]}"; do
 		if [[ ! -d ${pkgbase} ]]; then
 			msg "Cloning ${pkgbase} ..."
 			project_path=$(gitlab_project_name_to_path "${pkgbase}")
 			remote_url="${GIT_REPO_BASE_URL}/${project_path}.git"
-			git clone --origin origin "${remote_url}" "${pkgbase}"
+			if ! git clone --origin origin "${remote_url}" "${pkgbase}"; then
+				die 'failed to clone %s' "${pkgbase}"
+			fi
 		else
 			warning "Skip cloning ${pkgbase}: Directory exists"
 		fi
