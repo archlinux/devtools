@@ -27,6 +27,10 @@ pkgctl_auth_login_usage() {
 
 		The minimum required scopes for the token are: 'api', 'write_repository'.
 
+		The GitLab API token can either be stored in a plaintext file, or
+		supplied via the DEVTOOLS_GITLAB_TOKEN environment variable using a
+		vault, see pkgctl-auth-login(1) for details.
+
 		OPTIONS
 		    -g, --gen-access-token   Open the URL to generate a new personal access token
 		    -h, --help               Show this help text
@@ -66,6 +70,10 @@ pkgctl_auth_login() {
 
 	Tip: you can generate a Personal Access Token here ${personal_access_token_url}
 	The minimum required scopes are 'api' and 'write_repository'.
+
+	If you do not want to store the token in a plaintext file, you can abort
+	the following prompt and supply the token via the DEVTOOLS_GITLAB_TOKEN
+	environment variable using a vault, see pkgctl-auth-login(1) for details.
 _EOF_
 
 	if (( GEN_ACESS_TOKEN )); then

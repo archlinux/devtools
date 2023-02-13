@@ -16,6 +16,13 @@ Interactively authenticate with the GitLab instance.
 
 The minimum required scopes for the token are: 'api', 'write_repository'.
 
+The GitLab API token can either be stored in a plaintext file in
+'$XDG_CONFIG_HOME/devtools/gitlab.conf', or supplied via the
+'DEVTOOLS_GITLAB_TOKEN' environment variable using any command (gpg, vault,
+password manager) by declaring a shell alias:
+
+    $ alias pkgctl='DEVTOOLS_GITLAB_TOKEN="$(command to obtain token)" pkgctl'
+
 Options
 -------
 
