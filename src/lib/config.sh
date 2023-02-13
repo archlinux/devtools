@@ -14,11 +14,15 @@ readonly XDG_DEVTOOLS_GITLAB_CONFIG="${XDG_DEVTOOLS_DIR}/gitlab.conf"
 export GITLAB_TOKEN=""
 
 load_devtools_config() {
-	if [[ ! -f "${XDG_DEVTOOLS_GITLAB_CONFIG}" ]]; then
-		GITLAB_TOKEN=""
+	if [[ -n "${DEVTOOLS_GITLAB_TOKEN}" ]]; then
+		GITLAB_TOKEN="${DEVTOOLS_GITLAB_TOKEN}"
 		return
 	fi
-	GITLAB_TOKEN=$(grep GITLAB_TOKEN "${XDG_DEVTOOLS_GITLAB_CONFIG}"|cut -d= -f2|cut -d\" -f2)
+	if [[ -f "${XDG_DEVTOOLS_GITLAB_CONFIG}" ]]; then
+		GITLAB_TOKEN=$(grep GITLAB_TOKEN "${XDG_DEVTOOLS_GITLAB_CONFIG}"|cut -d= -f2|cut -d\" -f2)
+		return
+	fi
+	GITLAB_TOKEN=""
 }
 
 save_devtools_config() {
