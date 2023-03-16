@@ -141,6 +141,16 @@ for _arch in "${arch[@]}"; do
 	fi
 done
 
+#msg 'Fetching remote changes'
+#git fetch --prune --prune-tags origin || die 'failed to fetch remote changes'
+#
+## Check if local branch is up to date and contains the latest origin commit
+#if remoteref=$(git rev-parse "origin/${branchname}" 2>/dev/null); then
+#	if [[ $(git branch "${branchname}" --contains "${remoteref}" --format '%(refname:short)') != "${branchname}" ]]; then
+#		die "local branch is out of date, run 'git pull --rebase'"
+#	fi
+#fi
+
 if [[ -n $(git status --short --untracked-files=no) ]]; then
 	stat_busy 'Staging files'
 	for f in $(git ls-files --modified); do
