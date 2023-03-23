@@ -2,89 +2,431 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-_devtools_compgen() {
-  local i r
-  COMPREPLY=($(compgen -W '$*' -- "$cur"))
-  for ((i=1; i < ${#COMP_WORDS[@]}-1; i++)); do
-    for r in "${!COMPREPLY[@]}"; do
-      if [[ ${COMP_WORDS[i]} = "${COMPREPLY[r]}" ]]; then
-        unset 'COMPREPLY[r]'; break
-      fi
-    done
-  done
-}
+_DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
+# shellcheck source=src/lib/valid-tags.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
+# shellcheck source=src/lib/valid-repos.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 
-_pkgrepo_pkg() {
-  _devtools_compgen "$(
-      command pacman "-$1"
-  )"
-}
+_binary_arch=${_arch[*]:0:-1}
+_colors=(never always auto)
 
-_pkgrepo() {
-  local cur prev
-  COMPREPLY=()
-  cur=$(_get_cword)
-  prev=${COMP_WORDS[COMP_CWORD-1]}
 
-  _pkgrepo_pkg Slq
-  true
-} &&
-complete -F _pkgrepo pkgrepo
-
-_makechrootpkg() {
-  local cur
-  COMPREPLY=()
-  _get_comp_words_by_ref cur
-
-  case $cur in
-    -*)
-       COMPREPLY=( $( compgen -W '-I -c -h -l -r -u' -- "$cur" ) )
-       ;;
-    *)
-      _filedir
-      return 0
-      ;;
-  esac
-
-  true
-} &&
+_makechrootpkg_args=(
+	-h
+	-c
+	-d
+	-D
+	-u
+	-r
+	-I
+	-l
+	-n
+	-T
+	-U
+)
+_makechrootpkg_args_d_opts() { _filedir -d; }
+_makechrootpkg_args_D_opts() { _filedir -d; }
+_makechrootpkg_args_r_opts() { _filedir -d; }
+_makechrootpkg_args_I_opts() { _filedir '*.pkg.tar.*'; }
+_makechrootpkg_args_l_opts() { _filedir -d; }
+_makechrootpkg_args_U_opts() { :; }
+_makechrootpkg() { __devtools_complete _makechrootpkg; }
 complete -F _makechrootpkg makechrootpkg
 
-_mkarchroot() {
-  local cur
-  COMPREPLY=()
-  _get_comp_words_by_ref cur
 
-  case $cur in
-    -*)
-       COMPREPLY=( $( compgen -W '-C -M -c -h' -- "$cur" ) )
-       ;;
-    *)
-      _filedir
-      return 0
-      ;;
-  esac
+_makerepropkg_args=(
+	-h
+	-d
+	-c
+	-M
+)
+_makerepropkg_args_c_opts() { _filedir -d; }
+_makerepropkg_args_M_opts() { _filedir '*.conf'; }
+_makerepropkg_opts() { _filedir '*.pkg.tar.*'; }
+_makerepropkg() { __devtools_complete _makerepropkg; }
+complete -F _makerepropkg makerepropkg
 
-  true
-} &&
+
+_mkarchroot_args=(
+	-U
+	-C
+	-M
+	-c
+	-h
+)
+_mkarchroot_args_U_opts() { _filedir '*.pkg.tar.*'; }
+_mkarchroot_args_C_opts() { _filedir '*.conf'; }
+_mkarchroot_args_M_opts() { _filedir '*.conf'; }
+_mkarchroot_args_c_opts() { _filedir -d; }
+_mkarchroot_opts() {
+	local args
+	args=$(__pkgctl_word_count_after_subcommand)
+	if (( args == 0 )); then
+		_filedir -d
+	elif (( args >= 1 )); then
+		_devtools_completions_all_packages
+	fi
+}
+_mkarchroot() { __devtools_complete _mkarchroot; }
 complete -F _mkarchroot mkarchroot
 
-_arch-nspawn() {
-  local cur
-  COMPREPLY=()
-  _get_comp_words_by_ref cur
 
-  case $cur in
-    -*)
-       COMPREPLY=( $( compgen -W '-C -M -c -h' -- "$cur" ) )
-       ;;
-    *)
-      _filedir
-      return 0
-      ;;
-  esac
+_arch_nspawn_args=(
+	-C
+	-M
+	-c
+	-f
+	-s
+	-h
+)
+_arch_nspawn_args_C_opts() { _filedir '*.conf'; }
+_arch_nspawn_args_M_opts() { _filedir '*.conf'; }
+_arch_nspawn_args_c_opts() { _filedir -d; }
+_arch_nspawn_args_f_opts() { _filedir; }
+_arch_nspawn_opts() {
+	local args
+	args=$(__pkgctl_word_count_after_subcommand)
+	if (( args == 0 )); then
+		_filedir -d
+	fi
+}
+_arch_nspawn() { __devtools_complete _arch_nspawn; }
+complete -F _arch_nspawn arch-nspawn
 
-  true
-} &&
-complete -F _arch-nspawn arch-nspawn
-# ex:et ts=2 sw=2 ft=sh
+
+_sogrep_args=(
+	-v --verbose
+	-r --refresh
+	-h --help
+)
+_sogrep_opts() {
+	local args
+	args=$(__pkgctl_word_count_after_subcommand)
+	if (( args == 0 )); then
+		_devtools_completions_repo all
+	fi
+}
+_sogrep() { __devtools_complete _sogrep; }
+complete -F _sogrep sogrep
+
+
+_offload_build_args=(
+	-r --repo
+	-a --arch
+	-s --server
+	-h --help
+)
+_offload_build_args__repo_opts() { _devtools_completions_build_repo; }
+_offload_build_args_r_opts() { _offload_build_args__repo_opts; }
+_offload_build_args__arch_opts() { _devtools_completions_arch; }
+_offload_build_args_a_opts() { _offload_build_args__arch_opts; }
+_offload_build_args__server_opts() { :; }
+_offload_build_args_s_opts() { _offload_build_args__server_opts; }
+_offload_build() { __devtools_complete _offload_build; }
+complete -F _offload_build offload-build
+
+
+_pkgctl_cmds=(
+	auth
+	build
+	db
+	diff
+	release
+	repo
+	version
+)
+_pkgctl_args=(
+	-V --version
+	-h --help
+)
+
+
+_pkgctl_auth_cmds=(
+	login
+	status
+)
+
+
+_pkgctl_auth_login_args=(
+	-g --gen-access-token
+	-h --help
+)
+
+
+_pkgctl_auth_status_args=(
+	-t --show-token
+	-h --help
+)
+
+
+_pkgctl_build_args=(
+	--arch
+	--repo
+
+	-s --staging
+	-t --testing
+	-o --offload
+	-c --clean
+
+	--pkgver
+	--pkgrel
+	--rebuild
+	-e --edit
+
+	-r --release
+	-m --message
+	-u --db-update
+
+	-h --help
+)
+_pkgctl_build_args__arch_opts() { _devtools_completions_arch; }
+_pkgctl_build_args__repo_opts() { _devtools_completions_repo; }
+_pkgctl_build_args__pkgver_opts() { :; }
+_pkgctl_build_args__pkgrel_opts() { :; }
+_pkgctl_build_args__message_opts() { :; }
+_pkgctl_build_args_m_opts() { _pkgctl_build_args__message_opts; }
+_pkgctl_build_opts() { _filedir -d; }
+
+
+_pkgctl_db_cmds=(
+	move
+	remove
+	update
+)
+
+
+_pkgctl_db_move_args=(
+	-h --help
+)
+_pkgctl_db_move_opts() {
+	local subcommand args
+	subcommand=(db move)
+	args=$(__pkgctl_word_count_after_subcommand "${subcommand[@]}")
+
+	if (( args == 0 )); then
+		_devtools_completions_repo
+	elif (( args == 1 )); then
+		_devtools_completions_repo
+	elif (( args >= 2 )); then
+		_devtools_completions_all_packages
+	fi
+}
+
+
+_pkgctl_db_remove_args=(
+	-a --arch
+	-h --help
+)
+_pkgctl_db_remove_opts() {
+	local subcommand args
+	subcommand=(db remove)
+	args=$(__pkgctl_word_count_after_subcommand "${subcommand[@]}")
+
+	if (( args == 0 )); then
+		_devtools_completions_repo
+	elif (( args >= 1 )); then
+		_devtools_completions_all_packages
+	fi
+}
+
+
+_pkgctl_db_update_args=(
+	-h --help
+)
+
+
+_pkgctl_release_args=(
+	-m --message
+	-r --repo
+	-s --staging
+	-t --testing
+	-u --db-update
+	-h --help
+)
+_pkgctl_release_args__message_opts() { :; }
+_pkgctl_release_args_m_opts() { _pkgctl_release_args__message_opts; }
+_pkgctl_release_args__repo_opts() { _devtools_completions_repo; }
+_pkgctl_release_args_r_opts() { _pkgctl_release_args__repo_opts; }
+_pkgctl_release_opts() { _filedir -d; }
+
+
+_pkgctl_repo_cmds=(
+	clone
+	configure
+	create
+	web
+)
+
+
+_pkgctl_repo_clone_args=(
+	-m --maintainer
+	-u --unprivileged
+	--universe
+	-h --help
+)
+_pkgctl_repo_clone_args__maintainer_opts() { :; }
+_pkgctl_repo_clone_args_m_opts() { _pkgctl_repo_clone_args__maintainer_opts; }
+_pkgctl_repo_clone_opts() { _devtools_completions_all_packages; }
+
+
+_pkgctl_repo_configure_args=(
+	-h --help
+)
+_pkgctl_repo_configure_opts() { _filedir -d; }
+
+
+_pkgctl_repo_create_args=(
+	-c --clone
+	-h --help
+)
+
+
+_pkgctl_repo_web_args=(
+	-h --help
+)
+_pkgctl_repo_web_opts() { _filedir -d; }
+
+
+_pkgctl_diff_args=(
+	-l --list
+	-d --diffoscope
+	-p --pkginfo
+	-b --buildinfo
+	-m --makepkg-config
+	-u -U --unified
+	-y --side-by-side
+	--color
+	-W --width
+	-P --pool
+	-v --verbose
+	-h --help
+)
+_pkgctl_diff_args__makepkg_config_opts() { _filedir '*.conf'; }
+_pkgctl_diff_args_m_opts() { _pkgctl_diff_args__makepkg_config_opts; }
+_pkgctl_diff_args__width_opts() { :; }
+_pkgctl_diff_args_W_opts() { _pkgctl_diff_args__width_opts; }
+_pkgctl_diff_args__color_opts() { _devtools_completions_color; }
+_pkgctl_diff_args__pool_opts() { _filedir -d; }
+_pkgctl_diff_args_P_opts() { _pkgctl_diff_args__pool_opts; }
+_pkgctl_diff_opts() { _devtools_completions_all_packages; }
+
+
+_pkgctl_version_args=(
+	-h --help
+)
+
+
+_devtools_completions_color() {
+	mapfile -t COMPREPLY < <(compgen -W "${_colors[*]}" -- "$cur")
+}
+_devtools_completions_arch() {
+	mapfile -t COMPREPLY < <(compgen -W "${_arch[*]}" -- "$cur")
+}
+_devtools_completions_repo() {
+	local optional=${1:-}
+	mapfile -t COMPREPLY < <(compgen -W "${optional} ${_repos[*]}" -- "$cur")
+}
+_devtools_completions_build_repo() {
+	mapfile -t COMPREPLY < <(compgen -W "${_build_repos[*]}" -- "$cur")
+}
+_devtools_completions_all_packages() {
+	mapfile -t COMPREPLY < <(compgen -W "$(pacman -Sql)" -- "$cur")
+}
+
+__devtools_complete() {
+	local service=$1
+	local cur prev
+
+	# Don't break words at : and =
+	COMP_WORDBREAKS=${COMP_WORDBREAKS//[:=]}
+
+	cur=$(_get_cword)
+	prev=${COMP_WORDS[COMP_CWORD-1]}
+
+	__pkgctl_handle_subcommands "${service}"
+	return 0
+}
+
+__pkgctl_has_func() {
+	declare -f -- "${1}" &>/dev/null
+}
+
+__pkgctl_has_array() {
+	declare -p -- "${1}" &>/dev/null
+}
+
+__pkgctl_is_subcommand() {
+	__pkgctl_has_array "${1}"_args || \
+		__pkgctl_has_array "${1}"_cmds
+}
+
+__pkgctl_words_after_subcommand() {
+	local subcommand=("$@")
+	local subcommand_idx=0
+	local word prev_word
+	for ((i = 1; i < ${#COMP_WORDS[@]}; ++i)); do
+		word=${COMP_WORDS[i]}
+		prev_word=${COMP_WORDS[i-1]}
+		# skip options and the current typing
+		if [[ ${word} == -* ]] || [[ ${word} == "${cur}" ]]; then
+			continue
+		fi
+		# skip until we resolved the passed subcommand
+		if (( subcommand_idx < ${#subcommand[@]} )); then
+			if [[ $word == "${subcommand[$subcommand_idx]}" ]]; then
+				subcommand_idx=$(( subcommand_idx + 1 ))
+			fi
+			continue
+		fi
+		# skip previous options as they belong to the argument
+		if [[ ${prev_word} == -* ]] && __pkgctl_has_func "${service_name}_args${prev_word//-/_}_opts"; then
+			continue
+		fi
+		printf "%s\n" "${word}"
+	done
+}
+__pkgctl_word_count_after_subcommand() {
+	local subcommand=("$@")
+	mapfile -t words < <(__pkgctl_words_after_subcommand "${subcommand[@]}")
+	echo "${#words[@]}"
+}
+
+__pkgctl_handle_subcommands() {
+	local service_name=${1}
+	local index=${2:-0}
+	local word ref
+
+	# recurse into nested subcommands
+	for ((i = index + 1; i < ${#COMP_WORDS[@]}; ++i)); do
+		word=${COMP_WORDS[i]}
+		if [[ ${word} == -* ]] || [[ ${word} == "${cur}" ]]; then
+			continue
+		fi
+		if __pkgctl_is_subcommand "${service_name}_${word}"; then
+			__pkgctl_handle_subcommands "${service_name}_${word}" "${i}"
+			return
+		fi
+	done
+
+	# dynamic argument options
+	if [[ $prev == -* ]] && word=${prev//-/_} && __pkgctl_has_func "${service_name}_args${word}_opts"; then
+		"${service_name}_args${word}_opts"
+	# dynamic subcommand options
+	elif [[ $cur != -* ]] && __pkgctl_has_func "${service_name}_opts"; then
+		"${service_name}_opts"
+	# subcommand argument array
+	elif ( ! __pkgctl_has_array "${service_name}"_cmds || [[ $cur == -* ]] ) && __pkgctl_has_array "${service_name}_args"; then
+		declare -n ref="${service_name}_args"
+		mapfile -t COMPREPLY < <(compgen -W "${ref[*]}" -- "$cur")
+	# subcommand array
+	elif __pkgctl_has_array "${service_name}"_cmds; then
+		declare -n ref="${service_name}_cmds"
+		mapfile -t COMPREPLY < <(compgen -W "${ref[*]}" -- "$cur")
+	fi
+}
+
+
+_pkgctl() { __devtools_complete _pkgctl; }
+complete -F _pkgctl pkgctl
+# ex:noet ts=4 sw=4 ft=sh
