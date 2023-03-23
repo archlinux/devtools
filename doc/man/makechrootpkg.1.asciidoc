@@ -73,4 +73,8 @@ Options
 *-U*::
 	Run makepkg as a specified user
 
+*-x* <when>::
+	Inspect chroot after build, possible modes are 'never' (default), 'always' or 'failure'
+
+
 include::include/footer.asciidoc[]

@@ -7,6 +7,8 @@ _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
 # shellcheck source=src/lib/valid-repos.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
+# shellcheck source=src/lib/valid-inspect.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
 
 _binary_arch=${DEVTOOLS_VALID_ARCHES[*]:0:-1}
 _colors=(never always auto)
@@ -42,6 +44,7 @@ _pkgctl_build_args=(
 	'(-o --offload)'{-o,--offload}'[Build on a remote server and transfer artifacts afterwards]'
 	'(-c --clean)'{-c,--clean}'[Recreate the chroot before building]'
 	'(-I --install)'{-I,--install}'[Install a package into the working copy of the chroot]:target:_files -g "*.pkg.tar.*(.)"'
+	"--inspect[Spawn an interactive shell to inspect the chroot (never, always, failure)]:inspect:($DEVTOOLS_VALID_INSPECT_MODES[*])"
 	'(-w --worker)'{-w,--worker}'[Name of the worker slot, useful for concurrent builds (disables auto-detection)]:slot:'
 	'--nocheck[Do not run the check() function in the PKGBUILD]'
 	'--pkgver=[Set pkgver, reset pkgrel and update checksums]:pkgver:'
@@ -190,6 +193,7 @@ _makechrootpkg_args=(
 	'-n[Run namcap on the package]'
 	'-T[Build in a temporary directory]'
 	'-U[Run makepkg as a specified user]:makepkg_user'
+	"-x[Spawn an interactive shell to inspect the chroot (never, always, failure)]:inspect:($DEVTOOLS_VALID_INSPECT_MODES[*])"
 )
 
 _mkarchroot_args=(

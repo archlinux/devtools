@@ -38,6 +38,10 @@ Build Options
 *-I, --install* 'FILE'::
 	Install a package into the working copy of the chroot
 
+*--inspect* 'WHEN'::
+	Spawn an interactive shell to inspect the chroot after building. Useful to ease the debugging of a package build. +
+	Possible values for 'WHEN' are `'never'`, `'always'` or `'failure'`
+
 *-w, --worker* 'SLOT'::
 	Name of the worker slot, useful for concurrent builds. By default the slot
 	is automatically assigned to the current tty pts number. In case the caller

@@ -7,6 +7,8 @@ _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
 # shellcheck source=src/lib/valid-repos.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
+# shellcheck source=src/lib/valid-inspect.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
 
 _binary_arch=${DEVTOOLS_VALID_ARCHES[*]:0:-1}
 _colors=(never always auto)
@@ -24,6 +26,7 @@ _makechrootpkg_args=(
 	-n
 	-T
 	-U
+	-x
 )
 _makechrootpkg_args_d_opts() { _filedir -d; }
 _makechrootpkg_args_D_opts() { _filedir -d; }
@@ -31,6 +34,7 @@ _makechrootpkg_args_r_opts() { _filedir -d; }
 _makechrootpkg_args_I_opts() { _filedir '*.pkg.tar.*'; }
 _makechrootpkg_args_l_opts() { _filedir -d; }
 _makechrootpkg_args_U_opts() { :; }
+_makechrootpkg_args_x_opts() { _devtools_completions_inspect; }
 _makechrootpkg() { __devtools_complete _makechrootpkg; }
 complete -F _makechrootpkg makechrootpkg
 
@@ -169,6 +173,7 @@ _pkgctl_build_args=(
 	-o --offload
 	-c --clean
 	-w --worker
+	--inspect
 
 	--pkgver
 	--pkgrel
@@ -186,6 +191,7 @@ _pkgctl_build_args__arch_opts() { _devtools_completions_arch; }
 _pkgctl_build_args__repo_opts() { _devtools_completions_repo; }
 _pkgctl_build_args__worker_opts() { :; }
 _pkgctl_build_args_w_opts() { _pkgctl_build_args__worker_opts; }
+_pkgctl_build_args__inspect_opts() { _devtools_completions_inspect; }
 _pkgctl_build_args__pkgver_opts() { :; }
 _pkgctl_build_args__pkgrel_opts() { :; }
 _pkgctl_build_args__message_opts() { :; }
@@ -370,6 +376,9 @@ _devtools_completions_all_packages() {
 }
 _devtools_completions_protocol() {
 	mapfile -t COMPREPLY < <(compgen -W "https" -- "$cur")
+}
+_devtools_completions_inspect() {
+	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_INSPECT_MODES[*]}" -- "$cur")
 }
 
 __devtools_complete() {

@@ -20,6 +20,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/pacman.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 # shellcheck source=src/lib/valid-tags.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
+# shellcheck source=src/lib/valid-inspect.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
 
 source /usr/share/makepkg/util/config.sh
 source /usr/share/makepkg/util/message.sh
@@ -48,6 +50,7 @@ pkgctl_build_usage() {
 		    -o, --offload        Build on a remote server and transfer artifacts afterwards
 		    -c, --clean          Recreate the chroot before building
 		    -I, --install FILE   Install a package into the working copy of the chroot
+		    --inspect WHEN       Spawn an interactive shell to inspect the chroot (never, always, failure)
 		    -w, --worker SLOT    Name of the worker slot, useful for concurrent builds (disables automatic names)
 		    --nocheck            Do not run the check() function in the PKGBUILD
 
@@ -217,6 +220,14 @@ pkgctl_build() {
 				MAKEPKG_OPTIONS+=("--nocheck")
 				warning 'not running checks is disallowed for official packages, except for bootstrapping. Please rebuild after bootstrapping is completed!'
 				shift
+				;;
+			--inspect)
+				(( $# <= 1 )) && die "missing argument for %s" "$1"
+				if ! in_array "${2}" "${DEVTOOLS_VALID_INSPECT_MODES[@]}"; then
+					die "Invalid inspect mode: %s" "${2}"
+				fi
+				MAKECHROOT_OPTIONS+=("-x" "${2}")
+				shift 2
 				;;
 			-r|--release)
 				# shellcheck source=src/lib/release.sh

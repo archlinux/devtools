@@ -8,9 +8,12 @@ _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 # shellcheck source=src/lib/archroot.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/archroot.sh
+# shellcheck source=src/lib/valid-inspect.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
 
 
 source /usr/share/makepkg/util/config.sh
+source /usr/share/makepkg/util/util.sh
 
 shopt -s nullglob
 
@@ -30,6 +33,8 @@ run_namcap=0
 run_checkpkg=0
 temp_chroot=0
 tmp_opts="nosuid,nodev,size=50%,nr_inodes=2m"
+
+inspect=never
 
 bindmounts_ro=()
 bindmounts_rw=()
@@ -76,6 +81,7 @@ usage() {
 	echo '-C         Run checkpkg on the package'
 	echo '-T         Build in a temporary directory'
 	echo '-U         Run makepkg as a specified user'
+	echo '-x <when>  Inspect chroot after build (never, always, failure)'
 	exit 1
 }
 
@@ -280,7 +286,7 @@ move_products() {
 }
 # }}}
 
-while getopts 'hcur:I:l:nCTD:d:U:' arg; do
+while getopts 'hcur:I:l:nCTD:d:U:x:' arg; do
 	case "$arg" in
 		c) clean_first=1 ;;
 		D) bindmounts_ro+=("--bind-ro=$OPTARG") ;;
@@ -293,6 +299,7 @@ while getopts 'hcur:I:l:nCTD:d:U:' arg; do
 		C) run_checkpkg=1 ;;
 		T) temp_chroot=1; copy+="-$$" ;;
 		U) makepkg_user="$OPTARG" ;;
+		x) inspect="$OPTARG" ;;
 		h|*) usage ;;
 	esac
 done
@@ -312,6 +319,10 @@ if [[ ${copy:0:1} = / ]]; then
 	copydir=$copy
 else
 	copydir="$chrootdir/$copy"
+fi
+
+if ! in_array "${inspect}" "${DEVTOOLS_VALID_INSPECT_MODES[@]}"; then
+	die "Invalid inspect mode: %s" "${inspect}"
 fi
 
 # Pass all arguments after -- right to makepkg
@@ -368,11 +379,16 @@ download_sources
 
 prepare_chroot
 
+nspawn_build_args=(
+	--bind="${PWD//:/\\:}:/startdir"
+	--bind="${SRCDEST//:/\\:}:/srcdest"
+	--tmpfs="/tmp:${tmp_opts}"
+	"${bindmounts_ro[@]}"
+	"${bindmounts_rw[@]}"
+)
+
 if arch-nspawn "$copydir" \
-	--bind="${PWD//:/\\:}:/startdir" \
-	--bind="${SRCDEST//:/\\:}:/srcdest" \
-	--tmpfs="/tmp:${tmp_opts}" \
-	"${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
+	"${nspawn_build_args[@]}" \
 	/chrootbuild "${makepkg_args[@]}"
 then
 	mapfile -t pkgnames < <(sudo -u "$makepkg_user" bash -c 'source PKGBUILD; printf "%s\n" "${pkgname[@]}"')
@@ -380,6 +396,18 @@ then
 else
 	(( ret += 1 ))
 	move_logfiles
+fi
+
+if [[ $inspect == always ]] || ( [[ $inspect == failure ]] && (( ret != 0 )) ); then
+	if (( ret == 0 )); then
+		msg "Build succeeded, inspecting %s" "$copydir"
+	else
+		error "Build failed, inspecting %s" "$copydir"
+	fi
+	arch-nspawn "$copydir" \
+		"${nspawn_build_args[@]}" \
+		--user=builduser \
+		--chdir=/build
 fi
 
 (( temp_chroot )) && delete_chroot "$copydir" "$copy"
