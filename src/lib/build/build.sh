@@ -333,17 +333,20 @@ pkgctl_build() {
 		# edit PKGBUILD
 		if (( EDIT )); then
 			stat_busy 'Editing PKGBUILD'
-			if [[ -n $VISUAL ]]; then
+			if [[ -n $GIT_EDITOR ]]; then
+				$GIT_EDITOR PKGBUILD || die
+			elif [[ -n $VISUAL ]]; then
 				$VISUAL PKGBUILD || die
 			elif [[ -n $EDITOR ]]; then
 				$EDITOR PKGBUILD || die
-			elif command -v vi &>/dev/null; then
-				vi PKGBUILD || die
+			elif giteditor=$(git config --get core.editor); then
+				$giteditor PKGBUILD || die
 			else
-				die "need \$VISUAL or \$EDITOR to edit the PKGBUILD"
+				die "No usable editor found (tried \$GIT_EDITOR, \$VISUAL, \$EDITOR, git config [core.editor])."
 			fi
 			stat_done
 		fi
+
 
 		# update checksums if any sources are declared
 		if (( UPDPKGSUMS )) && (( ${#source[@]} >= 1 )); then
