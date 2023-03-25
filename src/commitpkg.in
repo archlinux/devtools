@@ -198,8 +198,10 @@ if [[ -n $(git status --short --untracked-files=no) ]]; then
 			$VISUAL "$msgfile" || die
 		elif [[ -n $EDITOR ]]; then
 			$EDITOR "$msgfile" || die
+		elif giteditor=$(git config --get core.editor); then
+			$giteditor "$msgfile" || die
 		else
-			vi "$msgfile" || die
+			die "No usable editor found (tried \$GIT_EDITOR, \$VISUAL, \$EDITOR, git config [core.editor])."
 		fi
 		[[ -s $msgfile ]] || die
 		stat_busy 'Committing changes'
