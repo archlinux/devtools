@@ -32,6 +32,37 @@ will automatically build the project and proxy all calls to the local build dire
 5. Upload the source tarball with ```make dist upload```
 6. Update the package
 
+## Dependencies
+
+### Runtime Dependencies
+
+- arch-install-scripts
+- awk
+- bash
+- binutils
+- coreutils
+- diffutils
+- findutils
+- grep
+- jq
+- ncurses
+- openssh
+- parallel
+- rsync
+- sed
+- systemd
+- util-linux
+- bzr
+- git
+- mercurial
+- subversion
+
+### Development Dependencies
+
+- asciidoc
+- make
+- shellcheck
+
 ## License
 
 Devtools is licensed under the terms of the **GPL-3.0-or-later** (see [LICENSE](LICENSE)).
