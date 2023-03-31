@@ -38,6 +38,9 @@ Build Options
 *-I, --install* 'FILE'::
 	Install a package into the working copy of the chroot
 
+*--nocheck*::
+	Do not run the check() function in the PKGBUILD
+
 PKGBUILD Options
 ----------------
 
