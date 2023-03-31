@@ -47,6 +47,7 @@ pkgctl_build_usage() {
 		    -o, --offload        Build on a remote server and transfer artifacts afterwards
 		    -c, --clean          Recreate the chroot before building
 		    -I, --install FILE   Install a package into the working copy of the chroot
+		    --nocheck            Do not run the check() function in the PKGBUILD
 
 		PKGBUILD OPTIONS
 		    --pkgver=PKGVER      Set pkgver, reset pkgrel and update checksums
@@ -120,6 +121,7 @@ pkgctl_build() {
 	local BUILD_OPTIONS=()
 	local MAKECHROOT_OPTIONS=()
 	local RELEASE_OPTIONS=()
+	local MAKEPKG_OPTIONS=()
 
 	local PTS
 	PTS="$(tty | sed 's|/dev/pts/||')"
@@ -198,6 +200,11 @@ pkgctl_build() {
 				MAKECHROOT_OPTIONS+=("-I" "$2")
 				warning 'installing packages into the chroot may break reproducible builds, use with caution!'
 				shift 2
+				;;
+			--nocheck)
+				MAKEPKG_OPTIONS+=("--nocheck")
+				warning 'not running checks is disallowed for official packages, except for bootstrapping. Please rebuild after bootstrapping is completed!'
+				shift
 				;;
 			-r|--release)
 				# shellcheck source=src/lib/release.sh
@@ -364,9 +371,9 @@ pkgctl_build() {
 			fi
 
 			if (( OFFLOAD )); then
-				offload-build --repo "${pkgrepo}" -- "${BUILD_OPTIONS[@]}" -- "${MAKECHROOT_OPTIONS[@]}" -l "${WORKER}"
+				offload-build --repo "${pkgrepo}" -- "${BUILD_OPTIONS[@]}" -- "${MAKECHROOT_OPTIONS[@]}" -l "${WORKER}" -- "${MAKEPKG_OPTIONS[@]}"
 			else
-				"${BUILDTOOL}" "${BUILD_OPTIONS[@]}" -- "${MAKECHROOT_OPTIONS[@]}" -l "${WORKER}"
+				"${BUILDTOOL}" "${BUILD_OPTIONS[@]}" -- "${MAKECHROOT_OPTIONS[@]}" -l "${WORKER}" -- "${MAKEPKG_OPTIONS[@]}"
 			fi
 		done
 
