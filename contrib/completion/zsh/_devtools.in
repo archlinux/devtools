@@ -42,6 +42,7 @@ _pkgctl_build_args=(
 	'(-o --offload)'{-o,--offload}'[Build on a remote server and transfer artifacts afterwards]'
 	'(-c --clean)'{-c,--clean}'[Recreate the chroot before building]'
 	'(-I --install)'{-I,--install}'[Install a package into the working copy of the chroot]:target:_files -g "*.pkg.tar.*(.)"'
+	'--nocheck[Do not run the check() function in the PKGBUILD]'
 	'--pkgver=[Set pkgver, reset pkgrel and update checksums]:pkgver:'
 	'--pkgrel=[Set pkgrel to a given value]:pkgrel:'
 	'--rebuild[Increment the pkgrel variable]'
