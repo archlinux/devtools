@@ -14,6 +14,13 @@ readonly XDG_DEVTOOLS_GITLAB_CONFIG="${XDG_DEVTOOLS_DIR}/gitlab.conf"
 export GITLAB_TOKEN=""
 
 load_devtools_config() {
+	# temporary permission fixup
+	if [[ -d "${XDG_DEVTOOLS_DIR}" ]]; then
+		chmod 700 "${XDG_DEVTOOLS_DIR}"
+	fi
+	if [[ -f "${XDG_DEVTOOLS_GITLAB_CONFIG}" ]]; then
+		chmod 600 "${XDG_DEVTOOLS_GITLAB_CONFIG}"
+	fi
 	if [[ -n "${DEVTOOLS_GITLAB_TOKEN}" ]]; then
 		GITLAB_TOKEN="${DEVTOOLS_GITLAB_TOKEN}"
 		return
@@ -26,6 +33,12 @@ load_devtools_config() {
 }
 
 save_devtools_config() {
-	mkdir -p "${XDG_DEVTOOLS_DIR}"
-	printf 'GITLAB_TOKEN="%s"\n' "${GITLAB_TOKEN}" > "${XDG_DEVTOOLS_GITLAB_CONFIG}"
+	# temporary permission fixup
+	chmod 700 "${XDG_DEVTOOLS_DIR}"
+	chmod 600 "${XDG_DEVTOOLS_GITLAB_CONFIG}"
+	(
+		umask 0077
+		mkdir -p "${XDG_DEVTOOLS_DIR}"
+		printf 'GITLAB_TOKEN="%s"\n' "${GITLAB_TOKEN}" > "${XDG_DEVTOOLS_GITLAB_CONFIG}"
+	)
 }
