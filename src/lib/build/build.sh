@@ -12,6 +12,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/db/update.sh
 # shellcheck source=src/lib/release.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/release.sh
+# shellcheck source=src/lib/util/git.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
 # shellcheck source=src/lib/util/pacman.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/pacman.sh
 # shellcheck source=src/lib/valid-repos.sh
@@ -126,7 +128,7 @@ pkgctl_build() {
 	local WORKER="${USER}-${PTS}"
 
 	# variables
-	local path pkgbase pkgrepo source
+	local path pkgbase pkgrepo source soname_changed=0
 
 	while (( $# )); do
 		case $1 in
@@ -264,6 +266,7 @@ pkgctl_build() {
 		. ./PKGBUILD
 		pkgbase=${pkgbase:-$pkgname}
 		pkgrepo=${REPO}
+		soname_changed=0
 		msg "Building ${pkgbase}"
 
 		# auto-detection of build target
@@ -392,6 +395,11 @@ pkgctl_build() {
 
 		# release the build
 		if (( RELEASE )); then
+			if [[ ${pkgrepo} != *-staging ]] && ! diffpkg --soname >/dev/null; then
+				die "abort none staging auto-release: package contains soname differences"
+			fi
+			echo RELEASE, ABORT
+			exit 0
 			pkgctl_release --repo "${pkgrepo}" "${RELEASE_OPTIONS[@]}"
 		fi
 

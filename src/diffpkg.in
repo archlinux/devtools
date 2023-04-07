@@ -5,6 +5,8 @@
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 # shellcheck source=src/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+# shellcheck source=src/lib/util/util.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/util.sh
 
 
 usage() {
@@ -26,6 +28,8 @@ usage() {
 
 		OPTIONS
 		    -M, --makepkg-config Set an alternate makepkg configuration file
+		    -M, --pacman-config  Set an alternate pacman configuration file
+		    --dbpath             Set an alternate pacman database path
 		    -P, --pool=DIR       Search diff target in pool dir (default '/srv/ftp/pool')
 		    -v, --verbose        Provide more detailed/unfiltered output
 		    -h, --help           Show this help text
@@ -37,12 +41,14 @@ usage() {
 		    -y, --side-by-side   Output in two columns
 		    -W, --width=NUM      Output at most NUM (default 'auto') print columns
 		                         NUM can be 'auto', 'columns' or a number
+		    --summary            Print a summary or warning message on disparity
 
 		MODES
 		    -l, --list           Activate content list diff mode (default)
 		    -d, --diffoscope     Activate diffoscope diff mode
 		    -p, --pkginfo        Activate .PKGINFO diff mode
 		    -b, --buildinfo      Activate .BUILDINFO diff mode
+		    -s, --soname         Activate library SONAME diff mode
 _EOF_
 }
 
@@ -54,11 +60,13 @@ TARLIST=0
 DIFFOSCOPE=0
 PKGINFO=0
 BUILDINFO=0
+SONAME=0
+SUMMARY=0
 
 DIFFMODE=--side-by-side
 DIFFCOLOR=--color=auto
 DIFFWIDTH=--width=auto
-DIFFOPTIONS=(--expand-tabs)
+DIFFOPTIONS=(--expand-tabs --suppress-common-lines)
 
 # option checking
 while (( $# )); do
@@ -88,8 +96,16 @@ while (( $# )); do
 			BUILDINFO=1
 			shift
 			;;
+		-s|--soname)
+			SONAME=1
+			shift
+			;;
 		-v|--verbose)
 			VERBOSE=1
+			shift
+			;;
+		--summary)
+			SUMMARY=1
 			shift
 			;;
 		-u|-U|--unified)
@@ -135,7 +151,7 @@ while (( $# )); do
 			shift
 			break
 			;;
-		-*|--*)
+		-*)
 			die "invalid argument: %s" "$1"
 			;;
 		*)
@@ -157,6 +173,9 @@ if [[ $DIFFWIDTH == --width=columns ]]; then
 fi
 if [[ $DIFFWIDTH != --width=auto ]]; then
 	DIFFOPTIONS+=("${DIFFWIDTH}")
+fi
+if [[ $DIFFCOLOR == --color=auto ]] && is_tty; then
+	DIFFCOLOR="--color=always"
 fi
 DIFFOPTIONS+=("${DIFFMODE}" "${DIFFCOLOR}")
 
@@ -232,23 +251,31 @@ diff_pkgs() {
 		bsdtar xOqf "$newpkg" .BUILDINFO > "$TMPDIR/new"
 	fi
 
-	if (( TARLIST || PKGINFO || BUILDINFO )); then
+	if (( SONAME )); then
+		find-libprovides "$oldpkg" 2>/dev/null | sort > "$TMPDIR/old"
+		find-libprovides "$newpkg" 2>/dev/null | sort > "$TMPDIR/new"
+	fi
+
+	if (( TARLIST || PKGINFO || BUILDINFO || SONAME )); then
 		# Resolve dynamic auto width one we know the content to diff
 		if [[ $DIFFWIDTH == --width=auto ]]; then
 			AUTOLENGTH=$(file_diff_columns "$TMPDIR/old" "$TMPDIR/new")
 			DIFFOPTIONS+=("--width=${AUTOLENGTH}")
 		fi
 
-		# Print a header for side-by-side view as it lacks labels
-		if [[ $DIFFMODE == --side-by-side ]]; then
-			printf -- "--- %s\n+++ %s\n" "${oldpkg}" "${newpkg}"
+		if ! output=$(diff "${DIFFOPTIONS[@]}" "$TMPDIR/old" "$TMPDIR/new"); then
+			# Print a header for side-by-side view as it lacks labels
+			if [[ $DIFFMODE == --side-by-side ]]; then
+				printf -- "%s--- %s\n+++ %s%s\n" "${BOLD}" "${oldpkg}" "${newpkg}" "${ALL_OFF}"
+			fi
+			printf "%s\n" "${output}"
+			return 1
 		fi
-
-		diff "${DIFFOPTIONS[@]}" "$TMPDIR/old" "$TMPDIR/new"
 	fi
 
 	if (( DIFFOSCOPE )); then
 		diffoscope "${DIFFCOLOR/--color/--text-color}" "$oldpkg" "$newpkg"
+		return $?
 	fi
 }
 
@@ -277,13 +304,14 @@ fetch_pkg() {
 		fi
 		# Search via pacman database if no pool file exists
 		if [[ ! -f ${pkgurl} ]]; then
-			pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm "$pkg") ||
+			pkgurl=$(pacman -Spdd --print-format '%l' --noconfirm -- "$pkg") ||
 				die "Couldn't download previous package for %s." "$pkg"
+			# TODO: check and download via Swdd so we also do signatures checks before processing
 		fi
 	fi
 
 	pkg=${pkgurl##*/}
-	pkgdest=$(mktemp -t -d "${pkg}-XXXXXX")/${pkg}
+	pkgdest=$(mktemp -t -d -- "${pkg}-XXXXXX")/${pkg}
 
 	if [[ $pkgurl = file://* || ( $pkgurl = /* && -f $pkgurl ) ]]; then
 		ln -sf "${pkgurl#file://}" "$pkgdest"
@@ -313,6 +341,7 @@ if (( $# < 2 )); then
 		CARCH='any'
 	fi
 
+	ret=0
 	for _pkgname in "${pkgname[@]}"; do
 		comparepkg=$_pkgname
 		pkgurl=
@@ -330,10 +359,13 @@ if (( $# < 2 )); then
 		oldpkg=$(fetch_pkg "$comparepkg") || exit 1
 
 		diff_pkgs "$oldpkg" "$pkgfile"
+		ret+=$?
 	done
+	exit $ret
 else
 	file1=$(fetch_pkg "$1") || exit 1
 	file2=$(fetch_pkg "$2") || exit 1
 
 	diff_pkgs "$file1" "$file2"
+	exit $?
 fi
