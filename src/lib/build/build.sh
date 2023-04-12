@@ -169,6 +169,8 @@ pkgctl_build() {
 				shift
 				;;
 			--rebuild)
+				# shellcheck source=src/lib/util/git.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
 				pkgctl_build_check_option_group_ver '--rebuild' "${PKGVER}" "${PKGREL}" "${REBUILD}"
 				REBUILD=1
 				shift
