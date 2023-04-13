@@ -231,9 +231,15 @@ _pkgctl_cmds=(
 	"diff[Compare package files using different modes]"
 	"release[Release step to commit, tag and upload build artifacts]"
 	"repo[Manage Git packaging repositories and their configuration]"
+	"version[Show pkgctl version information]"
 )
 
 _pkgctl_args=(
+	'(-V --version)'{-V,--version}'[Show pkgctl version information]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+)
+
+_pkgctl_version_args=(
 	'(-h --help)'{-h,--help}'[Display usage]'
 )
 

@@ -1,0 +1,23 @@
+pkgctl-version(1)
+=================
+
+Name
+----
+pkgctl-version - Show pkgctl version information
+
+Synopsis
+--------
+pkgctl version [OPTIONS]
+
+Description
+-----------
+
+Shows the current version information of pkgctl.
+
+Options
+-------
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]
