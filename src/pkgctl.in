@@ -25,6 +25,7 @@ usage() {
 		    diff    Compare package files using different modes
 		    release Release step to commit, tag and upload build artifacts
 		    repo    Manage Git packaging repositories and their configuration
+		    version Show pkgctl version information
 
 		OPTIONS
 		    -h, --help     Show this help text
@@ -91,6 +92,14 @@ while (( $# )); do
 			# shellcheck source=src/lib/repo.sh
 			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/release.sh
 			pkgctl_release "$@"
+			exit 0
+			;;
+		version|--version|-V)
+			_DEVTOOLS_COMMAND+=" $1"
+			shift
+			# shellcheck source=src/lib/version/version.sh
+			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/version/version.sh
+			pkgctl_version "$@"
 			exit 0
 			;;
 		*)
