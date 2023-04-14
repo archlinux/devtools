@@ -262,12 +262,14 @@ _pkgctl_repo_cmds=(
 
 _pkgctl_repo_clone_args=(
 	-m --maintainer
+	--switch
 	-u --unprivileged
 	--universe
 	-h --help
 )
 _pkgctl_repo_clone_args__maintainer_opts() { :; }
 _pkgctl_repo_clone_args_m_opts() { _pkgctl_repo_clone_args__maintainer_opts; }
+_pkgctl_repo_clone_args__switch_opts() { :; }
 _pkgctl_repo_clone_opts() { _devtools_completions_all_packages; }
 
 

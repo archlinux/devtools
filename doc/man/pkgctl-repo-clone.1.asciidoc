@@ -28,6 +28,10 @@ Options
 *--universe*::
 	Clone all existing packages, useful for cache warming
 
+*--switch* 'VERSION'::
+	Switch to a specified version. The working tree and the index are updated to
+	match the version.
+
 *-h, --help*::
 	Show a help text
 
@@ -35,5 +39,6 @@ See Also
 --------
 
 linkman:pkgctl-repo-configure[1]
+linkman:pkgctl-repo-switch[1]
 
 include::include/footer.asciidoc[]

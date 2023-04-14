@@ -107,6 +107,7 @@ _pkgctl_repo_switch_args=(
 
 _pkgctl_repo_clone_args=(
 	'(-m --maintainer=)'{-m,--maintainer=}'[Clone all packages of the named maintainer]:maintainer:'
+	'--switch=[Switch the current working tree to a specified version]'
 	'--universe[Clone all existing packages, useful for cache warming]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:packages:_devtools_completions_all_packages'
