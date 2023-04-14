@@ -32,12 +32,14 @@ pkgctl_repo_clone_usage() {
 
 		OPTIONS
 		    -m, --maintainer=NAME  Clone all packages of the named maintainer
+		    --switch VERSION       Switch the current working tree to a specified version
 		    --universe             Clone all existing packages, useful for cache warming
 		    -h, --help             Show this help text
 
 		EXAMPLES
 		    $ ${COMMAND} libfoo linux libbar
 		    $ ${COMMAND} --maintainer mynickname
+		    $ ${COMMAND} --switch 1:1.0-2 libfoo
 _EOF_
 }
 
@@ -51,6 +53,7 @@ pkgctl_repo_clone() {
 	local GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_SSH}
 	local CLONE_ALL=0
 	local MAINTAINER=
+	local VERSION=
 	local CONFIGURE_OPTIONS=()
 	local pkgbases
 
@@ -75,6 +78,19 @@ pkgctl_repo_clone() {
 				;;
 			--maintainer=*)
 				MAINTAINER="${1#*=}"
+				shift
+				;;
+			--switch)
+				(( $# <= 1 )) && die "missing argument for %s" "$1"
+				# shellcheck source=src/lib/repo/switch.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo/switch.sh
+				VERSION="$2"
+				shift 2
+				;;
+			--switch=*)
+				# shellcheck source=src/lib/repo/switch.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo/switch.sh
+				VERSION="${1#*=}"
 				shift
 				;;
 			--universe)
@@ -137,5 +153,9 @@ pkgctl_repo_clone() {
 		fi
 
 		pkgctl_repo_configure "${CONFIGURE_OPTIONS[@]}" "${pkgbase}"
+
+		if [[ -n "${VERSION}" ]]; then
+			pkgctl_repo_switch "${VERSION}" "${pkgbase}"
+		fi
 	done
 }
