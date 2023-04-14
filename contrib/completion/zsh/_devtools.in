@@ -233,6 +233,10 @@ _pkgctl_cmds=(
 	"repo[Manage Git packaging repositories and their configuration]"
 )
 
+_pkgctl_args=(
+	'(-h --help)'{-h,--help}'[Display usage]'
+)
+
 _pkgctl_diff_args=("${_diffpkg_args[@]}")
 
 _handle_subcommands() {
@@ -243,8 +247,13 @@ _handle_subcommands() {
 			'*::arg:->args'
 		case $state in
 			cmds)
-				local service_cmds=${service_name}_cmds[@]
-				_values "${(P)service_cmds}"
+				if [[ "${line[-1]}" == -* ]] && typeset -p ${service_name}_args &> /dev/null; then
+					local argname="${service_name}_args[@]"
+					_arguments -s "${(P)argname}"
+				else
+					local service_cmds=${service_name}_cmds[@]
+					_values "${(P)service_cmds}"
+				fi
 				;;
 			args)
 				local service_sub=${service_name}_$line[1]
