@@ -41,6 +41,9 @@ pkgctl repo configure::
 pkgctl repo create::
 	Create a new GitLab package repository
 
+pkgctl repo switch::
+	Switch a package repository to a specified version
+
 pkgctl repo web::
 	Open the packaging repository's website
 
@@ -50,6 +53,7 @@ See Also
 linkman:pkgctl-repo-clone[1]
 linkman:pkgctl-repo-configure[1]
 linkman:pkgctl-repo-create[1]
+linkman:pkgctl-repo-switch[1]
 linkman:pkgctl-repo-web[1]
 
 include::include/footer.asciidoc[]

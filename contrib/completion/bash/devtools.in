@@ -255,6 +255,7 @@ _pkgctl_repo_cmds=(
 	clone
 	configure
 	create
+	switch
 	web
 )
 
@@ -280,6 +281,24 @@ _pkgctl_repo_create_args=(
 	-c --clone
 	-h --help
 )
+
+
+_pkgctl_repo_switch_args=(
+	--discard-changes
+	-f --force
+	-h --help
+)
+_pkgctl_repo_switch_opts() {
+	local subcommand args
+	subcommand=(repo switch)
+	args=$(__pkgctl_word_count_after_subcommand "${subcommand[@]}")
+
+	if (( args == 0 )); then
+		:
+	elif (( args >= 1 )); then
+		_filedir -d;
+	fi
+}
 
 
 _pkgctl_repo_web_args=(

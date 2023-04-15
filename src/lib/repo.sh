@@ -30,6 +30,7 @@ pkgctl_repo_usage() {
 		    clone          Clone a package repository
 		    configure      Configure a clone according to distro specs
 		    create         Create a new GitLab package repository
+		    switch         Switch a package repository to a specified version
 		    web            Open the packaging repository's website
 
 		OPTIONS
@@ -40,6 +41,7 @@ pkgctl_repo_usage() {
 		    $ ${COMMAND} clone --maintainer mynickname
 		    $ ${COMMAND} configure *
 		    $ ${COMMAND} create libfoo
+		    $ ${COMMAND} switch 2:1.19.5-1 libfoo
 		    $ ${COMMAND} web linux
 _EOF_
 }
@@ -79,6 +81,14 @@ pkgctl_repo() {
 				# shellcheck source=src/lib/repo/create.sh
 				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo/create.sh
 				pkgctl_repo_create "$@"
+				exit 0
+				;;
+			switch)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/repo/switch.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo/switch.sh
+				pkgctl_repo_switch "$@"
 				exit 0
 				;;
 			web)
