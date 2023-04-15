@@ -81,6 +81,14 @@ pkgctl_repo() {
 				pkgctl_repo_create "$@"
 				exit 0
 				;;
+			switch)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/repo/switch.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo/switch.sh
+				pkgctl_repo_switch "$@"
+				exit 0
+				;;
 			web)
 				_DEVTOOLS_COMMAND+=" $1"
 				shift
