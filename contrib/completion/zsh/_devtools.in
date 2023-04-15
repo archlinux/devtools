@@ -94,7 +94,15 @@ _pkgctl_repo_cmds=(
 	"clone[Clone a package repository]"
 	"configure[Configure a clone according to distro specs]"
 	"create[Create a new GitLab package repository]"
+	"switch[Switch a package repository to a specified version]"
 	"web[Open the packaging repository's website]"
+)
+
+_pkgctl_repo_switch_args=(
+	'(-f --force --discard-changes)'{-f,--force,--discard-changes}'[Discard changes if index or working tree is dirty]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'1:version'
+	'*:git_dir:_files -/'
 )
 
 _pkgctl_repo_clone_args=(

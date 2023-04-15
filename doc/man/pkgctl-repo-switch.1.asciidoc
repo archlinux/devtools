@@ -1,0 +1,36 @@
+pkgctl-repo-switch(1)
+=====================
+
+Name
+----
+pkgctl-repo-switch - Switch a package repository to a specified version
+
+Synopsis
+--------
+pkgctl repo switch [OPTIONS] [VERSION] [PKGBASE]...
+
+Description
+-----------
+
+Switch a package source repository to a specified version, tag or branch.
+The working tree and the index are updated to match the specified ref.
+
+If a version identifier is specified in the pacman version format, that
+identifier is automatically translated to the Git tag name accordingly.
+
+The current working directory is used if no PKGBASE is specified.
+
+Options
+-------
+
+*--discard-changes*::
+	Proceed even if the index or the working tree differs from HEAD. Both the
+	index and working tree are restored to match the switching target.
+
+*-f, --force*::
+	An alias for '--discard-changes'.
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]
