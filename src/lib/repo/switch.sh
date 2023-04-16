@@ -19,13 +19,17 @@ pkgctl_repo_switch_usage() {
 	cat <<- _EOF_
 		Usage: ${COMMAND} [OPTIONS] [PKGBASE]...
 
-		Switch the version of a package source
+		Switch the version of package sources
+		If no PKGBASE was provided the local directory is assumed
 
 		OPTIONS
-		    TBA
+		    --version=VERSION  Set the PKGBASEs to the specified version
+		    --force            Discard the changes if index is dirty
+		    -h, --help         Show this help text
 
 		EXAMPLES
-		    TBA
+		    $ ${COMMAND} --version="1.14.6-1" gopass gopass-jsonapi
+		    $ ${COMMAND} --force --version="2:1.19.5-1"
 _EOF_
 }
 

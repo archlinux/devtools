@@ -30,6 +30,7 @@ pkgctl_repo_usage() {
 		    clone          Clone a package repository
 		    configure      Configure a clone according to distro specs
 		    create         Create a new GitLab package repository
+		    switch         Switch the version of package sources
 		    web            Open the packaging repository's website
 
 		OPTIONS
@@ -40,6 +41,7 @@ pkgctl_repo_usage() {
 		    $ ${COMMAND} clone --maintainer mynickname
 		    $ ${COMMAND} configure *
 		    $ ${COMMAND} create libfoo
+		    $ ${COMMAND} switch --version="2:1.19.5-1" libfoo
 		    $ ${COMMAND} web linux
 _EOF_
 }
