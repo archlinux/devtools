@@ -60,7 +60,8 @@ Release Options
 ---------------
 
 *-r, --release*::
-	Automatically commit, tag and release after building
+	Automatically commit, tag and release after building +
+	Specifying this option is required when using any of the following options in this section
 
 *-m, --message* 'MSG'::
 	Use the given <msg> as the commit message

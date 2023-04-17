@@ -238,6 +238,15 @@ pkgctl_build() {
 		esac
 	done
 
+	if (( ! RELEASE )); then
+		if (( DB_UPDATE )); then
+			die "cannot use --db-update without --release"
+		fi
+		if [[ -n "${MESSAGE}" ]]; then
+			die "cannot use --message without --release"
+		fi
+	fi
+
 	# check if invoked without any path from within a packaging repo
 	if (( ${#paths[@]} == 0 )); then
 		if [[ -f PKGBUILD ]]; then
