@@ -1,14 +1,13 @@
 pkgctl-repo-switch(1)
-======================
+=====================
 
 Name
 ----
 pkgctl-repo-switch - Switch the version of package sources
 
-
 Synopsis
 --------
-pkgctl repo switch [OPTIONS] [PKGBASE...]
+pkgctl repo switch [OPTIONS] [VERSION] [PKGBASE]...
 
 Description
 -----------
@@ -17,16 +16,16 @@ Switch the version of package sources
 
 If no PKGBASE was provided the local directory is assumed
 
-Options
--------
-
-*--version=*'VERSION'::
 	Set the PKGBASEs to the specified version where 'VERSION' is assumed to be
 	a version in pacman format and is then translated to the appropriate git
 	tag in the package
 
-*--force*::
-	Discard the changes if index is dirty
+Options
+-------
+
+*-f, --force*::
+	Proceed even if the index or the working tree differs from HEAD. Both the
+	index and working tree are restored to match the switching target.
 
 *-h, --help*::
 	Show a help text

@@ -22,3 +22,22 @@ git_diff_tree() {
 		"${commit}" \
 		-- "${path}"
 }
+
+git_show_ref() {
+	local ref=$1
+	git \
+		--no-pager \
+		show-ref \
+		--verify \
+		"${ref}"
+}
+
+git_is_branch() {
+	local ref=$1
+	git_show_ref "refs/heads/${ref}" &>/dev/null
+}
+
+git_is_tag() {
+	local ref=$1
+	git_show_ref "refs/tags/${ref}" &>/dev/null
+}

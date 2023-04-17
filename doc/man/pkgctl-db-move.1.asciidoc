@@ -3,17 +3,16 @@ pkgctl-db-move(1)
 
 Name
 ----
-pkgctl-db-update - Update the binary repository as final release step
+pkgctl-db-move - Move packages between binary repositories
 
 Synopsis
 --------
-pkgctl db update [OPTIONS]
+pkgctl db move [OPTIONS] [SOURCE_REPO] [TARGET_REPO] [PKGBASE]...
 
 Description
 -----------
 
-Update the pacman database as final release step for packages that
-have been transfered and staged on 'repos.archlinux.org'.
+TODO
 
 Options
 -------

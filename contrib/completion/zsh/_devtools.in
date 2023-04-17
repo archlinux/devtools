@@ -99,9 +99,9 @@ _pkgctl_repo_cmds=(
 )
 
 _pkgctl_repo_switch_args=(
-	"--version=[Set the PKGBASEs to the specified version]:version:"
 	'--force[Discard the changes if index is dirty]'
 	'(-h --help)'{-h,--help}'[Display usage]'
+	'1:version'
 	'*:git_dir:_files -/'
 )
 

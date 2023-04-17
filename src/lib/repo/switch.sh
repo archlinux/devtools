@@ -17,19 +17,19 @@ set -e
 pkgctl_repo_switch_usage() {
 	local -r COMMAND=${_DEVTOOLS_COMMAND:-${BASH_SOURCE[0]##*/}}
 	cat <<- _EOF_
-		Usage: ${COMMAND} [OPTIONS] [PKGBASE]...
+		Usage: ${COMMAND} [OPTIONS] [VERSION] [PKGBASE]...
 
 		Switch the version of package sources
+
 		If no PKGBASE was provided the local directory is assumed
 
 		OPTIONS
-		    --version=VERSION  Set the PKGBASEs to the specified version
-		    --force            Discard the changes if index is dirty
-		    -h, --help         Show this help text
+		    -f, --force    Discard the changes if index is dirty
+		    -h, --help     Show this help text
 
 		EXAMPLES
-		    $ ${COMMAND} --version="1.14.6-1" gopass gopass-jsonapi
-		    $ ${COMMAND} --force --version="2:1.19.5-1"
+		    $ ${COMMAND} 1.14.6-1 gopass gopass-jsonapi
+		    $ ${COMMAND} --force 2:1.19.5-1
 _EOF_
 }
 
@@ -40,8 +40,8 @@ pkgctl_repo_switch() {
 	fi
 
 	# options
-	local VERSION=
-	local GITVERSION=
+	local VERSION
+	local GIT_REF
 	local paths
 	local GIT_CHECKOUT_OPTIONS=()
 
@@ -55,12 +55,6 @@ pkgctl_repo_switch() {
 				GIT_CHECKOUT_OPTIONS+=("--force")
 				shift
 				;;
-			--version=*)
-				VERSION="${1#*=}"
-				GITVERSION="$(get_tag_from_pkgver "$VERSION")"
-				GIT_CHECKOUT_OPTIONS+=("--detach" "${GITVERSION}")
-				shift
-				;;
 			--)
 				shift
 				break
@@ -69,25 +63,35 @@ pkgctl_repo_switch() {
 				die "invalid argument: %s" "$1"
 				;;
 			*)
-				paths=("$@")
-				break
+				if [[ -n ${VERSION} ]]; then
+					break
+				fi
+				VERSION=$1
+				shift
 				;;
 		esac
 	done
+
+	if [[ -z ${VERSION} ]]; then
+		error "missing positional argument 'VERSION'"
+		pkgctl_repo_switch_usage
+		exit 1
+	fi
+
+	GIT_REF="$(get_tag_from_pkgver "${VERSION}")"
+	paths=("$@")
 
 	# check if invoked without any path from within a packaging repo
 	if (( ${#paths[@]} == 0 )); then
 		if [[ -f PKGBUILD ]]; then
 			paths=(".")
 		else
-			error "Not a Package repository: $(realpath .)"
-			pkgctl_repo_switch_usage
-			exit 1
+			die "Not a package repository: $(realpath -- .)"
 		fi
 	fi
 
 	for path in "${paths[@]}"; do
-		if ! realpath=$(realpath -e "${path}"); then
+		if ! realpath=$(realpath -e -- "${path}"); then
 			die "No such directory: ${path}"
 		fi
 		pkgbase=$(basename "${realpath}")
@@ -97,20 +101,9 @@ pkgctl_repo_switch() {
 			continue
 		fi
 
-		pushd "${path}" >/dev/null
-
-		if [[ -n "${VERSION}" ]]; then
-			if ! git show-ref --quiet "refs/tags/${GITVERSION}"; then
-			   die "Failed to switch ${pkgbase} to version ${VERSION} because required tag ${GITVERSION} does not exist"
-			fi
+		if ! git -C "${path}" checkout "${GIT_CHECKOUT_OPTIONS[@]}" "${GIT_REF}"; then
+			die "Failed to switch ${pkgbase} to version ${VERSION}"
 		fi
-
-		if ! git checkout "${GIT_CHECKOUT_OPTIONS[@]}"; then
-			die "Failed to switch ${pkgbase} version ${VERSION}"
-		else
-			msg "Successfully switched ${pkgbase} to version ${VERSION}"
-		fi
-
-		popd >/dev/null
+		msg "Successfully switched ${pkgbase} to version ${VERSION}"
 	done
 }
