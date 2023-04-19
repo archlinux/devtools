@@ -115,6 +115,7 @@ install: all
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
 	ln -sf find-libdeps $(DESTDIR)$(PREFIX)/bin/find-libprovides
 	install -Dm0644 $(BUILDDIR)/contrib/completion/bash/devtools $(DESTDIR)$(PREFIX)/share/bash-completion/completions/devtools
+	for f in $(notdir $(BINPROGS)); do ln -sf devtools $(DESTDIR)$(PREFIX)/share/bash-completion/completions/$$f; done
 	install -Dm0644 $(BUILDDIR)/contrib/completion/zsh/_devtools $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	for manfile in $(MANS); do \
 		install -Dm644 $$manfile -t $(DESTDIR)$(MANDIR)/man$${manfile##*.}; \
@@ -123,12 +124,14 @@ install: all
 uninstall:
 	for f in $(notdir $(BINPROGS)); do rm -f $(DESTDIR)$(PREFIX)/bin/$$f; done
 	for f in $(notdir $(LIBRARY)); do rm -f $(DESTDIR)$(DATADIR)/lib/$$f; done
+	rm -rf $(DESTDIR)$(DATADIR)/lib
 	for conf in $(notdir $(MAKEPKG_CONFIGS)); do rm -f $(DESTDIR)$(DATADIR)/makepkg.conf.d/$${conf##*/}; done
 	for conf in $(notdir $(PACMAN_CONFIGS)); do rm -f $(DESTDIR)$(DATADIR)/pacman.conf.d/$${conf##*/}; done
 	for f in $(notdir $(SETARCH_ALIASES)); do rm -f $(DESTDIR)$(DATADIR)/setarch-aliases.d/$$f; done
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	rm -f $(DESTDIR)$(PREFIX)/share/bash-completion/completions/devtools
+	for f in $(notdir $(BINPROGS)); do rm -f $(DESTDIR)$(PREFIX)/share/bash-completion/completions/$$f; done
 	rm -f $(DESTDIR)$(PREFIX)/share/zsh/site-functions/_devtools
 	rm -f $(DESTDIR)$(PREFIX)/bin/find-libprovides
 	for manfile in $(notdir $(MANS)); do rm -f $(DESTDIR)$(MANDIR)/man$${manfile##*.}/$${manfile}; done;
@@ -136,7 +139,6 @@ uninstall:
 		$(DESTDIR)$(DATADIR)/setarch-aliases.d \
 		$(DESTDIR)$(DATADIR)/makepkg.conf.d \
 		$(DESTDIR)$(DATADIR)/pacman.conf.d \
-		$(DESTDIR)$(DATADIR)/lib \
 		$(DESTDIR)$(DATADIR)
 
 TODAY=$(shell date +"%Y%m%d")

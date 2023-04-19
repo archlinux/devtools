@@ -34,7 +34,7 @@ will automatically build the project and proxy all calls to the local build dire
 
 ## Dependencies
 
-### Runtime
+### Runtime Dependencies
 
 - arch-install-scripts
 - awk
@@ -45,18 +45,19 @@ will automatically build the project and proxy all calls to the local build dire
 - findutils
 - grep
 - jq
+- ncurses
 - openssh
 - parallel
 - rsync
 - sed
+- systemd
 - util-linux
-
 - bzr
 - git
 - mercurial
 - subversion
 
-### Development
+### Development Dependencies
 
 - asciidoc
 - make
