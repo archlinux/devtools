@@ -89,7 +89,6 @@ if git tag --verify "$gittag" &> /dev/null; then
 	exit 0
 fi
 
-stat_busy "Releasing package"
+msg "Releasing package"
 git tag --sign --message="Package release ${pkgver}" "$gittag" || abort
 git push --tags --set-upstream origin main || abort
-stat_done
