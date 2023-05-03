@@ -32,12 +32,16 @@ COMMITPKG_LINKS = \
 	gnome-unstablepkg
 
 ARCHBUILD_LINKS = \
+	core-testing-x86_64-build \
+	core-testing-x86_64_v3-build \
+	core-staging-x86_64-build \
+	core-staging-x86_64_v3-build \
 	extra-x86_64-build \
 	extra-x86_64_v3-build \
-	testing-x86_64-build \
-	testing-x86_64_v3-build \
-	staging-x86_64-build \
-	staging-x86_64_v3-build \
+	extra-testing-x86_64-build \
+	extra-testing-x86_64_v3-build \
+	extra-staging-x86_64-build \
+	extra-staging-x86_64_v3-build \
 	multilib-build \
 	multilib-testing-build \
 	multilib-staging-build \
