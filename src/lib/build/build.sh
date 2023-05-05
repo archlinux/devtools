@@ -25,6 +25,7 @@ source /usr/share/makepkg/util/config.sh
 source /usr/share/makepkg/util/message.sh
 
 set -e
+set -o pipefail
 
 
 pkgctl_build_usage() {
@@ -47,6 +48,7 @@ pkgctl_build_usage() {
 		    -o, --offload        Build on a remote server and transfer artifacts afterwards
 		    -c, --clean          Recreate the chroot before building
 		    -I, --install FILE   Install a package into the working copy of the chroot
+		    -w, --worker SLOT    Name of the worker slot, useful for concurrent builds (disables automatic names)
 		    --nocheck            Do not run the check() function in the PKGBUILD
 
 		PKGBUILD OPTIONS
@@ -123,9 +125,8 @@ pkgctl_build() {
 	local RELEASE_OPTIONS=()
 	local MAKEPKG_OPTIONS=()
 
-	local PTS
-	PTS="$(tty | sed 's|/dev/pts/||')"
-	local WORKER="${USER}-${PTS}"
+	local WORKER=
+	local WORKER_SLOT=
 
 	# variables
 	local path pkgbase pkgrepo source
@@ -224,6 +225,11 @@ pkgctl_build() {
 				DB_UPDATE=1
 				shift
 				;;
+			-w|--worker)
+				(( $# <= 1 )) && die "missing argument for %s" "$1"
+				WORKER_SLOT=$2
+				shift 2
+				;;
 			--)
 				shift
 				break
@@ -257,6 +263,12 @@ pkgctl_build() {
 			exit 1
 		fi
 	fi
+
+	# assign default worker slot
+	if [[ -z ${WORKER_SLOT} ]] && ! WORKER_SLOT="$(tty | sed 's|/dev/pts/||')"; then
+		WORKER_SLOT=$(( RANDOM % $(nproc) + 1 ))
+	fi
+	WORKER="${USER}-${WORKER_SLOT}"
 
 	# Update pacman cache for auto-detection
 	if [[ -z ${REPO} ]]; then
@@ -311,8 +323,9 @@ pkgctl_build() {
 		fi
 
 		# print gathered build modes
-		msg2 "repo: ${pkgrepo}"
-		msg2 "arch: ${BUILD_ARCH[*]}"
+		msg2 "  repo: ${pkgrepo}"
+		msg2 "  arch: ${BUILD_ARCH[*]}"
+		msg2 "worker: ${WORKER}"
 
 		# increment pkgrel on rebuild
 		if (( REBUILD )); then

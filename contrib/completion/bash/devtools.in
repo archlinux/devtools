@@ -168,6 +168,7 @@ _pkgctl_build_args=(
 	-t --testing
 	-o --offload
 	-c --clean
+	-w --worker
 
 	--pkgver
 	--pkgrel
@@ -182,6 +183,8 @@ _pkgctl_build_args=(
 )
 _pkgctl_build_args__arch_opts() { _devtools_completions_arch; }
 _pkgctl_build_args__repo_opts() { _devtools_completions_repo; }
+_pkgctl_build_args__worker_opts() { :; }
+_pkgctl_build_args_w_opts() { _pkgctl_build_args__worker_opts; }
 _pkgctl_build_args__pkgver_opts() { :; }
 _pkgctl_build_args__pkgrel_opts() { :; }
 _pkgctl_build_args__message_opts() { :; }

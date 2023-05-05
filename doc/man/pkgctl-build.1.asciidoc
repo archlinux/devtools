@@ -38,6 +38,12 @@ Build Options
 *-I, --install* 'FILE'::
 	Install a package into the working copy of the chroot
 
+*-w, --worker* 'SLOT'::
+	Name of the worker slot, useful for concurrent builds. By default the slot
+	is automatically assigned to the current tty pts number. In case the caller
+	is not a tty, choose a random slot between 1 and number of available
+	processing units.
+
 *--nocheck*::
 	Do not run the check() function in the PKGBUILD
 
