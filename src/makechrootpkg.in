@@ -301,7 +301,7 @@ done
 [[ -n $makepkg_user && -z $(id -u "$makepkg_user") ]] && die 'Invalid makepkg user.'
 makepkg_user=${makepkg_user:-${SUDO_USER:-$USER}}
 
-check_root SOURCE_DATE_EPOCH,BUILDTOOL,BUILDTOOLVER,GNUPGHOME,SRCDEST,SRCPKGDEST,PKGDEST,LOGDEST,MAKEFLAGS,PACKAGER
+check_root SOURCE_DATE_EPOCH,BUILDTOOL,BUILDTOOLVER,GNUPGHOME,SRCDEST,SRCPKGDEST,PKGDEST,LOGDEST,MAKEFLAGS,PACKAGER "${BASH_SOURCE[0]}" "$@"
 
 # Canonicalize chrootdir, getting rid of trailing /
 chrootdir=$(readlink -e "$passeddir")

@@ -46,7 +46,7 @@ done
 shift $((OPTIND - 1))
 
 (( $# < 1 )) && die 'You must specify a directory.'
-check_root
+check_root "" "${BASH_SOURCE[0]}" "$@"
 
 working_dir=$(readlink -f "$1")
 shift 1

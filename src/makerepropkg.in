@@ -137,7 +137,7 @@ while getopts 'dM:c:l:h' arg; do
 done
 shift $((OPTIND - 1))
 
-check_root
+check_root "" "${BASH_SOURCE[0]}" "$@"
 
 [[ -f PKGBUILD ]] || { error "No PKGBUILD in current directory."; exit 1; }
 
