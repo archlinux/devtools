@@ -14,7 +14,8 @@ _repos=(
 
 # shellcheck disable=2034
 _build_repos=(
-	extra staging testing
+	core-staging core-testing
+	extra extra-staging extra-testing
 	multilib multilib-staging multilib-testing
 	gnome-unstable
 	kde-unstable
