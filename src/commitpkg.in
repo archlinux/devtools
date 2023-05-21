@@ -173,6 +173,14 @@ done
 # check for PKGBUILD standards
 check_pkgbuild_validity
 
+# auto generate .SRCINFO if present
+if [[ -f .SRCINFO ]]; then
+	stat_busy 'Generating .SRCINFO'
+	makepkg --printsrcinfo > .SRCINFO
+	git add .SRCINFO
+	stat_done
+fi
+
 if [[ -n $(git status --porcelain --untracked-files=no) ]]; then
 	stat_busy 'Staging files'
 	for f in $(git ls-files --modified); do
