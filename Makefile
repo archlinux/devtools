@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-V=20230307
+V=1.0.0
 BUILDTOOLVER ?= $(V)
 
 PREFIX = /usr/local
