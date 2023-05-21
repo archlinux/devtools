@@ -215,7 +215,8 @@ diff_pkgs() {
 	[[ -f $oldpkg ]] || die "No such file: %s" "${oldpkg}"
 	[[ -f $newpkg ]] || die "No such file: %s" "${newpkg}"
 
-	DIFFOPTIONS+=(--label "${oldpkg}" --label "${newpkg}")
+	local -a diffoptions
+	diffoptions=("${DIFFOPTIONS[@]}" --label "${oldpkg}" --label "${newpkg}")
 
 	if (( TARLIST )); then
 		tar_list "$oldpkg" > "$TMPDIR/old"
@@ -236,7 +237,7 @@ diff_pkgs() {
 		# Resolve dynamic auto width one we know the content to diff
 		if [[ $DIFFWIDTH == --width=auto ]]; then
 			AUTOLENGTH=$(file_diff_columns "$TMPDIR/old" "$TMPDIR/new")
-			DIFFOPTIONS+=("--width=${AUTOLENGTH}")
+			diffoptions+=("--width=${AUTOLENGTH}")
 		fi
 
 		# Print a header for side-by-side view as it lacks labels
@@ -244,7 +245,7 @@ diff_pkgs() {
 			printf -- "--- %s\n+++ %s\n" "${oldpkg}" "${newpkg}"
 		fi
 
-		diff "${DIFFOPTIONS[@]}" "$TMPDIR/old" "$TMPDIR/new"
+		diff "${diffoptions[@]}" "$TMPDIR/old" "$TMPDIR/new"
 	fi
 
 	if (( DIFFOSCOPE )); then
