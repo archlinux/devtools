@@ -173,7 +173,7 @@ done
 # check for PKGBUILD standards
 check_pkgbuild_validity
 
-if [[ -n $(git status --short --untracked-files=no) ]]; then
+if [[ -n $(git status --porcelain --untracked-files=no) ]]; then
 	stat_busy 'Staging files'
 	for f in $(git ls-files --modified); do
 		git add "$f"
