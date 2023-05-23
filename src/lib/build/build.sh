@@ -298,7 +298,7 @@ pkgctl_build() {
 				die 'failed to get pacman repo'
 			fi
 			if [[ -z "${pkgrepo}" ]]; then
-				die 'unknown repo, please specify --repo for new packages'
+				die 'unknown repo, specify --repo for packages not currently in any official repo'
 			fi
 		fi
 
