@@ -26,12 +26,13 @@ pkgctl_repo_clone_usage() {
 		Clone Git packaging repositories from the canonical namespace.
 
 		The configure command is subsequently invoked to synchronize the distro
-		specs and makepkg.conf settings. The unprivileged option can be used
+		specs and makepkg.conf settings. The protocol option can be used
 		for cloning packaging repositories without SSH access using read-only
 		HTTPS.
 
 		OPTIONS
 		    -m, --maintainer=NAME  Clone all packages of the named maintainer
+		    --protocol https       Clone the repository over https
 		    --switch VERSION       Switch the current working tree to a specified version
 		    --universe             Clone all existing packages, useful for cache warming
 		    -j, --jobs N           Run up to N jobs in parallel (default: $(nproc))
@@ -69,10 +70,20 @@ pkgctl_repo_clone() {
 				pkgctl_repo_clone_usage
 				exit 0
 				;;
-			-u|--unprivileged)
+			--protocol=https)
 				GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_HTTPS}
 				CONFIGURE_OPTIONS+=("$1")
 				shift
+				;;
+			--protocol)
+				(( $# <= 1 )) && die "missing argument for %s" "$1"
+				if [[ $2 == https ]]; then
+					GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_HTTPS}
+				else
+					die "unsupported protocol: %s" "$2"
+				fi
+				CONFIGURE_OPTIONS+=("$1" "$2")
+				shift 2
 				;;
 			-m|--maintainer)
 				(( $# <= 1 )) && die "missing argument for %s" "$1"

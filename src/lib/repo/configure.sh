@@ -33,6 +33,7 @@ pkgctl_repo_configure_usage() {
 		read-only HTTPS otherwise.
 
 		OPTIONS
+		    --protocol https     Configure remote url to use https
 		    -j, --jobs N         Run up to N jobs in parallel (default: $(nproc))
 		    -h, --help           Show this help text
 
@@ -94,6 +95,7 @@ pkgctl_repo_configure() {
 	local GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_HTTPS}
 	local official=0
 	local proto=https
+	local proto_force=0
 	local jobs=
 	jobs=$(nproc)
 	local paths=()
@@ -108,6 +110,19 @@ pkgctl_repo_configure() {
 			-h|--help)
 				pkgctl_repo_configure_usage
 				exit 0
+				;;
+			--protocol=https)
+				proto_force=1
+				shift
+				;;
+			--protocol)
+				(( $# <= 1 )) && die "missing argument for %s" "$1"
+				if [[ $2 == https ]]; then
+					proto_force=1
+				else
+					die "unsupported protocol: %s" "$2"
+				fi
+				shift 2
 				;;
 			-j|--jobs)
 				(( $# <= 1 )) && die "missing argument for %s" "$1"
@@ -152,8 +167,10 @@ pkgctl_repo_configure() {
 		fi
 		if is_packager_email_official "${packager_email}"; then
 			official=1
-			proto=ssh
-			GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_SSH}
+			if (( ! proto_force )); then
+				proto=ssh
+				GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_SSH}
+			fi
 		fi
 	fi
 
