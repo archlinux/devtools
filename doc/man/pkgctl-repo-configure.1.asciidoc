@@ -25,6 +25,9 @@ read-only HTTPS otherwise.
 Options
 -------
 
+*--protocol* 'https'::
+	Configure remote url to use https
+
 *-j, --jobs* 'N'::
 	Run up to N jobs in parallel. By default the number of jobs is equal to the
 	number of available processing units. For sequential processing this option

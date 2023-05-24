@@ -25,6 +25,9 @@ Options
 *-m, --maintainer* 'NAME'::
 	Clone all packages of the named maintainer
 
+*--protocol* 'https'::
+	Clone the repository over https
+
 *--universe*::
 	Clone all existing packages, useful for cache warming
 

@@ -265,6 +265,7 @@ _pkgctl_repo_cmds=(
 
 _pkgctl_repo_clone_args=(
 	-m --maintainer
+	--protocol
 	--switch
 	-u --unprivileged
 	--universe
@@ -273,6 +274,7 @@ _pkgctl_repo_clone_args=(
 )
 _pkgctl_repo_clone_args__maintainer_opts() { :; }
 _pkgctl_repo_clone_args_m_opts() { _pkgctl_repo_clone_args__maintainer_opts; }
+_pkgctl_repo_clone_args__protocol_opts() { _devtools_completions_protocol; }
 _pkgctl_repo_clone_args__switch_opts() { :; }
 _pkgctl_repo_clone_args__jobs_opts() { :; }
 _pkgctl_repo_clone_args_j_opts() { _pkgctl_repo_clone_args__jobs_opts; }
@@ -280,9 +282,11 @@ _pkgctl_repo_clone_opts() { _devtools_completions_all_packages; }
 
 
 _pkgctl_repo_configure_args=(
+	--protocol
 	-j --jobs
 	-h --help
 )
+_pkgctl_repo_configure_args__protocol_opts() { _devtools_completions_protocol; }
 _pkgctl_repo_configure_args__jobs_opts() { :; }
 _pkgctl_repo_configure_args_j_opts() { _pkgctl_repo_clone_args__jobs_opts; }
 _pkgctl_repo_configure_opts() { _filedir -d; }
@@ -362,6 +366,9 @@ _devtools_completions_build_repo() {
 }
 _devtools_completions_all_packages() {
 	mapfile -t COMPREPLY < <(compgen -W "$(pacman -Sql)" -- "$cur")
+}
+_devtools_completions_protocol() {
+	mapfile -t COMPREPLY < <(compgen -W "https" -- "$cur")
 }
 
 __devtools_complete() {
