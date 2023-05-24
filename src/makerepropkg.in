@@ -125,6 +125,9 @@ OPTIONS
 __EOF__
 }
 
+# save all args for check_root
+orig_args=("$@")
+
 while getopts 'dM:c:l:h' arg; do
     case "$arg" in
         d) diffoscope=1 ;;
@@ -137,7 +140,7 @@ while getopts 'dM:c:l:h' arg; do
 done
 shift $((OPTIND - 1))
 
-check_root "" "${BASH_SOURCE[0]}" "$@"
+check_root "" "${BASH_SOURCE[0]}" "${orig_args[@]}"
 
 [[ -f PKGBUILD ]] || { error "No PKGBUILD in current directory."; exit 1; }
 
