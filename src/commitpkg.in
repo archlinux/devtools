@@ -129,6 +129,10 @@ done
 # assert that they really are controlled by git
 if (( ${#needsversioning[*]} )); then
 	for file in "${needsversioning[@]}"; do
+		# skip none existing files
+		if [[ ! -f "${file}" ]]; then
+			continue
+		fi
 		if ! git ls-files --error-unmatch "$file"; then
 			die "%s is not under version control" "$file"
 		fi
