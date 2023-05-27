@@ -38,7 +38,7 @@ pkgctl_repo_configure_usage() {
 		    -h, --help           Show this help text
 
 		EXAMPLES
-		    $ ${COMMAND} configure *
+		    $ ${COMMAND} *
 _EOF_
 }
 

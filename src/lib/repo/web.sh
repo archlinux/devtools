@@ -26,7 +26,7 @@ pkgctl_repo_web_usage() {
 		    -h, --help    Show this help text
 
 		EXAMPLES
-		    $ ${COMMAND} web linux
+		    $ ${COMMAND} linux
 _EOF_
 }
 
