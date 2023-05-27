@@ -145,18 +145,19 @@ uninstall:
 		$(DESTDIR)$(DATADIR)/pacman.conf.d \
 		$(DESTDIR)$(DATADIR)
 
-TODAY=$(shell date +"%Y%m%d")
 tag:
-	@sed -E "s|^V=[0-9]{8}|V=$(TODAY)|" -i Makefile
-	@git commit --gpg-sign --message "Version $(TODAY)" Makefile
-	@git tag --sign --message "Version $(TODAY)" $(TODAY)
+	@echo "current version: v$(V)"
+	@read -r -p "tag version: v" VERSION && \
+	sed -E "s|^V=.+|V=$$VERSION|" -i Makefile && \
+	git commit --gpg-sign --message "chore(release): version v$$VERSION" Makefile && \
+	git tag --sign --message "Version v$$VERSION" v$$VERSION
+
+release: dist
+	glab release create v$(RELEASE) devtools-$(RELEASE).tar.gz*
 
 dist:
-	git archive --format=tar --prefix=devtools-$(V)/ $(V) | gzip > devtools-$(V).tar.gz
+	git archive --format=tar --prefix=devtools-$(V)/ v$(V) | gzip > devtools-$(V).tar.gz
 	gpg --detach-sign --use-agent devtools-$(V).tar.gz
-
-upload:
-	scp devtools-$(V).tar.gz devtools-$(V).tar.gz.sig repos.archlinux.org:/srv/ftp/other/devtools/
 
 check: $(BINPROGS_SRC) $(LIBRARY_SRC) contrib/completion/bash/devtools.in config/makepkg/x86_64.conf contrib/makepkg/PKGBUILD.proto
 	shellcheck $^
