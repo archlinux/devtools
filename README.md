@@ -43,6 +43,7 @@ will automatically build the project and proxy all calls to the local build dire
 - coreutils
 - diffutils
 - findutils
+- fzf
 - grep
 - jq
 - ncurses

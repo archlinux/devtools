@@ -16,6 +16,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/release.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
 # shellcheck source=src/lib/util/pacman.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/pacman.sh
+# shellcheck source=src/lib/workspace/util.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/workspace/util.sh
 # shellcheck source=src/lib/valid-repos.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 # shellcheck source=src/lib/valid-tags.sh
@@ -277,6 +279,8 @@ pkgctl_build() {
 	elif ! in_array "${REPO}" "${_repos[@]}"; then
 		die "Invalid repository target: %s" "${REPO}"
 	fi
+
+	enter_workspace
 
 	for path in "${paths[@]}"; do
 		pushd "${path}" >/dev/null

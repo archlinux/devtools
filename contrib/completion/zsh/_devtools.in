@@ -134,6 +134,56 @@ _pkgctl_repo_web_args=(
 	'*:git_dir:_files -/'
 )
 
+_pkgctl_workspace_cmds=(
+	"pkgctl workspace command"
+	"add[TODO a]"
+	"cd[TODO a]"
+	"list[TODO a]"
+	"remove[TODO a]"
+	"show[TODOa a]"
+	"switch[TODO a]"
+)
+
+_pkgctl_workspace_add_args=(
+	'(-f --force)'{-f,--force}'[TODO name]'
+	'(-s --switch)'{-s,--switch}'[TODO path]'
+	'(-c --cd)'{-c,--cd}'[TODO path]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'1:workspace'
+	'2:path:_files -/'
+)
+
+_pkgctl_workspace_cd_args=(
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'1:workspace:_devtools_completions_all_workspaces'
+)
+
+_pkgctl_workspace_list_args=(
+	'(-n --name)'{-n,--name}'[TODO name]'
+	'(-p --path)'{-p,--path}'[TODO path]'
+	'(-l --local)'{-l,--local}'[TODO path]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+)
+
+_pkgctl_workspace_remove_args=(
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'1:workspace:_devtools_completions_local_workspaces'
+)
+
+_pkgctl_workspace_show_args=(
+	'(-n --name)'{-n,--name}'[TODO name]'
+	'(-p --path)'{-p,--path}'[TODO path]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'1:workspace:_devtools_completions_all_workspaces'
+)
+
+_pkgctl_workspace_switch_args=(
+	'(-i --interactive)'{-i,--interactive}'[TODO]'
+	'(-c --cd)'{-c,--cd}'[TODO]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'1:workspace:_devtools_completions_all_workspaces'
+)
+
 _arch_nspawn_args=(
 	'-C[Location of a pacman config file]:pacman_config:_files -g "*.conf(.)"'
 	'-M[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
@@ -237,6 +287,18 @@ _devtools_completions_all_packages() {
 	compadd - "${(@)packages}"
 }
 
+_devtools_completions_all_workspaces() {
+	typeset -U workspaces
+	workspaces=($(_call_program workspaces pkgctl workspace list --name))
+	compadd - "${(@)workspaces}"
+}
+
+_devtools_completions_local_workspaces() {
+	typeset -U local_workspaces
+	local_workspaces=($(_call_program local_workspaces pkgctl workspace list --local --name))
+	compadd - "${(@)local_workspaces}"
+}
+
 _pkgctl_cmds=(
 	"pkgctl command"
 	"auth[Authenticate with services like GitLab]"
@@ -246,6 +308,7 @@ _pkgctl_cmds=(
 	"release[Release step to commit, tag and upload build artifacts]"
 	"repo[Manage Git packaging repositories and their configuration]"
 	"version[Show pkgctl version information]"
+	"workspace[TODO]"
 )
 
 _pkgctl_args=(

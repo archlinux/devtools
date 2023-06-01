@@ -12,6 +12,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/api/gitlab.sh
 # shellcheck source=src/lib/repo/configure.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo/configure.sh
+# shellcheck source=src/lib/workspace/util.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/workspace/util.sh
 
 source /usr/share/makepkg/util/message.sh
 
@@ -178,6 +180,8 @@ pkgctl_repo_clone() {
 		exit 0
 	fi
 
+	enter_workspace
+
 	for pkgbase in "${pkgbases[@]}"; do
 		if [[ ! -d ${pkgbase} ]]; then
 			msg "Cloning ${pkgbase} ..."
@@ -196,4 +200,6 @@ pkgctl_repo_clone() {
 			pkgctl_repo_switch "${VERSION}" "${pkgbase}"
 		fi
 	done
+
+	leave_workspace
 }

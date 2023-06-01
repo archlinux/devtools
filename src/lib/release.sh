@@ -10,6 +10,8 @@ _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/db/update.sh
 # shellcheck source=src/lib/util/pacman.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/pacman.sh
+# shellcheck source=src/lib/workspace/util.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/workspace/util.sh
 # shellcheck source=src/lib/valid-repos.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 
@@ -129,6 +131,8 @@ pkgctl_release() {
 	elif ! in_array "${REPO}" "${_repos[@]}"; then
 		die "Invalid repository target: %s" "${REPO}"
 	fi
+
+	enter_workspace
 
 	for path in "${PKGBASES[@]}"; do
 		pushd "${path}" >/dev/null

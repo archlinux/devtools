@@ -135,6 +135,7 @@ _pkgctl_cmds=(
 	release
 	repo
 	version
+	workspace
 )
 _pkgctl_args=(
 	-V --version
@@ -322,6 +323,103 @@ _pkgctl_repo_web_args=(
 _pkgctl_repo_web_opts() { _filedir -d; }
 
 
+_pkgctl_workspace_cmds=(
+	add
+	cd
+	list
+	remove
+	show
+	switch
+)
+
+
+_pkgctl_workspace_add_args=(
+	-f --force
+	-s --switch
+	-c --cd
+	-h --help
+)
+_pkgctl_workspace_add_opts() {
+	local subcommand args
+	subcommand=(workspace add)
+	args=$(__pkgctl_word_count_after_subcommand "${subcommand[@]}")
+
+	if (( args == 0 )); then
+		:
+	elif (( args == 1 )); then
+		_filedir -d;
+	fi
+}
+
+
+_pkgctl_workspace_cd_args=(
+	-h --help
+)
+_pkgctl_workspace_cd_opts() {
+	local subcommand args
+	subcommand=(workspace cd)
+	args=$(__pkgctl_word_count_after_subcommand "${subcommand[@]}")
+
+	if (( args == 0 )); then
+		_devtools_completions_all_workspaces
+	fi
+}
+
+
+_pkgctl_workspace_list_args=(
+	-n --name
+	-p --path
+	-l --local
+	-h --help
+)
+
+
+_pkgctl_workspace_remove_args=(
+	-h --help
+)
+_pkgctl_workspace_remove_opts() {
+	local subcommand args
+	subcommand=(workspace remove)
+	args=$(__pkgctl_word_count_after_subcommand "${subcommand[@]}")
+
+	if (( args == 0 )); then
+		_devtools_completions_local_workspaces
+	fi
+}
+
+
+_pkgctl_workspace_show_args=(
+	-n --name
+	-p --path
+	-h --help
+)
+_pkgctl_workspace_show_opts() {
+	local subcommand args
+	subcommand=(workspace show)
+	args=$(__pkgctl_word_count_after_subcommand "${subcommand[@]}")
+
+	if (( args == 0 )); then
+		_devtools_completions_all_workspaces
+	fi
+}
+
+
+_pkgctl_workspace_switch_args=(
+	-i --interactive
+	-c --cd
+	-h --help
+)
+_pkgctl_workspace_switch_opts() {
+	local subcommand args
+	subcommand=(workspace switch)
+	args=$(__pkgctl_word_count_after_subcommand "${subcommand[@]}")
+
+	if (( args == 0 )); then
+		_devtools_completions_all_workspaces
+	fi
+}
+
+
 _pkgctl_diff_args=(
 	-l --list
 	-d --diffoscope
@@ -366,6 +464,12 @@ _devtools_completions_build_repo() {
 }
 _devtools_completions_all_packages() {
 	mapfile -t COMPREPLY < <(compgen -W "$(pacman -Sql)" -- "$cur")
+}
+_devtools_completions_all_workspaces() {
+	mapfile -t COMPREPLY < <(compgen -W "$(pkgctl workspace list --name)" -- "$cur")
+}
+_devtools_completions_local_workspaces() {
+	mapfile -t COMPREPLY < <(compgen -W "$(pkgctl workspace list --local --name)" -- "$cur")
 }
 _devtools_completions_protocol() {
 	mapfile -t COMPREPLY < <(compgen -W "https" -- "$cur")

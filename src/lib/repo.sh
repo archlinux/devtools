@@ -27,6 +27,7 @@ pkgctl_repo_usage() {
 		without SSH access using read-only HTTPS.
 
 		COMMANDS
+		    cd             Change current working directory into the repository
 		    clone          Clone a package repository
 		    configure      Configure a clone according to distro specs
 		    create         Create a new GitLab package repository
@@ -57,6 +58,14 @@ pkgctl_repo() {
 		case $1 in
 			-h|--help)
 				pkgctl_repo_usage
+				exit 0
+				;;
+			cd)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/repo/cd.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo/cd.sh
+				pkgctl_repo_cd "$@"
 				exit 0
 				;;
 			clone)
