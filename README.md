@@ -42,6 +42,7 @@ will automatically build the project and proxy all calls to the local build dire
 - binutils
 - coreutils
 - diffutils
+- fakeroot
 - findutils
 - grep
 - jq
