@@ -1,0 +1,41 @@
+pkgctl-aur-drop-from-repo(1)
+============================
+
+Name
+----
+pkgctl-aur-drop-from-repo - Drop a package from the official repository to the AUR
+
+Synopsis
+--------
+pkgctl aur drop-from-repo [OPTIONS] [PATH]...
+
+Description
+-----------
+
+Drops a specified package from the official repositories to the Arch User
+Repository.
+
+This command requires a local Git clone of the package repository. It
+reconfigures the repository for AUR compatibility and pushes it to the
+AUR. Afterwards, the package is removed from the official repository.
+
+By default, the package is automatically disowned in the AUR.
+
+Options
+-------
+
+*--no-disown*::
+	Do not disown the package on the AUR
+
+*-f, --force*::
+	Force push to the AUR overwriting the remote repository
+
+*-h, --help*::
+	Show a help text
+
+See Also
+--------
+
+linkman:pkgctl-db-remove[1]
+
+include::include/footer.asciidoc[]

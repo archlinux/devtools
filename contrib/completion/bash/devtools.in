@@ -135,6 +135,7 @@ complete -F _offload_build offload-build
 
 
 _pkgctl_cmds=(
+	aur
 	auth
 	build
 	db
@@ -264,6 +265,17 @@ _pkgctl_release_args__repo_opts() { _devtools_completions_repo; }
 _pkgctl_release_args_r_opts() { _pkgctl_release_args__repo_opts; }
 _pkgctl_release_opts() { _filedir -d; }
 
+_pkgctl_aur_cmds=(
+	drop-from-repo
+)
+
+_pkgctl_aur_drop_from_repo_args=(
+	--no-disown
+	-f --force
+	-h --help
+)
+_pkgctl_aur_drop_from_repo_opts() { _filedir -d; }
+
 
 _pkgctl_repo_cmds=(
 	clone
@@ -307,7 +319,6 @@ _pkgctl_repo_create_args=(
 	-c --clone
 	-h --help
 )
-
 
 _pkgctl_repo_switch_args=(
 	--discard-changes

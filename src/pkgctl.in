@@ -19,6 +19,7 @@ usage() {
 		Unified command-line frontend for devtools.
 
 		COMMANDS
+		    aur     Interact with the Arch User Repository
 		    auth    Authenticate with services like GitLab
 		    build   Build packages inside a clean chroot
 		    db      Pacman database modification for package update, move etc
@@ -49,6 +50,14 @@ while (( $# )); do
 	case $1 in
 		-h|--help)
 			usage
+			exit 0
+			;;
+		aur)
+			_DEVTOOLS_COMMAND+=" $1"
+			shift
+			# shellcheck source=src/lib/aur.sh
+			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/aur.sh
+			pkgctl_aur "$@"
 			exit 0
 			;;
 		build)

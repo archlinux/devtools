@@ -96,6 +96,18 @@ _pkgctl_release_args=(
 	'*:git_dir:_files -/'
 )
 
+_pkgctl_aur_cmds=(
+	"pkgctl aur command"
+	"drop-from-repo[Drop a package from the official repository to the AUR]"
+)
+
+_pkgctl_aur_drop_from_repo_args=(
+	'(-f --force)'{-f,--force}'[Force push to the AUR overwriting the remote repository]'
+	'--no-disown[Do not disown the package on the AUR]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'*:git_dir:_files -/'
+)
+
 _pkgctl_repo_cmds=(
 	"pkgctl repo command"
 	"clone[Clone a package repository]"
@@ -257,6 +269,7 @@ _devtools_completions_all_packages() {
 
 _pkgctl_cmds=(
 	"pkgctl command"
+	"aur[Interact with the Arch User Repository (AUR)]"
 	"auth[Authenticate with services like GitLab]"
 	"build[Build packages inside a clean chroot]"
 	"db[Pacman database modification for package update, move etc]"

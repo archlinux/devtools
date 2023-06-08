@@ -26,6 +26,9 @@ Options
 Subcommands
 -----------
 
+pkgctl aur::
+	Interact with the Arch User Repository
+
 pkgctl auth::
 	Authenticate with services like GitLab
 
@@ -53,6 +56,7 @@ pkgctl version::
 See Also
 --------
 
+linkman:pkgctl-aur[1]
 linkman:pkgctl-auth[1]
 linkman:pkgctl-build[1]
 linkman:pkgctl-db[1]
