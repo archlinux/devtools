@@ -17,6 +17,7 @@ source /usr/share/makepkg/util/config.sh
 source /usr/share/makepkg/util/message.sh
 
 set -e
+shopt -s nullglob
 
 
 pkgctl_repo_configure_usage() {
@@ -33,6 +34,8 @@ pkgctl_repo_configure_usage() {
 		The remote protocol is automatically determined from the author email
 		address by choosing SSH for all official packager identities and
 		read-only HTTPS otherwise.
+
+		Git default excludes and hooks are applied to the configured repo.
 
 		OPTIONS
 		    --protocol https     Configure remote url to use https
@@ -104,7 +107,7 @@ pkgctl_repo_configure() {
 
 	# variables
 	local -r command=${_DEVTOOLS_COMMAND:-${BASH_SOURCE[0]##*/}}
-	local path realpath pkgbase remote_url project_path
+	local path realpath pkgbase remote_url project_path hook
 	local PACKAGER GPGKEY packager_name packager_email
 
 	while (( $# )); do
@@ -230,7 +233,15 @@ pkgctl_repo_configure() {
 			git config branch.main.merge refs/heads/main
 		fi
 
+		# configure spec version and variant to avoid using development hooks in production
 		git config devtools.version "${GIT_REPO_SPEC_VERSION}"
+		if [[ ${_DEVTOOLS_LIBRARY_DIR} == /usr/share/devtools ]]; then
+			git config devtools.variant canonical
+		else
+			warning "Configuring with development version of pkgctl, do not use this repo in production"
+			git config devtools.variant development
+		fi
+
 		git config pull.rebase true
 		git config branch.autoSetupRebase always
 		git config branch.main.remote origin
@@ -256,6 +267,18 @@ pkgctl_repo_configure() {
 			git config commit.gpgsign true
 			git config user.signingKey "${GPGKEY}"
 		fi
+
+		# set default git exclude
+		mkdir -p .git/info
+		ln -sf "${_DEVTOOLS_LIBRARY_DIR}/git.conf.d/template/info/exclude" \
+			.git/info/exclude
+
+		# set default git hooks
+		mkdir -p .git/hooks
+		rm -f .git/hooks/*.sample
+		for hook in "${_DEVTOOLS_LIBRARY_DIR}"/git.conf.d/template/hooks/*; do
+			ln -sf "${hook}" ".git/hooks/$(basename "${hook}")"
+		done
 
 		if ! git ls-remote origin &>/dev/null; then
 			warning "configured remote origin may not exist, run:"

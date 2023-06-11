@@ -22,7 +22,7 @@ export BUILDTOOLVER=@buildtoolver@
 # Set common properties
 export PACMAN_KEYRING_DIR=/etc/pacman.d/gnupg
 export GITLAB_HOST=gitlab.archlinux.org
-export GIT_REPO_SPEC_VERSION=1
+export GIT_REPO_SPEC_VERSION=2
 export GIT_PACKAGING_NAMESPACE=archlinux/packaging/packages
 export GIT_PACKAGING_NAMESPACE_ID=11323
 export GIT_PACKAGING_URL_SSH="git@${GITLAB_HOST}:${GIT_PACKAGING_NAMESPACE}"

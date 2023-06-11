@@ -22,6 +22,8 @@ The remote protocol is automatically determined from the author email
 address by choosing SSH for all official packager identities and
 read-only HTTPS otherwise.
 
+Git default excludes and hooks are applied to the configured repo.
+
 Options
 -------
 

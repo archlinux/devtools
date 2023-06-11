@@ -71,6 +71,12 @@ if ! repo_spec=$(git config --local devtools.version) || [[ ${repo_spec} != "${G
 	exit 1
 fi
 
+if ! repo_variant=$(git config --local devtools.variant) || [[ ${repo_variant} != canonical ]]; then
+	error "cannot release from a repository with none canonical specs (%s), try:" "${repo_variant:-development}"
+	msg2 'pkgctl repo configure'
+	exit 1
+fi
+
 if [[ "$(git symbolic-ref --short HEAD)" != main ]]; then
 	die 'must be run from the main branch'
 fi
