@@ -249,6 +249,9 @@ pkgctl_repo_configure() {
 			git config user.signingKey "${GPGKEY}"
 		fi
 
+		# git template setup
+		ln -sf "${_DEVTOOLS_LIBRARY_DIR}/git.conf.d/template/info/exclude" .git/info/exclude
+
 		if ! git ls-remote origin &>/dev/null; then
 			warning "configured remote origin may not exist, run:"
 			msg2 "pkgctl repo create ${pkgbase}"

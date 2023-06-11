@@ -16,6 +16,7 @@ LIBRARY_SRC = $(call rwildcard,src/lib,*.sh)
 LIBRARY = $(addprefix $(BUILDDIR)/,$(patsubst src/%,%,$(patsubst %.in,%,$(LIBRARY_SRC))))
 MAKEPKG_CONFIGS=$(wildcard config/makepkg/*)
 PACMAN_CONFIGS=$(wildcard config/pacman/*)
+GIT_CONFIGS = $(wildcard config/git/*)
 SETARCH_ALIASES = $(wildcard config/setarch-aliases.d/*)
 MANS = $(addprefix $(BUILDDIR)/,$(patsubst %.asciidoc,%,$(wildcard doc/man/*.asciidoc)))
 
@@ -97,9 +98,12 @@ $(BUILDDIR)/doc/man/%: doc/man/%.asciidoc doc/asciidoc.conf doc/man/include/foot
 	@a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage --destination-dir=$(BUILDDIR)/doc/man -a pkgdatadir=$(DATADIR) $<
 
 conf:
-	@install -d $(BUILDDIR)/makepkg.conf.d $(BUILDDIR)/pacman.conf.d
+	@install -d $(BUILDDIR)/makepkg.conf.d
 	@cp -a $(MAKEPKG_CONFIGS) $(BUILDDIR)/makepkg.conf.d
+	@install -d $(BUILDDIR)/pacman.conf.d
 	@cp -a $(PACMAN_CONFIGS) $(BUILDDIR)/pacman.conf.d
+	@install -d $(BUILDDIR)/git.conf.d
+	cp -a $(GIT_CONFIGS) $(BUILDDIR)/git.conf.d
 
 clean:
 	rm -rf $(BUILDDIR)
@@ -112,6 +116,7 @@ install: all
 	install -m0755 ${BINPROGS} $(DESTDIR)$(PREFIX)/bin
 	install -dm0755 $(DESTDIR)$(DATADIR)/lib
 	cp -ra $(BUILDDIR)/lib/* $(DESTDIR)$(DATADIR)/lib
+	cp -a $(BUILDDIR)/git.conf.d -t $(DESTDIR)$(DATADIR)
 	for conf in $(notdir $(MAKEPKG_CONFIGS)); do install -Dm0644 $(BUILDDIR)/makepkg.conf.d/$$conf $(DESTDIR)$(DATADIR)/makepkg.conf.d/$${conf##*/}; done
 	for conf in $(notdir $(PACMAN_CONFIGS)); do install -Dm0644 $(BUILDDIR)/pacman.conf.d/$$conf $(DESTDIR)$(DATADIR)/pacman.conf.d/$${conf##*/}; done
 	for a in ${SETARCH_ALIASES}; do install -m0644 $$a -t $(DESTDIR)$(DATADIR)/setarch-aliases.d; done
@@ -129,6 +134,7 @@ uninstall:
 	for f in $(notdir $(BINPROGS)); do rm -f $(DESTDIR)$(PREFIX)/bin/$$f; done
 	for f in $(notdir $(LIBRARY)); do rm -f $(DESTDIR)$(DATADIR)/lib/$$f; done
 	rm -rf $(DESTDIR)$(DATADIR)/lib
+	rm -rf $(DESTDIR)$(DATADIR)/git.conf.d
 	for conf in $(notdir $(MAKEPKG_CONFIGS)); do rm -f $(DESTDIR)$(DATADIR)/makepkg.conf.d/$${conf##*/}; done
 	for conf in $(notdir $(PACMAN_CONFIGS)); do rm -f $(DESTDIR)$(DATADIR)/pacman.conf.d/$${conf##*/}; done
 	for f in $(notdir $(SETARCH_ALIASES)); do rm -f $(DESTDIR)$(DATADIR)/setarch-aliases.d/$$f; done

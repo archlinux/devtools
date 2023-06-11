@@ -183,7 +183,10 @@ pkgctl_repo_clone() {
 			msg "Cloning ${pkgbase} ..."
 			project_path=$(gitlab_project_name_to_path "${pkgbase}")
 			remote_url="${GIT_REPO_BASE_URL}/${project_path}.git"
-			if ! git clone --origin origin "${remote_url}" "${pkgbase}"; then
+			if ! git clone \
+					--origin origin \
+					--template="${_DEVTOOLS_LIBRARY_DIR}/git.conf.d/template" \
+					"${remote_url}" "${pkgbase}"; then
 				die 'failed to clone %s' "${pkgbase}"
 			fi
 		else

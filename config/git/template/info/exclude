@@ -1,0 +1,12 @@
+/*.log
+/*.tar.*
+/*.tar
+/*.zst
+/*.gz
+/*.xz
+/*.bz2
+/*.zip
+/*.spl
+/*.xpi
+/pkg
+/src
