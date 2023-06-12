@@ -329,7 +329,7 @@ pkgctl_build() {
 
 		# increment pkgrel on rebuild
 		if (( REBUILD )); then
-			# try to figure out of pkgrel has been changed
+			# try to figure out if pkgrel has been changed
 			if ! old_pkgrel=$(git_diff_tree HEAD PKGBUILD | grep --perl-regexp --only-matching --max-count=1 '^-pkgrel=\K\w+'); then
 				old_pkgrel=${pkgrel}
 			fi
