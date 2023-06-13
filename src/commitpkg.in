@@ -111,7 +111,7 @@ if (( ${#validpgpkeys[@]} != 0 )); then
 fi
 
 # find files which should be under source control
-needsversioning=()
+needsversioning=(PKGBUILD)
 for s in "${source[@]}"; do
 	[[ $s != *://* ]] && needsversioning+=("$s")
 done
