@@ -20,6 +20,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/srcinfo.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/pacman.sh
 # shellcheck source=src/lib/util/pkgbuild.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/pkgbuild.sh
+# shellcheck source=src/lib/valid-build-install.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-build-install.sh
 # shellcheck source=src/lib/valid-repos.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 # shellcheck source=src/lib/valid-tags.sh
@@ -52,10 +54,13 @@ pkgctl_build_usage() {
 		    -t, --testing        Build against the testing counterpart of the auto-detected repo
 		    -o, --offload        Build on a remote server and transfer artifacts afterwards
 		    -c, --clean          Recreate the chroot before building
-		    -I, --install FILE   Install a package into the working copy of the chroot
 		    --inspect WHEN       Spawn an interactive shell to inspect the chroot (never, always, failure)
 		    -w, --worker SLOT    Name of the worker slot, useful for concurrent builds (disables automatic names)
 		    --nocheck            Do not run the check() function in the PKGBUILD
+
+		INSTALL OPTIONS
+		    -I, --install-to-chroot FILE   Install a package to the working copy of the chroot
+		    -i, --install-to-host MODE     Install the built package to the host system, possible modes are 'all' and 'auto'
 
 		PKGBUILD OPTIONS
 		    --pkgver=PKGVER      Set pkgver, reset pkgrel and update checksums
@@ -119,6 +124,7 @@ pkgctl_build() {
 	local TESTING=0
 	local RELEASE=0
 	local DB_UPDATE=0
+	local INSTALL_TO_HOST=none
 
 	local REPO=
 	local PKGVER=
@@ -131,12 +137,13 @@ pkgctl_build() {
 	local MAKECHROOT_OPTIONS=()
 	local RELEASE_OPTIONS=()
 	local MAKEPKG_OPTIONS=()
+	local INSTALL_HOST_PACKAGES=()
 
 	local WORKER=
 	local WORKER_SLOT=
 
 	# variables
-	local _arch path pkgbase pkgrepo source pkgbuild_checksum
+	local _arch path pkgbase pkgrepo source pkgbuild_checksum current_checksum
 
 	while (( $# )); do
 		case $1 in
@@ -209,14 +216,22 @@ pkgctl_build() {
 				BUILD_OPTIONS+=("-c")
 				shift
 				;;
-			-I|--install)
+			-I|--install-to-chroot)
 				(( $# <= 1 )) && die "missing argument for %s" "$1"
 				if (( OFFLOAD )); then
 					MAKECHROOT_OPTIONS+=("-I" "$2")
 				else
 					MAKECHROOT_OPTIONS+=("-I" "$(realpath "$2")")
 				fi
-				warning 'installing packages into the chroot may break reproducible builds, use with caution!'
+				warning 'installing packages to the chroot may break reproducible builds, use with caution!'
+				shift 2
+				;;
+			-i|--install-to-host)
+				(( $# <= 1 )) && die "missing argument for %s" "$1"
+				if ! in_array "$2" "${DEVTOOLS_VALID_BUILD_INSTALL[@]}"; then
+					die 'invalid install mode: %s' "${2}"
+				fi
+				INSTALL_TO_HOST=$2
 				shift 2
 				;;
 			--nocheck)
@@ -410,7 +425,9 @@ pkgctl_build() {
 		fi
 
 		# re-source the PKGBUILD if it changed
-		if [[ ${pkgbuild_checksum} != "$(b2sum PKGBUILD | awk '{print $1}')" ]]; then
+		current_checksum="$(b2sum PKGBUILD | awk '{print $1}')"
+		if [[ ${pkgbuild_checksum} != "${current_checksum}" ]]; then
+			pkgbuild_checksum=${current_checksum}
 			# shellcheck source=contrib/makepkg/PKGBUILD.proto
 			. ./PKGBUILD
 		fi
@@ -432,9 +449,37 @@ pkgctl_build() {
 			fi
 		done
 
+		# re-source the PKGBUILD if it changed
+		current_checksum="$(b2sum PKGBUILD | awk '{print $1}')"
+		if [[ ${pkgbuild_checksum} != "${current_checksum}" ]]; then
+			pkgbuild_checksum=${current_checksum}
+			# shellcheck source=contrib/makepkg/PKGBUILD.proto
+			. ./PKGBUILD
+		fi
+
 		# auto generate .SRCINFO
 		# shellcheck disable=SC2119
 		write_srcinfo_file
+
+		# test-install (some of) the produced packages
+		if [[ ${INSTALL_TO_HOST} == auto ]] || [[ ${INSTALL_TO_HOST} == all ]]; then
+			# shellcheck disable=2119
+			load_makepkg_config
+
+			# this is inspired by print_all_package_names from libmakepkg
+			local version pkg_architecture pkg pkgfile
+			version=$(get_full_version)
+
+			for pkg in "${pkgname[@]}"; do
+				pkg_architecture=$(get_pkg_arch "$pkg")
+				pkgfile=$(realpath "$(printf "%s/%s-%s-%s%s\n" "${PKGDEST:-.}" "$pkg" "$version" "$pkg_architecture" "$PKGEXT")")
+
+				# check if we install all packages or if the (split-)package is already installed
+				if [[ ${INSTALL_TO_HOST} == all ]] || ( [[ ${INSTALL_TO_HOST} == auto ]] && pacman -Qq -- "$pkg" &>/dev/null ); then
+					INSTALL_HOST_PACKAGES+=("$pkgfile")
+				fi
+			done
+		fi
 
 		# release the build
 		if (( RELEASE )); then
@@ -445,6 +490,12 @@ pkgctl_build() {
 		unset pkgbase pkgname arch pkgrepo source pkgver pkgrel validpgpkeys
 		popd >/dev/null
 	done
+
+	# install all collected packages to the host system
+	if (( ${#INSTALL_HOST_PACKAGES[@]} )); then
+		msg "Installing built packages to the host system"
+		sudo pacman -U -- "${INSTALL_HOST_PACKAGES[@]}"
+	fi
 
 	# update the binary package repo db as last action
 	if (( RELEASE )) && (( DB_UPDATE )); then

@@ -35,9 +35,6 @@ Build Options
 *-c, --clean*::
 	Recreate the chroot before building
 
-*-I, --install* 'FILE'::
-	Install a package into the working copy of the chroot
-
 *--inspect* 'WHEN'::
 	Spawn an interactive shell to inspect the chroot after building. Useful to ease the debugging of a package build. +
 	Possible values for 'WHEN' are `'never'`, `'always'` or `'failure'`
@@ -50,6 +47,17 @@ Build Options
 
 *--nocheck*::
 	Do not run the check() function in the PKGBUILD
+
+Install Options
+---------------
+
+*-I, --install-to-chroot* 'FILE'::
+	Install a package to the working copy of the chroot
+
+*-i, --install-to-host* 'MODE'::
+	Install the built packages to the host system. Useful when one wants to verify that the package works as intended.
+	* When 'MODE' is 'all', this installs all built packages
+	* When 'MODE' is 'auto', this installs all built packages which are currently installed
 
 PKGBUILD Options
 ----------------

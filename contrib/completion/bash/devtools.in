@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
+# shellcheck source=src/lib/valid-build-install.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-build-install.sh
 # shellcheck source=src/lib/valid-tags.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
 # shellcheck source=src/lib/valid-repos.sh
@@ -179,6 +181,8 @@ _pkgctl_build_args=(
 	-c --clean
 	-w --worker
 	--inspect
+	-I --install-to-chroot
+	-i --install-to-host
 
 	--pkgver
 	--pkgrel
@@ -199,9 +203,16 @@ _pkgctl_build_args_w_opts() { _pkgctl_build_args__worker_opts; }
 _pkgctl_build_args__inspect_opts() { _devtools_completions_inspect; }
 _pkgctl_build_args__pkgver_opts() { :; }
 _pkgctl_build_args__pkgrel_opts() { :; }
+_pkgctl_build_args__install_to_host_opts() { _pkgctl_build_completions_install_mode; }
+_pkgctl_build_args_i_opts() { _pkgctl_build_args__install_to_host_opts; }
+_pkgctl_build_args__install_to_chroot_opts() { _makechrootpkg_args_I_opts; }
+_pkgctl_build_args_I_opts() { _pkgctl_build_args__install_to_chroot_opts; }
 _pkgctl_build_args__message_opts() { :; }
 _pkgctl_build_args_m_opts() { _pkgctl_build_args__message_opts; }
 _pkgctl_build_opts() { _filedir -d; }
+_pkgctl_build_completions_install_mode() {
+	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_BUILD_INSTALL[*]}" -- "$cur")
+}
 
 
 _pkgctl_db_cmds=(

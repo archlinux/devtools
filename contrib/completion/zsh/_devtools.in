@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
+# shellcheck source=src/lib/valid-build-install.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-build-install.sh
 # shellcheck source=src/lib/valid-tags.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
 # shellcheck source=src/lib/valid-repos.sh
@@ -45,8 +47,9 @@ _pkgctl_build_args=(
 	'(-t --testing)'{-t,--testing}'[Build against the testing counterpart of the auto-detected repo]'
 	'(-o --offload)'{-o,--offload}'[Build on a remote server and transfer artifacts afterwards]'
 	'(-c --clean)'{-c,--clean}'[Recreate the chroot before building]'
-	'(-I --install)'{-I,--install}'[Install a package into the working copy of the chroot]:target:_files -g "*.pkg.tar.*(.)"'
 	"--inspect[Spawn an interactive shell to inspect the chroot (never, always, failure)]:inspect:($DEVTOOLS_VALID_INSPECT_MODES[*])"
+	'(-I --install-to-chroot)'{-I,--install-to-chroot}'[Install a package to the working copy of the chroot]:target:_files -g "*.pkg.tar.*(.)"'
+	'(-i --install-to-host)'{-i,--install-to-host}"[Install the built packages to the host system]:mode:($DEVTOOLS_VALID_BUILD_INSTALL[*])"
 	'(-w --worker)'{-w,--worker}'[Name of the worker slot, useful for concurrent builds (disables auto-detection)]:slot:'
 	'--nocheck[Do not run the check() function in the PKGBUILD]'
 	'--pkgver=[Set pkgver, reset pkgrel and update checksums]:pkgver:'
