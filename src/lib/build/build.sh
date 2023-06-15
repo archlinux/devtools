@@ -129,7 +129,7 @@ pkgctl_build() {
 	local WORKER_SLOT=
 
 	# variables
-	local path pkgbase pkgrepo source
+	local loop_arch path pkgbase pkgrepo source
 
 	while (( $# )); do
 		case $1 in
@@ -318,7 +318,13 @@ pkgctl_build() {
 			if in_array any "${arch[@]}"; then
 				BUILD_ARCH=("${_arch[0]}")
 			else
-				BUILD_ARCH+=("${arch[@]}")
+				for loop_arch in "${arch[@]}"; do 
+					if in_array "${loop_arch}" "${_arch[@]}"; then
+						BUILD_ARCH+=("$loop_arch")
+					else
+						warning 'invalid architecture, not building for: %s' "${loop_arch}"
+					fi
+				done
 			fi
 		fi
 
