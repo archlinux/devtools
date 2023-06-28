@@ -16,7 +16,6 @@ umask 0022
 working_dir=''
 
 files=()
-mount_args=()
 
 usage() {
 	echo "Usage: ${0##*/} [options] working-dir [systemd-nspawn arguments]"
@@ -56,6 +55,15 @@ shift 1
 
 [[ -z $working_dir ]] && die 'Please specify a working directory.'
 
+nspawn_args=(
+	--quiet
+	--directory="$working_dir"
+	--setenv="PATH=/usr/local/sbin:/usr/local/bin:/usr/bin"
+	--register=no
+	--keep-unit
+	--as-pid2
+)
+
 if (( ${#cache_dirs[@]} == 0 )); then
 	mapfile -t cache_dirs < <(pacman-conf --config "${pac_conf:-$working_dir/etc/pacman.conf}" CacheDir)
 fi
@@ -83,10 +91,10 @@ while read -r line; do
 	done
 done < <(pacman-conf --config "${pac_conf:-$working_dir/etc/pacman.conf}" --repo-list)
 
-mount_args+=("--bind=${cache_dirs[0]//:/\\:}")
+nspawn_args+=(--bind="${cache_dirs[0]//:/\\:}")
 
 for cache_dir in "${cache_dirs[@]:1}"; do
-	mount_args+=("--bind-ro=${cache_dir//:/\\:}")
+	nspawn_args+=(--bind-ro="${cache_dir//:/\\:}")
 done
 
 # {{{ functions
@@ -129,9 +137,4 @@ else
 	set_arch="${CARCH}"
 fi
 
-exec ${CARCH:+setarch "$set_arch"} systemd-nspawn -q \
-	-D "$working_dir" \
-	-E "PATH=/usr/local/sbin:/usr/local/bin:/usr/bin" \
-	--register=no --keep-unit --as-pid2 \
-	"${mount_args[@]}" \
-	"$@"
+exec ${CARCH:+setarch "$set_arch"} systemd-nspawn "${nspawn_args[@]}" "$@"
