@@ -60,7 +60,8 @@ nspawn_args=(
 	--directory="$working_dir"
 	--setenv="PATH=/usr/local/sbin:/usr/local/bin:/usr/bin"
 	--register=no
-	--keep-unit
+	--slice="devtools-$(systemd-escape "${SUDO_USER:-$USER}")"
+	--machine="arch-nspawn-$$"
 	--as-pid2
 )
 
