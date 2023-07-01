@@ -67,6 +67,7 @@ Component: pkgctl db remove
 - arch-install-scripts
 - awk
 - bash
+- bats
 - binutils
 - coreutils
 - diffutils

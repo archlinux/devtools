@@ -139,6 +139,13 @@ _pkgctl_repo_web_args=(
 	'*:git_dir:_files -/'
 )
 
+_pkgctl_search_args=(
+	'--json[Enable printing results in JSON]'
+	'--no-default-filter[Do not apply default filter (like -path:keys/pgp/*.asc)]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'1:query'
+)
+
 _arch_nspawn_args=(
 	'-C[Location of a pacman config file]:pacman_config:_files -g "*.conf(.)"'
 	'-M[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
@@ -252,6 +259,7 @@ _pkgctl_cmds=(
 	"diff[Compare package files using different modes]"
 	"release[Release step to commit, tag and upload build artifacts]"
 	"repo[Manage Git packaging repositories and their configuration]"
+	"search[Search for an expression across the GitLab packaging group]"
 	"version[Show pkgctl version information]"
 )
 

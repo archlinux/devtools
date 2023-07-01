@@ -139,6 +139,7 @@ _pkgctl_cmds=(
 	diff
 	release
 	repo
+	search
 	version
 )
 _pkgctl_args=(
@@ -329,6 +330,14 @@ _pkgctl_repo_web_args=(
 	-h --help
 )
 _pkgctl_repo_web_opts() { _filedir -d; }
+
+
+_pkgctl_search_args=(
+	--json
+	--no-default-filter
+	-h --help
+)
+_pkgctl_search_opts() { :; }
 
 
 _pkgctl_diff_args=(

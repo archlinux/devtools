@@ -44,6 +44,9 @@ pkgctl release::
 pkgctl repo::
 	Manage Git packaging repositories and their configuration
 
+pkgctl search::
+	Search for an expression across the GitLab packaging group
+
 pkgctl version::
 	Show pkgctl version information
 
@@ -56,6 +59,7 @@ linkman:pkgctl-db[1]
 linkman:pkgctl-diff[1]
 linkman:pkgctl-release[1]
 linkman:pkgctl-repo[1]
+linkman:pkgctl-search[1]
 linkman:pkgctl-version[1]
 
 include::include/footer.asciidoc[]

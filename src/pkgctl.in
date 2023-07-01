@@ -25,6 +25,7 @@ usage() {
 		    diff    Compare package files using different modes
 		    release Release step to commit, tag and upload build artifacts
 		    repo    Manage Git packaging repositories and their configuration
+		    search  Search for an expression across the GitLab packaging group
 		    version Show pkgctl version information
 
 		OPTIONS
@@ -94,6 +95,14 @@ while (( $# )); do
 			# shellcheck source=src/lib/release.sh
 			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/release.sh
 			pkgctl_release "$@"
+			exit 0
+			;;
+		search)
+			_DEVTOOLS_COMMAND+=" $1"
+			shift
+			# shellcheck source=src/lib/release.sh
+			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/search.sh
+			pkgctl_search "$@"
 			exit 0
 			;;
 		version|--version|-V)

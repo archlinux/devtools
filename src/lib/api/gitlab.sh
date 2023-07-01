@@ -13,13 +13,63 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/config.sh
 
 set -e
 
+graphql_api_call() {
+	local outfile=$1
+	local request=$2
+	local node_type=$3
+	local data=$4
+	local hasNextPage cursor
+
+	# empty token
+	if [[ -z "${GITLAB_TOKEN}" ]]; then
+		msg_error "  api call failed: No token provided"
+		return 1
+	fi
+
+	[[ -z ${WORKDIR:-} ]] && setup_workdir
+	api_workdir=$(mktemp --tmpdir="${WORKDIR}" --directory pkgctl-gitlab-api.XXXXXXXXXX)
+
+	# normalize graphql data and prepare query
+	data="${data//\"/\\\"}"
+	data='{
+		"query": "'"${data}"'"
+	}'
+	data="${data//$'\t'/ }"
+	data="${data//$'\n'/}"
+
+	cursor=""
+	hasNextPage=true
+	while [[ ${hasNextPage} == true ]]; do
+		data=$(sed -E 's|after: \\"[a-zA-Z0-9]*\\"|after: \\"'"${cursor}"'\\"|' <<< "${data}")
+		result="${api_workdir}/result.${cursor}"
+
+		if ! curl --request "${request}" \
+				--url "https://${GITLAB_HOST}/api/graphql" \
+				--header "Authorization: Bearer ${GITLAB_TOKEN}" \
+				--header "Content-Type: application/json" \
+				--data "${data}" \
+				--output "${result}" \
+				--silent; then
+			msg_error "  api call failed: $(cat "${outfile}")"
+			return 1
+		fi
+
+		hasNextPage=$(jq --raw-output ".data | .${node_type} | .pageInfo | .hasNextPage" < "${result}")
+		cursor=$(jq --raw-output ".data | .${node_type} | .pageInfo | .endCursor" < "${result}")
+
+		cp "${result}" "${api_workdir}/tmp"
+		jq ".data.${node_type}.nodes" "${api_workdir}/tmp" > "${result}"
+	done
+
+	jq --slurp add "${api_workdir}"/result.* > "${outfile}"
+	return 0
+}
 
 gitlab_api_call() {
 	local outfile=$1
 	local request=$2
 	local endpoint=$3
 	local data=${4:-}
-	local error
 
 	# empty token
 	if [[ -z "${GITLAB_TOKEN}" ]]; then
@@ -38,25 +88,100 @@ gitlab_api_call() {
 		return 1
 	fi
 
+	if ! gitlab_check_api_errors "${outfile}"; then
+		return 1
+	fi
+
+	return 0
+}
+
+gitlab_api_call_paged() {
+	local outfile=$1
+	local request=$2
+	local endpoint=$3
+	local data=${4:-}
+	local result header
+
+	# empty token
+	if [[ -z "${GITLAB_TOKEN}" ]]; then
+		msg_error "  api call failed: No token provided"
+		return 1
+	fi
+
+	[[ -z ${WORKDIR:-} ]] && setup_workdir
+	api_workdir=$(mktemp --tmpdir="${WORKDIR}" --directory pkgctl-gitlab-api.XXXXXXXXXX)
+
+	next_page=1
+	while [[ -n "${next_page}" ]]; do
+		result="${api_workdir}/result.${next_page}"
+		header="${api_workdir}/header"
+		if ! curl --request "${request}" \
+				--get \
+				--url "https://${GITLAB_HOST}/api/v4/${endpoint}&per_page=100&page=${next_page}" \
+				--header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+				--header "Content-Type: application/json" \
+				--data-urlencode "${data}" \
+				--dump-header "${header}" \
+				--output "${result}" \
+				--silent; then
+			msg_error "  api call failed: $(cat "${result}")"
+			return 1
+		fi
+
+		if ! gitlab_check_api_errors "${result}"; then
+			return 1
+		fi
+
+		next_page=$(grep "x-next-page" "${header}" | tr -d '\r' | awk '{ print $2 }')
+	done
+
+	jq --slurp add "${api_workdir}"/result.* > "${outfile}"
+	return 0
+}
+
+gitlab_check_api_errors() {
+	local file=$1
+	local error
+
+	# search API only returns an array, no errors
+	if [[ $(jq --raw-output 'type' < "${file}") == "array" ]]; then
+		return 0
+	fi
+
 	# check for general purpose api error
-	if error=$(jq --raw-output --exit-status '.error' < "${outfile}"); then
+	if error=$(jq --raw-output --exit-status '.error' < "${file}"); then
 		msg_error "  api call failed: ${error}"
 		return 1
 	fi
 
 	# check for api specific error messages
-	if ! jq --raw-output --exit-status '.id' < "${outfile}" >/dev/null; then
-		if jq --raw-output --exit-status '.message | keys[]' < "${outfile}" &>/dev/null; then
+	if ! jq --raw-output --exit-status '.id' < "${file}" >/dev/null; then
+		if jq --raw-output --exit-status '.message | keys[]' < "${file}" &>/dev/null; then
 			while read -r error; do
 				msg_error "  api call failed: ${error}"
-			done < <(jq --raw-output --exit-status '.message|to_entries|map("\(.key) \(.value[])")[]' < "${outfile}")
-		elif error=$(jq --raw-output --exit-status '.message' < "${outfile}"); then
+			done < <(jq --raw-output --exit-status '.message|to_entries|map("\(.key) \(.value[])")[]' < "${file}")
+		elif error=$(jq --raw-output --exit-status '.message' < "${file}"); then
 			msg_error "  api call failed: ${error}"
 		fi
 		return 1
 	fi
-
 	return 0
+}
+
+graphql_check_api_errors() {
+	local file=$1
+	local error
+
+	# early exit if we do not have errors
+	if ! jq --raw-output --exit-status '.errors[]' < "${file}" &>/dev/null; then
+		return 0
+	fi
+
+	# check for api specific error messages
+	while read -r error; do
+		msg_error "  api call failed: ${error}"
+	done < <(jq --raw-output --exit-status '.errors[].message' < "${file}")
+	return 1
 }
 
 gitlab_api_get_user() {
@@ -78,6 +203,23 @@ gitlab_api_get_user() {
 	fi
 
 	printf "%s" "${username}"
+	return 0
+}
+
+gitlab_api_get_project_name_mapping() {
+	local query=$1
+	local outfile
+
+	[[ -z ${WORKDIR:-} ]] && setup_workdir
+	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
+
+	# query user details
+	if ! graphql_api_call "${outfile}" POST projects "${query}"; then
+		msg_warn "  Invalid token provided?"
+		exit 1
+	fi
+
+	cat "${outfile}"
 	return 0
 }
 
@@ -128,5 +270,23 @@ gitlab_api_create_project() {
 	fi
 
 	printf "%s" "${path}"
+	return 0
+}
+
+# TODO: parallelize
+# https://docs.gitlab.com/ee/api/search.html#scope-blobs
+gitlab_api_search() {
+	local search=$1
+	local outfile
+
+	[[ -z ${WORKDIR:-} ]] && setup_workdir
+	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
+
+	if ! gitlab_api_call_paged "${outfile}" GET "/groups/archlinux%2fpackaging%2fpackages/search?scope=blobs" "search=${search}"; then
+		return 1
+	fi
+
+	cat "${outfile}"
+
 	return 0
 }

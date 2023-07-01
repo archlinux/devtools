@@ -1,0 +1,58 @@
+pkgctl-search(1)
+================
+
+Name
+----
+pkgctl-search - Search for an expression across the GitLab packaging group
+
+Synopsis
+--------
+pkgctl search [OPTIONS] QUERY
+
+Description
+-----------
+
+Search for an expression across the GitLab packaging group.
+
+To use a filter, include it in your query. You may use wildcards (*) to
+use glob matching.
+
+Available filters for the blobs scope: path, extension
+
+Every usage of the search command must be authenticated. Consult the
+'pkgctl auth' command to authenticate with GitLab or view the authentication
+status.
+
+Search Tips
+-----------
+
+	Syntax  Description    Example
+	───────────────────────────────────────
+	"       Exact search   "gem sidekiq"
+	~       Fuzzy search   J~ Doe
+	|       Or             display | banner
+	+       And            display +banner
+	-       Exclude        display -banner
+	*       Partial        bug error 50*
+	\       Escape         \*md
+	#       Issue ID       #23456
+	!       Merge request  !23456
+
+Options
+-------
+
+*--json*::
+	Enable printing results in JSON 
+
+*--no-default-filter*::
+	Do not apply default filter (like -path:keys/pgp/*.asc)
+
+*-h, --help*::
+	Show a help text
+
+See Also
+--------
+
+linkman:pkgctl-auth[1]
+
+include::include/footer.asciidoc[]
