@@ -153,7 +153,7 @@ tag:
 	git tag --sign --message "Version v$$VERSION" v$$VERSION
 
 release: dist
-	glab release create v$(RELEASE) devtools-$(RELEASE).tar.gz*
+	glab release create v$(V) devtools-$(V).tar.gz*
 
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ v$(V) | gzip > devtools-$(V).tar.gz
