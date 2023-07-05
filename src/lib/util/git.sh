@@ -22,3 +22,8 @@ git_diff_tree() {
 		"${commit}" \
 		-- "${path}"
 }
+
+is_valid_release_branch() {
+	local branch=$1
+	in_array "${branch}" "${VALID_RELEASE_BRANCHES[@]}"
+}

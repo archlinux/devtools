@@ -7,6 +7,8 @@ _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 # shellcheck source=src/lib/valid-tags.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
+# shellcheck source=src/lib/util/git.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
 
 set -e
 
@@ -55,8 +57,8 @@ gittag=$(get_tag_from_pkgver "$pkgver")
 if ! branchname=$(git symbolic-ref --short HEAD); then
 	die 'not on any branch'
 fi
-if [[ "${branchname}" != main ]]; then
-	die 'must be run from the main branch'
+if ! is_valid_release_branch "${branchname}"; then
+	die 'must be run from a valid release branch (%s)' "${VALID_RELEASE_BRANCHES[@]}"
 fi
 
 # Check if remote origin is setup properly
@@ -85,10 +87,10 @@ if git tag --verify "$gittag" &> /dev/null; then
 	if [[ "$cwd_checksum" != "$tag_checksum" ]]; then
 		die "tagged PKGBUILD is not the same as the working dir PKGBUILD"
 	fi
-	git push --tags --set-upstream origin main || abort
+	git push --tags --set-upstream origin "${branchname}" || abort
 	exit 0
 fi
 
 msg "Releasing package"
 git tag --sign --message="Package release ${pkgver}" "$gittag" || abort
-git push --tags --set-upstream origin main || abort
+git push --tags --set-upstream origin "${branchname}" || abort

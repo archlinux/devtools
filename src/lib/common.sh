@@ -29,6 +29,8 @@ export GIT_PACKAGING_URL_SSH="git@${GITLAB_HOST}:${GIT_PACKAGING_NAMESPACE}"
 export GIT_PACKAGING_URL_HTTPS="https://${GITLAB_HOST}/${GIT_PACKAGING_NAMESPACE}"
 export PACKAGING_REPO_RELEASE_HOST=repos.archlinux.org
 
+export VALID_RELEASE_BRANCHES=(main unstable)
+
 # check if messages are to be printed using color
 if [[ -t 2 && "$TERM" != dumb ]] || [[ ${DEVTOOLS_COLOR} == always ]]; then
 	colorize

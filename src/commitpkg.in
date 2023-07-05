@@ -5,6 +5,8 @@
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 # shellcheck source=src/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+# shellcheck source=src/lib/util/git.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
 
 source /usr/share/makepkg/util/util.sh
 
@@ -70,8 +72,12 @@ if ! repo_spec=$(git config --local devtools.version) || [[ ${repo_spec} != "${G
 	exit 1
 fi
 
-if [[ "$(git symbolic-ref --short HEAD)" != main ]]; then
-	die 'must be run from the main branch'
+if ! branchname=$(git symbolic-ref --short HEAD); then
+	die 'not on any branch'
+fi
+
+if ! is_valid_release_branch "${branchname}"; then
+	die 'must be run from a valid release branch (%s)' "${VALID_RELEASE_BRANCHES[@]}"
 fi
 
 source=()
@@ -95,6 +101,9 @@ case "$cmd" in
 		;;
 esac
 
+if [[ "${branchname}" == "unstable" ]] && [[ "$repo" != *"unstable" ]]; then
+	die 'Cannot release from unstable branch into non-unstable repo: %s' "${repo}"
+fi
 
 if (( ${#validpgpkeys[@]} != 0 )); then
 	if [[ -d keys ]]; then
