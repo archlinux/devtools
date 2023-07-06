@@ -241,7 +241,7 @@ _pkgctl_cmds=(
 	"pkgctl command"
 	"auth[Authenticate with services like GitLab]"
 	"build[Build packages inside a clean chroot]"
-	"db[Pacman database modification for packge update, move etc]"
+	"db[Pacman database modification for package update, move etc]"
 	"diff[Compare package files using different modes]"
 	"release[Release step to commit, tag and upload build artifacts]"
 	"repo[Manage Git packaging repositories and their configuration]"

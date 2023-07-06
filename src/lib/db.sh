@@ -15,7 +15,7 @@ pkgctl_db_usage() {
 	cat <<- _EOF_
 		Usage: ${COMMAND} [COMMAND] [OPTIONS]
 
-		Pacman database modification for packge update, move etc
+		Pacman database modification for package update, move etc
 
 		COMMANDS
 		    move      Move packages between pacman repositories
