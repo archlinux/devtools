@@ -17,6 +17,7 @@ LIBRARY = $(addprefix $(BUILDDIR)/,$(patsubst src/%,%,$(patsubst %.in,%,$(LIBRAR
 MAKEPKG_CONFIGS=$(wildcard config/makepkg/*)
 PACMAN_CONFIGS=$(wildcard config/pacman/*)
 SETARCH_ALIASES = $(wildcard config/setarch-aliases.d/*)
+INIT_SCRIPTS = $(wildcard config/init.d/*)
 MANS = $(addprefix $(BUILDDIR)/,$(patsubst %.asciidoc,%,$(wildcard doc/man/*.asciidoc)))
 
 COMMITPKG_LINKS = \
@@ -89,6 +90,7 @@ endef
 
 $(eval $(call buildInScript,build/bin,src/,.in,755))
 $(eval $(call buildInScript,build/lib,src/lib/,,644))
+$(eval $(call buildInScript,build/init.d,config/init.d/,,644))
 $(foreach completion,$(wildcard contrib/completion/*),$(eval $(call buildInScript,build/$(completion),$(completion)/,.in,444)))
 
 $(BUILDDIR)/doc/man/%: doc/man/%.asciidoc doc/asciidoc.conf doc/man/include/footer.asciidoc
@@ -100,6 +102,8 @@ conf:
 	@install -d $(BUILDDIR)/makepkg.conf.d $(BUILDDIR)/pacman.conf.d
 	@cp -a $(MAKEPKG_CONFIGS) $(BUILDDIR)/makepkg.conf.d
 	@cp -a $(PACMAN_CONFIGS) $(BUILDDIR)/pacman.conf.d
+	@install -d $(BUILDDIR)/init.d
+	@cp -a $(INIT_SCRIPTS) $(BUILDDIR)/init.d
 
 clean:
 	rm -rf $(BUILDDIR)
@@ -109,12 +113,14 @@ install: all
 	install -dm0755 $(DESTDIR)$(DATADIR)/setarch-aliases.d
 	install -dm0755 $(DESTDIR)$(DATADIR)/makepkg.conf.d
 	install -dm0755 $(DESTDIR)$(DATADIR)/pacman.conf.d
+	install -dm0755 $(DESTDIR)$(DATADIR)/init.d
 	install -m0755 ${BINPROGS} $(DESTDIR)$(PREFIX)/bin
 	install -dm0755 $(DESTDIR)$(DATADIR)/lib
 	cp -ra $(BUILDDIR)/lib/* $(DESTDIR)$(DATADIR)/lib
 	for conf in $(notdir $(MAKEPKG_CONFIGS)); do install -Dm0644 $(BUILDDIR)/makepkg.conf.d/$$conf $(DESTDIR)$(DATADIR)/makepkg.conf.d/$${conf##*/}; done
 	for conf in $(notdir $(PACMAN_CONFIGS)); do install -Dm0644 $(BUILDDIR)/pacman.conf.d/$$conf $(DESTDIR)$(DATADIR)/pacman.conf.d/$${conf##*/}; done
 	for a in ${SETARCH_ALIASES}; do install -m0644 $$a -t $(DESTDIR)$(DATADIR)/setarch-aliases.d; done
+	for f in $(notdir ${INIT_SCRIPTS}); do install -m0644 $(BUILDDIR)/init.d/$$f -t $(DESTDIR)$(DATADIR)/init.d; done
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do ln -sf archbuild $(DESTDIR)$(PREFIX)/bin/$$l; done
 	ln -sf find-libdeps $(DESTDIR)$(PREFIX)/bin/find-libprovides
@@ -132,6 +138,7 @@ uninstall:
 	for conf in $(notdir $(MAKEPKG_CONFIGS)); do rm -f $(DESTDIR)$(DATADIR)/makepkg.conf.d/$${conf##*/}; done
 	for conf in $(notdir $(PACMAN_CONFIGS)); do rm -f $(DESTDIR)$(DATADIR)/pacman.conf.d/$${conf##*/}; done
 	for f in $(notdir $(SETARCH_ALIASES)); do rm -f $(DESTDIR)$(DATADIR)/setarch-aliases.d/$$f; done
+	for f in $(notdir $(INIT_SCRIPTS)); do rm -f $(DESTDIR)$(DATADIR)/init.d/$$f; done
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	for l in ${ARCHBUILD_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
 	rm -f $(DESTDIR)$(PREFIX)/share/bash-completion/completions/devtools
