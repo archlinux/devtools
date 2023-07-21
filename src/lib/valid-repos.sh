@@ -4,7 +4,7 @@
 :
 
 # shellcheck disable=2034
-_repos=(
+DEVTOOLS_VALID_REPOS=(
 	core core-staging core-testing
 	extra extra-staging extra-testing
 	multilib multilib-staging multilib-testing
@@ -13,7 +13,7 @@ _repos=(
 )
 
 # shellcheck disable=2034
-_build_repos=(
+DEVTOOLS_VALID_BUILDREPOS=(
 	core-staging core-testing
 	extra extra-staging extra-testing
 	multilib multilib-staging multilib-testing

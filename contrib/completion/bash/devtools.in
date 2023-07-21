@@ -8,7 +8,7 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
 # shellcheck source=src/lib/valid-repos.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 
-_binary_arch=${_arch[*]:0:-1}
+_binary_arch=${DEVTOOLS_VALID_ARCHES[*]:0:-1}
 _colors=(never always auto)
 
 
@@ -355,14 +355,14 @@ _devtools_completions_color() {
 	mapfile -t COMPREPLY < <(compgen -W "${_colors[*]}" -- "$cur")
 }
 _devtools_completions_arch() {
-	mapfile -t COMPREPLY < <(compgen -W "${_arch[*]}" -- "$cur")
+	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_ARCHES[*]}" -- "$cur")
 }
 _devtools_completions_repo() {
 	local optional=${1:-}
-	mapfile -t COMPREPLY < <(compgen -W "${optional} ${_repos[*]}" -- "$cur")
+	mapfile -t COMPREPLY < <(compgen -W "${optional} ${DEVTOOLS_VALID_REPOS[*]}" -- "$cur")
 }
 _devtools_completions_build_repo() {
-	mapfile -t COMPREPLY < <(compgen -W "${_build_repos[*]}" -- "$cur")
+	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_BUILDREPOS[*]}" -- "$cur")
 }
 _devtools_completions_all_packages() {
 	mapfile -t COMPREPLY < <(compgen -W "$(pacman -Sql)" -- "$cur")

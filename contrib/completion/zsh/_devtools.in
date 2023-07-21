@@ -8,7 +8,7 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
 # shellcheck source=src/lib/valid-repos.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 
-_binary_arch=${_arch[*]:0:-1}
+_binary_arch=${DEVTOOLS_VALID_ARCHES[*]:0:-1}
 _colors=(never always auto)
 
 _archbuild_args=(
@@ -36,7 +36,7 @@ _pkgctl_auth_status_args=(
 
 _pkgctl_build_args=(
 	"--arch=[Specify architectures to build for (disables auto-detection)]:arch:($_arch[*])"
-	"--repo=[Specify a target repository (disables auto-detection)]:repo:($_repos[*])"
+	"--repo=[Specify a target repository (disables auto-detection)]:repo:($DEVTOOLS_VALID_REPOS[*])"
 	'(-s --staging)'{-s,--staging}'[Build against the staging counterpart of the auto-detected repo]'
 	'(-t --testing)'{-t,--testing}'[Build against the testing counterpart of the auto-detected repo]'
 	'(-o --offload)'{-o,--offload}'[Build on a remote server and transfer artifacts afterwards]'
@@ -64,15 +64,15 @@ _pkgctl_db_cmds=(
 
 _pkgctl_db_move_args=(
 	'(-h --help)'{-h,--help}'[Display usage]'
-	"1:src-repo:($_repos[*])"
-	"2:target-repo:($_repos[*])"
+	"1:src-repo:($DEVTOOLS_VALID_REPOS[*])"
+	"2:target-repo:($DEVTOOLS_VALID_REPOS[*])"
 	'*:pkgbase:_devtools_completions_all_packages'
 )
 
 _pkgctl_db_remove_args=(
 	'(-a --arch=)'{-a,--arch=}"[Override the architecture (disables auto-detection)]:arch:($_arch[*])"
 	'(-h --help)'{-h,--help}'[Display usage]'
-	"1:repo:($_repos[*])"
+	"1:repo:($DEVTOOLS_VALID_REPOS[*])"
 	'*:pkgbase:_devtools_completions_all_packages'
 )
 
@@ -82,7 +82,7 @@ _pkgctl_db_update_args=(
 
 _pkgctl_release_args=(
 	'(-m --message=)'{-m,--message=}"[Use the given <msg> as the commit message]:message:"
-	'(-r --repo=)'{-r,--repo=}"[Specify a target repository (disables auto-detection)]:repo:($_repos[*])"
+	'(-r --repo=)'{-r,--repo=}"[Specify a target repository (disables auto-detection)]:repo:($DEVTOOLS_VALID_REPOS[*])"
 	'(-s --staging)'{-s,--staging}'[Release to the staging counterpart of the auto-detected repo]'
 	'(-t --testing)'{-t,--testing}'[Release to the testing counterpart of the auto-detected repo]'
 	'(-u --db-update)'{-u,--db-update}'[Automatically update the pacman database after uploading]'
@@ -146,14 +146,14 @@ _arch_nspawn_args=(
 
 _archrelease_args=(
 	'-f[Force release without checks]'
-	"*:arch:($_tags[*])"
+	"*:arch:($DEVTOOLS_VALID_TAGS[*])"
 )
 
 _commitpkg_args=(
 	'-f[Force release without checks]'
 	'-s[Target repo server]'
 	'-l[Set bandwidth limit]:limit'
-	"-a[Release to a specific architecture only]:arch:($_arch[*])"
+	"-a[Release to a specific architecture only]:arch:($DEVTOOLS_VALID_ARCHES[*])"
 	'1:commit_msg'
 )
 
@@ -212,12 +212,12 @@ _sogrep_args=(
 	'(-v --verbose)'{-v,--verbose}'[Show matched links in addition to pkgname]'
 	'(-r --refresh)'{-r,--refresh}'[Refresh the links databases]'
 	'(-h --help)'{-h,--help}'[Display usage]'
-	'1:repo:(all $_repos[*])'
+	'1:repo:(all $DEVTOOLS_VALID_REPOS[*])'
 	'2:libname'
 )
 
 _offload_build_args=(
-	'(-r --repo)'{-r,--repo}'[Build against a specific repository]:repo:($_build_repos[*])'
+	'(-r --repo)'{-r,--repo}'[Build against a specific repository]:repo:($DEVTOOLS_VALID_BUILDREPOS[*])'
 	'(-a --arch)'{-a,--arch}'[Build against a specific architecture]:arch:(${_binary_arch[*]})'
 	'(-s --server)'{-s,--server}'[Offload to a specific Build server]:server:'
 	'(-h --help)'{-h,--help}'[Display usage]'

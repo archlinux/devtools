@@ -4,13 +4,13 @@
 :
 
 # shellcheck disable=2034
-_arch=(
+DEVTOOLS_VALID_ARCHES=(
 	x86_64
 	any
 )
 
 # shellcheck disable=2034
-_tags=(
+DEVTOOLS_VALID_TAGS=(
 	core-x86_64 core-any
 	core-staging-x86_64 core-staging-any
 	core-testing-x86_64 core-testing-any

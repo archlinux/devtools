@@ -35,7 +35,7 @@ fi
 # validate repo is really repo-arch
 if [[ -z $FORCE ]]; then
 	for tag in "$@"; do
-		if ! in_array "$tag" "${_tags[@]}"; then
+		if ! in_array "$tag" "${DEVTOOLS_VALID_TAGS[@]}"; then
 			die "archrelease: Invalid tag: '%s' (use -f to force release)" "$tag"
 		fi
 	done

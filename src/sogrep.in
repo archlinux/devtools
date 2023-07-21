@@ -31,7 +31,7 @@ recache() {
 
     (( VERBOSE )) && verbosity=--progress-bar
 
-    for repo in "${_repos[@]}"; do
+    for repo in "${DEVTOOLS_VALID_REPOS[@]}"; do
         if [[ -n "$SOLINKS_MIRROR" ]]; then
             mirror="$SOLINKS_MIRROR"
         elif ! mirror="$(set -o pipefail; pacman-conf --repo "$repo" Server 2>/dev/null | head -n1)"; then
@@ -72,7 +72,7 @@ is_outdated_cache() {
     # links databases are generated at about the same time every day; we should
     # attempt to check for new database files if any of them are over a day old
 
-    for repo in "${_repos[@]}"; do
+    for repo in "${DEVTOOLS_VALID_REPOS[@]}"; do
         for arch in "${arches[@]}"; do
             local dbpath=${SOCACHE_DIR}/${arch}/${repo}.links.tar.gz
             if [[ ! -f ${dbpath} ]] || [[ $(find "${dbpath}" -mtime +0) ]]; then
@@ -85,10 +85,10 @@ is_outdated_cache() {
 }
 
 search() {
-    local repo=$1 arch lib=$2 srepos=("${_repos[@]}")
+    local repo=$1 arch lib=$2 srepos=("${DEVTOOLS_VALID_REPOS[@]}")
 
     if [[ $repo != all ]]; then
-        if ! in_array "${repo}" "${_repos[@]}"; then
+        if ! in_array "${repo}" "${DEVTOOLS_VALID_REPOS[@]}"; then
             echo "${BASH_SOURCE[0]##*/}: unrecognized repo '$repo'"
             echo "Try '${BASH_SOURCE[0]##*/} --help' for more information."
             exit 1
