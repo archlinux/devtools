@@ -23,6 +23,34 @@ will automatically build the project and proxy all calls to the local build dire
 ./test/bin/pkgctl --help
 ```
 
+### Commit messages
+
+All commits must follow [conventional commits](https://www.conventionalcommits.org).
+
+The following groups are allowed:
+
+- chore
+- feat
+- fix
+- doc
+- perf
+- test
+
+To override the scope for the changelog entry use the `Component:` trailer.
+
+Example:
+
+```
+feat(db): yay mega cool feature
+
+Very long and useful description.
+
+Fixes #1
+Fixes #2
+
+Component: pkgctl db remove
+```
+
 ## Releasing
 
 1. bump the version in the Makefile

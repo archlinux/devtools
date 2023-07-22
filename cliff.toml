@@ -1,0 +1,44 @@
+[changelog]
+header = "# Changelog\n\n"
+body = """
+{%- if version -%}
+    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{%- else -%}
+    ## [unreleased]
+{%- endif %}
+{% for group, commits in commits | group_by(attribute="group") %}
+    ### {{ group | upper_first }}
+    {% for commit in commits | sort(attribute="message") %}
+		- {% set component = commit.footers | filter(attribute="token", value="Component") | map(attribute="value") | join %}
+		{%- if component %}{{ component }}: {% elif commit.scope %}{{ commit.scope }}: {% endif %}
+		{{- commit.message | upper_first }}
+		{%- set fixes = commit.footers | filter(attribute="token", value="Fixes") %}
+		{%- for fix in fixes %}{{ fix.separator }}{{ fix.value }}{% endfor %}
+    {%- endfor %}
+{% endfor %}
+
+"""
+footer = ""
+
+# remove the leading and trailing whitespaces from the template
+trim = true
+
+[git]
+# allow only conventional commits
+# https://www.conventionalcommits.org
+conventional_commits = true
+# regex for parsing and grouping commits
+commit_parsers = [
+    { message = "^chore\\(release\\): version", skip = true},
+    { message = "^feat", group = "Features"},
+    { message = "^fix", group = "Bug Fixes"},
+    { message = "^doc", group = "Documentation"},
+    { message = "^perf", group = "Performance"},
+    { message = "^test", group = "Testing"},
+    { message = "^chore", group = "Miscellaneous Tasks"},
+    { body = ".*security", group = "Security"},
+]
+# filter out the commits that are not matched by commit parsers
+filter_commits = false
+# glob pattern for matching git tags
+tag_pattern = "*v[0-9]*"
