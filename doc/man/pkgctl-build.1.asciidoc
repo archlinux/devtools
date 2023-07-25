@@ -59,6 +59,9 @@ PKGBUILD Options
 *--rebuild*::
 	Increment the current pkgrel variable
 
+*--updpkgsums*::
+	Regenerate the checksums
+
 *-e, --edit*::
 	Edit the PKGBUILD before building
 

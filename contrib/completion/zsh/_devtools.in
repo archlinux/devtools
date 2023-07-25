@@ -47,6 +47,7 @@ _pkgctl_build_args=(
 	'--pkgver=[Set pkgver, reset pkgrel and update checksums]:pkgver:'
 	'--pkgrel=[Set pkgrel to a given value]:pkgrel:'
 	'--rebuild[Increment the pkgrel variable]'
+	'--updpkgsums[Regenerate the checksums]'
 	'(-e --edit)'{-e,--edit}'[Edit the PKGBUILD before building]'
 	'(-r --release)'{-r,--release}'[Automatically commit, tag and release after building]'
 	'(-m --message=)'{-m,--message=}"[Use the given <msg> as the commit message]:message:"

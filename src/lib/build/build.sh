@@ -55,6 +55,7 @@ pkgctl_build_usage() {
 		    --pkgver=PKGVER      Set pkgver, reset pkgrel and update checksums
 		    --pkgrel=PKGREL      Set pkgrel to a given value
 		    --rebuild            Increment the current pkgrel variable
+		    --updpkgsums         Regenerate the checksums
 		    -e, --edit           Edit the PKGBUILD before building
 
 		RELEASE OPTIONS
@@ -167,6 +168,10 @@ pkgctl_build() {
 			--pkgrel=*)
 				pkgctl_build_check_option_group_ver '--pkgrel' "${PKGVER}" "${PKGREL}" "${REBUILD}"
 				PKGREL="${1#*=}"
+				shift
+				;;
+			--updpkgsums)
+				UPDPKGSUMS=1
 				shift
 				;;
 			--rebuild)

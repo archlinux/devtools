@@ -173,6 +173,7 @@ _pkgctl_build_args=(
 	--pkgver
 	--pkgrel
 	--rebuild
+	--updpkgsums
 	-e --edit
 
 	-r --release
