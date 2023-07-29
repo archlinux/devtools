@@ -44,7 +44,7 @@ get_pacman_repo_from_pkgbuild() {
 		-S \
 		--print \
 		--print-format '%n %r' \
-		"${pkgnames[0]}" | grep -E "^${pkgnames[0]} " | awk '{print $2}'
+		"${pkgnames[0]}" | awk '$1=="'"${pkgnames[0]}"'"{print $2}'
 	)
 	lock_close 10
 
