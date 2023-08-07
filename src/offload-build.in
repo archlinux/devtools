@@ -23,6 +23,7 @@ fi
 repo=extra
 arch=x86_64
 server=build.archlinux.org
+rsyncopts=(-e ssh -c -h -L --progress --partial -y)
 
 usage() {
     cat <<- _EOF_
@@ -124,7 +125,7 @@ mapfile -t files < <(
 
 if (( ${#files[@]} )); then
     printf '%s\n' '' '-> copying files...'
-    scp "${files[@]/#/$server:}" "${TEMPDIR}/"
+    rsync "${rsyncopts[@]}" "${files[@]/#/$server:}" "${TEMPDIR}/" || die
     mv "${TEMPDIR}"/*.pkg.tar* "${PKGDEST:-${PWD}}/"
     mv "${TEMPDIR}/PKGBUILD" "${PWD}/"
 else
