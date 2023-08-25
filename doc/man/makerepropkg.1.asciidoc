@@ -42,6 +42,9 @@ Options
 *-d*::
 	If packages are not reproducible, compare them using diffoscope.
 
+*-n*::
+	Do not run the check() function in the PKGBUILD.
+
 *-c*::
 	Set the pacman cache directory.
 

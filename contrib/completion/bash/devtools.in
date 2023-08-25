@@ -42,6 +42,7 @@ complete -F _makechrootpkg makechrootpkg
 _makerepropkg_args=(
 	-h
 	-d
+	-n
 	-c
 	-M
 )

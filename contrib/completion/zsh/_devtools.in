@@ -230,6 +230,7 @@ _offload_build_args=(
 
 _makerepropkg_args=(
 	'-d[Run diffoscope if the package is unreproducible]'
+	'-n[Do not run the check() function in the PKGBUILD]'
 	'-c[Set pacman cache]:pacman_cache:_files -/'
 	'-M[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
 	'-h[Display usage]'

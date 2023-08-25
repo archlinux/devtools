@@ -22,6 +22,7 @@ declare -a buildenv buildopts installed installpkgs
 archiveurl='https://archive.archlinux.org/packages'
 buildroot=/var/lib/archbuild/reproducible
 diffoscope=0
+makepkg_options=()
 
 chroot=$USER
 [[ -n ${SUDO_USER:-} ]] && chroot=$SUDO_USER
@@ -116,6 +117,7 @@ For more details see https://reproducible-builds.org/
 
 OPTIONS
     -d            Run diffoscope if the package is unreproducible
+    -n            Do not run the check() function in the PKGBUILD
     -c <dir>      Set pacman cache
     -M <file>     Location of a makepkg config file
     -l <chroot>   The directory name to use as the chroot namespace
@@ -128,9 +130,10 @@ __EOF__
 # save all args for check_root
 orig_args=("$@")
 
-while getopts 'dM:c:l:h' arg; do
+while getopts 'dnM:c:l:h' arg; do
     case "$arg" in
         d) diffoscope=1 ;;
+        n) makepkg_options+=(--nocheck) ;;
         M) archroot_args+=(-M "$OPTARG") ;;
         c) cache_dirs+=("$OPTARG") ;;
         l) chroot="$OPTARG" ;;
@@ -254,7 +257,7 @@ install -d -o "${SUDO_UID:-$UID}" -g "$(id -g "${SUDO_UID:-$UID}")" "${namespace
 arch-nspawn "${namespace}/build" \
     --bind="${PWD}:/startdir" \
     --bind="${SRCDEST}:/srcdest" \
-    /chrootbuild -C --noconfirm --log --holdver --skipinteg
+    /chrootbuild -C --noconfirm --log --holdver --skipinteg "${makepkg_options[@]}"
 ret=$?
 
 if (( ${ret} == 0 )); then
