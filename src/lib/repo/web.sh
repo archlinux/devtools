@@ -23,6 +23,7 @@ pkgctl_repo_web_usage() {
 		no arguments, open the package cloned in the current working directory.
 
 		OPTIONS
+		    --print       Print the url instead of opening it with xdg-open
 		    -h, --help    Show this help text
 
 		EXAMPLES
@@ -32,7 +33,8 @@ _EOF_
 
 pkgctl_repo_web() {
 	local pkgbases=()
-	local path giturl pkgbase
+	local path giturl pkgbase url
+	local mode=open
 
 	# option checking
 	while (( $# )); do
@@ -40,6 +42,10 @@ pkgctl_repo_web() {
 			-h|--help)
 				pkgctl_repo_web_usage
 				exit 0
+				;;
+			--print)
+				mode=print
+				shift
 				;;
 			--)
 				shift
@@ -56,7 +62,7 @@ pkgctl_repo_web() {
 	done
 
 	# Check if web mode has xdg-open
-	if ! command -v xdg-open &>/dev/null; then
+	if [[ ${mode} == open ]] && ! command -v xdg-open &>/dev/null; then
 		die "The web command requires 'xdg-open'"
 	fi
 
@@ -78,7 +84,18 @@ pkgctl_repo_web() {
 	fi
 
 	for pkgbase in "${pkgbases[@]}"; do
+		pkgbase=$(basename "${pkgbase}")
 		path=$(gitlab_project_name_to_path "${pkgbase}")
-		xdg-open "${GIT_PACKAGING_URL_HTTPS}/${path}"
+		url="${GIT_PACKAGING_URL_HTTPS}/${path}"
+		case ${mode} in
+			open)
+				xdg-open "${url}"
+				;;
+			print)
+				printf "%s\n" "${url}"
+				;;
+			*)
+				die "Unknown mode: ${mode}"
+		esac
 	done
 }

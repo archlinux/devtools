@@ -325,6 +325,7 @@ _pkgctl_repo_switch_opts() {
 
 
 _pkgctl_repo_web_args=(
+	--print
 	-h --help
 )
 _pkgctl_repo_web_opts() { _filedir -d; }

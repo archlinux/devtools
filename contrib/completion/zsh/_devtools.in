@@ -134,6 +134,7 @@ _pkgctl_repo_create_args=(
 )
 
 _pkgctl_repo_web_args=(
+	'--print[Print the url instead of opening it with xdg-open]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:git_dir:_files -/'
 )

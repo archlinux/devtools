@@ -18,6 +18,9 @@ no arguments, open the package cloned in the current working directory.
 Options
 -------
 
+*--print*::
+	Print the url instead of opening it with xdg-open
+
 *-h, --help*::
 	Show a help text
 
