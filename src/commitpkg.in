@@ -5,9 +5,12 @@
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 # shellcheck source=src/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+# shellcheck source=src/lib/util/srcinfo.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/srcinfo.sh
 
 source /usr/share/makepkg/util/util.sh
-source /usr/share/makepkg/srcinfo.sh
+
+set -eo pipefail
 
 
 check_pkgbuild_validity() {
@@ -185,10 +188,9 @@ done
 check_pkgbuild_validity
 
 # auto generate .SRCINFO
-stat_busy 'Generating .SRCINFO'
-write_srcinfo_content > .SRCINFO
+# shellcheck disable=SC2119
+write_srcinfo_file
 git add --force .SRCINFO
-stat_done
 
 if [[ -n $(git status --porcelain --untracked-files=no) ]]; then
 	stat_busy 'Staging files'

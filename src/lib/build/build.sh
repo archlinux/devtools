@@ -14,6 +14,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/db/update.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/release.sh
 # shellcheck source=src/lib/util/git.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
+# shellcheck source=src/lib/util/srcinfo.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/srcinfo.sh
 # shellcheck source=src/lib/util/pacman.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/pacman.sh
 # shellcheck source=src/lib/valid-repos.sh
@@ -26,8 +28,7 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
 source /usr/share/makepkg/util/config.sh
 source /usr/share/makepkg/util/message.sh
 
-set -e
-set -o pipefail
+set -eo pipefail
 
 
 pkgctl_build_usage() {
