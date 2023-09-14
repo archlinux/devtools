@@ -19,15 +19,16 @@ usage() {
 		Unified command-line frontend for devtools.
 
 		COMMANDS
-		    aur     Interact with the Arch User Repository
-		    auth    Authenticate with services like GitLab
-		    build   Build packages inside a clean chroot
-		    db      Pacman database modification for package update, move etc
-		    diff    Compare package files using different modes
-		    release Release step to commit, tag and upload build artifacts
-		    repo    Manage Git packaging repositories and their configuration
-		    search  Search for an expression across the GitLab packaging group
-		    version Check and manage package versions against upstream
+		    aur          Interact with the Arch User Repository
+		    auth         Authenticate with services like GitLab
+		    build        Build packages inside a clean chroot
+		    db           Pacman database modification for package update, move etc
+		    diff         Compare package files using different modes
+		    release      Release step to commit, tag and upload build artifacts
+		    repo         Manage Git packaging repositories and their configuration
+		    search       Search for an expression across the GitLab packaging group
+		    rebuild-todo Rebuilds packages from a todo list.
+		    version      Check and manage package versions against upstream
 
 		OPTIONS
 		    -h, --help     Show this help text
@@ -110,6 +111,14 @@ while (( $# )); do
 			# shellcheck source=src/lib/release.sh
 			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/release.sh
 			pkgctl_release "$@"
+			exit 0
+			;;
+		rebuild-todo)
+			_DEVTOOLS_COMMAND+=" $1"
+			shift
+			# shellcheck source=src/lib/rebuild-todo.sh
+			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/rebuild-todo.sh
+			pkgctl_rebuild_todo "$@"
 			exit 0
 			;;
 		search)
