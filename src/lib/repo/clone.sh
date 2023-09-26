@@ -12,6 +12,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/api/gitlab.sh
 # shellcheck source=src/lib/repo/configure.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo/configure.sh
+# shellcheck source=src/lib/util/git.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
 
 source /usr/share/makepkg/util/message.sh
 
@@ -52,6 +54,7 @@ pkgctl_repo_clone() {
 	fi
 
 	# options
+	local protocol=ssh
 	local GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_SSH}
 	local CLONE_ALL=0
 	local MAINTAINER=
@@ -72,6 +75,7 @@ pkgctl_repo_clone() {
 				;;
 			--protocol=https)
 				GIT_REPO_BASE_URL=${GIT_PACKAGING_URL_HTTPS}
+				protocol=https
 				CONFIGURE_OPTIONS+=("$1")
 				shift
 				;;
@@ -82,6 +86,7 @@ pkgctl_repo_clone() {
 				else
 					die "unsupported protocol: %s" "$2"
 				fi
+				protocol="$2"
 				CONFIGURE_OPTIONS+=("$1" "$2")
 				shift 2
 				;;
@@ -171,6 +176,12 @@ pkgctl_repo_clone() {
 		if [[ -n "${VERSION}" ]]; then
 			command+=" --switch '${VERSION}'"
 		fi
+
+		# warm up ssh connection as it may require user input (key unlock, hostkey verification etc)
+		if [[ ${protocol} == ssh ]]; then
+			git_warmup_ssh_connection
+		fi
+
 		if ! parallel --bar --jobs "${jobs}" "${command}" ::: "${pkgbases[@]}"; then
 			die 'Failed to clone some packages, please check the output'
 			exit 1

@@ -10,6 +10,8 @@ _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 # shellcheck source=src/lib/api/gitlab.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/api/gitlab.sh
+# shellcheck source=src/lib/util/git.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
 
 source /usr/share/makepkg/util/config.sh
 source /usr/share/makepkg/util/message.sh
@@ -188,6 +190,12 @@ pkgctl_repo_configure() {
 		if [[ -n ${BOLD} ]]; then
 			export DEVTOOLS_COLOR=always
 		fi
+
+		# warm up ssh connection as it may require user input (key unlock, hostkey verification etc)
+		if [[ ${proto} == ssh ]]; then
+			git_warmup_ssh_connection
+		fi
+
 		if ! parallel --bar --jobs "${jobs}" "${command}" ::: "${paths[@]}"; then
 			die 'Failed to configure some packages, please check the output'
 			exit 1
