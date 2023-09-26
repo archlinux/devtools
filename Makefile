@@ -146,6 +146,7 @@ uninstall:
 		$(DESTDIR)$(DATADIR)
 
 tag:
+	git cliff --strip=all --unreleased
 	@echo "current version: v$(V)"
 	@read -r -p "tag version: v" VERSION && \
 	sed -E "s|^V=.+|V=$$VERSION|" -i Makefile && \
@@ -153,7 +154,9 @@ tag:
 	git tag --sign --message "Version v$$VERSION" v$$VERSION
 
 release: dist
-	glab release create v$(V) devtools-$(V).tar.gz*
+	git push --tags origin master
+	git cliff --version >/dev/null
+	glab release create v$(V) devtools-$(V).tar.gz* --milestone v$(V) --notes-file <(git cliff --strip=all --latest)
 
 dist:
 	git archive --format=tar --prefix=devtools-$(V)/ v$(V) | gzip > devtools-$(V).tar.gz
