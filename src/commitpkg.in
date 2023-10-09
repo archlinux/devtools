@@ -205,14 +205,14 @@ if [[ -n $(git status --porcelain --untracked-files=no) ]]; then
 		echo "$msgtemplate" > "$msgfile"
 		if [[ -n $GIT_EDITOR ]]; then
 			$GIT_EDITOR "$msgfile" || die
+		elif giteditor=$(git config --get core.editor); then
+			$giteditor "$msgfile" || die
 		elif [[ -n $VISUAL ]]; then
 			$VISUAL "$msgfile" || die
 		elif [[ -n $EDITOR ]]; then
 			$EDITOR "$msgfile" || die
-		elif giteditor=$(git config --get core.editor); then
-			$giteditor "$msgfile" || die
 		else
-			die "No usable editor found (tried \$GIT_EDITOR, \$VISUAL, \$EDITOR, git config [core.editor])."
+			die "No usable editor found (tried \$GIT_EDITOR, git config [core.editor], \$VISUAL, \$EDITOR)."
 		fi
 		[[ -s $msgfile ]] || die
 		stat_busy 'Committing changes'
