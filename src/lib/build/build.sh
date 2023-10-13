@@ -200,7 +200,11 @@ pkgctl_build() {
 				;;
 			-I|--install)
 				(( $# <= 1 )) && die "missing argument for %s" "$1"
-				MAKECHROOT_OPTIONS+=("-I" "$(realpath "$2")")
+				if (( OFFLOAD )); then
+					MAKECHROOT_OPTIONS+=("-I" "$2")
+				else
+					MAKECHROOT_OPTIONS+=("-I" "$(realpath "$2")")
+				fi
 				warning 'installing packages into the chroot may break reproducible builds, use with caution!'
 				shift 2
 				;;
