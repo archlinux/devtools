@@ -146,11 +146,11 @@ pkgctl_build() {
 			--arch)
 				(( $# <= 1 )) && die "missing argument for %s" "$1"
 				if [[ ${2} == all ]]; then
-					BUILD_ARCH=("${_arch[@]::${#_arch[@]}-1}")
+					BUILD_ARCH=("${DEVTOOLS_VALID_ARCHES[@]::${#DEVTOOLS_VALID_ARCHES[@]}-1}")
 				elif [[ ${2} == any ]]; then
-					BUILD_ARCH=("${_arch[0]}")
+					BUILD_ARCH=("${DEVTOOLS_VALID_ARCHES[0]}")
 				elif ! in_array "${2}" "${BUILD_ARCH[@]}"; then
-					if ! in_array "${2}" "${_arch[@]}"; then
+					if ! in_array "${2}" "${DEVTOOLS_VALID_ARCHES[@]}"; then
 						die 'invalid architecture: %s' "${2}"
 					fi
 					BUILD_ARCH+=("${2}")
@@ -320,10 +320,10 @@ pkgctl_build() {
 			BUILD_ARCH=("")
 		elif (( ${#BUILD_ARCH[@]} == 0 )); then
 			if in_array any "${arch[@]}"; then
-				BUILD_ARCH=("${_arch[0]}")
+				BUILD_ARCH=("${DEVTOOLS_VALID_ARCHES[0]}")
 			else
 				for _arch in "${arch[@]}"; do
-					if in_array "${_arch}" "${_arch[@]}"; then
+					if in_array "${_arch}" "${DEVTOOLS_VALID_ARCHES[@]}"; then
 						BUILD_ARCH+=("$_arch")
 					else
 						warning 'invalid architecture, not building for: %s' "${_arch}"
