@@ -27,7 +27,7 @@ usage() {
 		    release Release step to commit, tag and upload build artifacts
 		    repo    Manage Git packaging repositories and their configuration
 		    search  Search for an expression across the GitLab packaging group
-		    version Show pkgctl version information
+		    version Package version related commands
 
 		OPTIONS
 		    -h, --help     Show this help text
@@ -38,6 +38,12 @@ if (( $# < 1 )); then
 	usage
 	exit 1
 fi
+
+pkgctl_version_print() {
+	cat <<- _EOF_
+		pkgctl @buildtoolver@
+_EOF_
+}
 
 export _DEVTOOLS_COMMAND='pkgctl'
 
@@ -114,12 +120,18 @@ while (( $# )); do
 			pkgctl_search "$@"
 			exit 0
 			;;
-		version|--version|-V)
+		version)
 			_DEVTOOLS_COMMAND+=" $1"
 			shift
-			# shellcheck source=src/lib/version/version.sh
-			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/version/version.sh
+			# shellcheck source=src/lib/version.sh
+			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/version.sh
 			pkgctl_version "$@"
+			exit 0
+			;;
+		--version|-V)
+			_DEVTOOLS_COMMAND+=" $1"
+			shift
+			pkgctl_version_print
 			exit 0
 			;;
 		*)

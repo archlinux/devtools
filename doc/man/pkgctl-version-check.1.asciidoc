@@ -1,0 +1,35 @@
+pkgctl-version-check(1)
+=======================
+
+Name
+----
+pkgctl-version-check - Check if there is an new upstream version available
+
+Synopsis
+--------
+pkgctl version check [OPTIONS] [PKGBASE...]
+
+Description
+-----------
+
+Uses nvchecker, a .nvchecker.toml file and the version specified in the current
+PKGBUILDs pkgver to check if there is a newer package version available to
+which this package could possibly be upgraded.
+
+The current working directory is used if no PKGBASE is specified.
+
+See the section on configuration files in **nvchecker**(1) for possible options
+which can be utilized in .nvchecker.toml.
+
+Options
+-------
+
+*-h, --help*::
+	Show a help text
+
+See Also
+--------
+
+linkman:nvchecker[1]
+
+include::include/footer.asciidoc[]

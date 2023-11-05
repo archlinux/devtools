@@ -3,21 +3,33 @@ pkgctl-version(1)
 
 Name
 ----
-pkgctl-version - Show pkgctl version information
+pkgctl-version - Package version related commands.
+
 
 Synopsis
 --------
-pkgctl version [OPTIONS]
+pkgctl version [OPTIONS] [SUBCOMMAND]
 
 Description
 -----------
 
-Shows the current version information of pkgctl.
+Package version related commands such as checking if a package is out of date.
 
 Options
 -------
 
 *-h, --help*::
 	Show a help text
+
+Subcommands
+-----------
+
+pkgctl version check::
+	Check if there is an new upstream version available
+
+See Also
+--------
+
+linkman:pkgctl-version-check[1]
 
 include::include/footer.asciidoc[]

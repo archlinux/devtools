@@ -337,6 +337,15 @@ _pkgctl_repo_switch_opts() {
 	fi
 }
 
+_pkgctl_version_cmds=(
+	check
+)
+
+_pkgctl_version_check_args=(
+	-h --help
+)
+
+_pkgctl_version_check_opts() { _filedir -d; }
 
 _pkgctl_repo_web_args=(
 	--print

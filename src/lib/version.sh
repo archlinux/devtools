@@ -7,34 +7,45 @@ DEVTOOLS_INCLUDE_VERSION_SH=1
 
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 
-source /usr/share/makepkg/util/message.sh
-
 set -e
 
 
 pkgctl_version_usage() {
 	local -r COMMAND=${_DEVTOOLS_COMMAND:-${BASH_SOURCE[0]##*/}}
     cat <<- _EOF_
-		Usage: ${COMMAND} [OPTIONS]
+		Usage: ${COMMAND} [COMMAND] [OPTIONS]
 
-		Shows the current version information of pkgctl
+		Package version related commands.
+
+		COMMANDS
+		    check    Check if there is a newer version availble
 
 		OPTIONS
 		    -h, --help    Show this help text
-_EOF_
-}
 
-pkgctl_version_print() {
-	cat <<- _EOF_
-		pkgctl @buildtoolver@
+		EXAMPLES
+		    $ ${COMMAND} check libfoo linux libbar
 _EOF_
 }
 
 pkgctl_version() {
+	if (( $# < 1 )); then
+		pkgctl_version_usage
+		exit 0
+	fi
+
 	while (( $# )); do
 		case $1 in
 			-h|--help)
 				pkgctl_version_usage
+				exit 0
+				;;
+			check)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/version/check.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/version/check.sh
+				pkgctl_version_check "$@"
 				exit 0
 				;;
 			*)
@@ -42,6 +53,4 @@ pkgctl_version() {
 				;;
 		esac
 	done
-
-	pkgctl_version_print
 }

@@ -277,7 +277,7 @@ _pkgctl_cmds=(
 	"release[Release step to commit, tag and upload build artifacts]"
 	"repo[Manage Git packaging repositories and their configuration]"
 	"search[Search for an expression across the GitLab packaging group]"
-	"version[Show pkgctl version information]"
+	"version[Package version related commands]"
 )
 
 _pkgctl_args=(
@@ -285,8 +285,14 @@ _pkgctl_args=(
 	'(-h --help)'{-h,--help}'[Display usage]'
 )
 
-_pkgctl_version_args=(
+_pkgctl_version_cmds=(
+	"pkgctl version command"
+	"check[Check if there is an new upstream version available]"
+)
+
+_pkgctl_version_check_args=(
 	'(-h --help)'{-h,--help}'[Display usage]'
+	'*:git_dir:_files -/'
 )
 
 _pkgctl_diff_args=("${_diffpkg_args[@]}")
