@@ -40,6 +40,8 @@ bindmounts_ro=()
 bindmounts_rw=()
 bindmounts_tmpfs=()
 
+offline_options=()
+
 copy=$USER
 [[ -n ${SUDO_USER:-} ]] && copy=$SUDO_USER
 [[ -z "$copy" || $copy = root ]] && copy=copy
@@ -80,6 +82,7 @@ usage() {
 	echo '                  Useful for maintaining multiple copies'
 	echo "                  Default: $copy"
 	echo '-n                Run namcap on the package'
+	echo '-o                Run given step offline'
 	echo '-C                Run checkpkg on the package'
 	echo '-T                Build in a temporary directory'
 	echo '-U                Run makepkg as a specified user'
@@ -203,6 +206,7 @@ EOF
 		declare -p SOURCE_DATE_EPOCH 2>/dev/null || true
 		declare -p BUILDTOOL 2>/dev/null
 		declare -p BUILDTOOLVER 2>/dev/null
+		declare -p offline_options
 		printf '_chrootbuild "$@" || exit\n'
 
 		if (( run_namcap )); then
@@ -222,14 +226,52 @@ _chrootbuild() {
 	# shellcheck source=/dev/null
 	. /etc/profile
 
+	# for in_array
+	. /usr/share/makepkg/util.sh
+
 	# Beware, there are some stupid arbitrary rules on how you can
 	# use "$" in arguments to commands with "sudo -i".  ${foo} or
 	# ${1} is OK, but $foo or $1 isn't.
 	# https://bugzilla.sudo.ws/show_bug.cgi?id=765
+
+	# Run prepare
 	sudo --preserve-env=SOURCE_DATE_EPOCH \
 		--preserve-env=BUILDTOOL \
 		--preserve-env=BUILDTOOLVER \
-		-iu builduser bash -c 'cd /startdir; makepkg "$@"' -bash "$@"
+		-iu builduser bash -c 'cd /startdir; makepkg --nobuild "$@"' -bash "$@"
+
+	if in_array "build" "${offline_options[@]}"; then
+		msg "building offline"
+		# Build offline
+		unshare -n -- sudo --preserve-env=SOURCE_DATE_EPOCH \
+			--preserve-env=BUILDTOOL \
+			--preserve-env=BUILDTOOLVER \
+			-iu builduser \
+			bash -c 'cd /startdir; makepkg --noprepare --noextract --nocheck "$@"' -bash "$@"
+	else
+		sudo --preserve-env=SOURCE_DATE_EPOCH \
+			--preserve-env=BUILDTOOL \
+			--preserve-env=BUILDTOOLVER \
+			-iu builduser \
+			bash -c 'cd /startdir; makepkg --noprepare --noextract --nocheck "$@"' -bash "$@"
+	fi
+
+	if in_array "check" "${offline_options[@]}"; then
+		msg "check offline"
+		# Run tests online
+		unshare -n -- sudo --preserve-env=SOURCE_DATE_EPOCH \
+			--preserve-env=BUILDTOOL \
+			--preserve-env=BUILDTOOLVER \
+			-iu builduser \
+			bash -c 'cd /startdir; makepkg --noprepare --noextract --nobuild "$@"' -bash "$@"
+	else
+		sudo --preserve-env=SOURCE_DATE_EPOCH \
+			--preserve-env=BUILDTOOL \
+			--preserve-env=BUILDTOOLVER \
+			-iu builduser \
+			bash -c 'cd /startdir; makepkg --noprepare --noextract --nobuild "$@"' -bash "$@"
+	fi
+
 	ret=$?
 	case $ret in
 		0|14)
@@ -293,7 +335,7 @@ move_products() {
 }
 # }}}
 
-while getopts 'hcur:I:l:nCTD:d:U:x:t:' arg; do
+while getopts 'hcur:I:l:nCTD:o:d:U:x:t:' arg; do
 	case "$arg" in
 		c) clean_first=1 ;;
 		D) bindmounts_ro+=("--bind-ro=$OPTARG") ;;
@@ -304,6 +346,7 @@ while getopts 'hcur:I:l:nCTD:d:U:x:t:' arg; do
 		I) install_pkgs+=("$OPTARG") ;;
 		l) copy="$OPTARG" ;;
 		n) run_namcap=1; makepkg_args+=(--install) ;;
+		o) offline_options+=("$OPTARG") ;;
 		C) run_checkpkg=1 ;;
 		T) temp_chroot=1; copy+="-$$" ;;
 		U) makepkg_user="$OPTARG" ;;

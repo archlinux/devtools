@@ -55,6 +55,7 @@ pkgctl_build_usage() {
 		    -o, --offload        Build on a remote server and transfer artifacts afterwards
 		    -c, --clean          Recreate the chroot before building
 		    --inspect WHEN       Spawn an interactive shell to inspect the chroot (never, always, failure)
+		    --offline MODE       Run a part of the build process offline (build, check)
 		    -w, --worker SLOT    Name of the worker slot, useful for concurrent builds (disables automatic names)
 		    --nocheck            Do not run the check() function in the PKGBUILD
 
@@ -197,6 +198,10 @@ pkgctl_build() {
 			-e|--edit)
 				EDIT=1
 				shift
+				;;
+			--offline)
+				MAKECHROOT_OPTIONS+=("-o" "$2")
+				shift 2
 				;;
 			-o|--offload)
 				OFFLOAD=1
