@@ -184,6 +184,13 @@ coverage: binprogs library conf completion man
 	jq -r '. | ["Percent covered", .percent_covered], ["Covered lines", .covered_lines], ["Total lines", .total_lines], ["Percent low", .percent_low], ["Percent high", .percent_high] | @tsv' \
 		$(COVERAGE_DIR)/bats.*/coverage.json
 
+testinstall:
+	tar --transform 's,^,devtools/,' -cz -f test/devtools.tar.gz --exclude='test' --exclude='./build' .
+	mv test/devtools.tar.gz devtools.tar.gz
+	pkgctl build --repo extra-testing
+	rm devtools.tar.gz
+	sudo pacman -U $$(makepkg --packagelist)
+
 check: $(BINPROGS_SRC) $(LIBRARY_SRC) contrib/completion/bash/devtools.in config/makepkg/x86_64.conf contrib/makepkg/PKGBUILD.proto
 	shellcheck $^
 
