@@ -95,7 +95,7 @@ Component: pkgctl db remove
 
 ### Development Dependencies
 
-- asciidoc
+- asciidoctor
 - make
 - shellcheck
 

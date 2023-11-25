@@ -46,7 +46,7 @@ Options
 See Also
 --------
 
-linkman:pkgctl-repo-configure[1]
-linkman:pkgctl-repo-switch[1]
+pkgctl-repo-configure(1)
+pkgctl-repo-switch(1)
 
 include::include/footer.asciidoc[]

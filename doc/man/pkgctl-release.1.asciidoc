@@ -46,6 +46,6 @@ Options
 See Also
 --------
 
-linkman:pkgctl-db-update[1]
+pkgctl-db-update(1)
 
 include::include/footer.asciidoc[]

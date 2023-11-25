@@ -8,7 +8,7 @@ build:
   stage: build
   needs: []
   script:
-    - pacman -Syu --noconfirm m4 make openssh subversion rsync arch-install-scripts git bzr mercurial diffutils asciidoc
+    - pacman -Syu --noconfirm m4 make openssh subversion rsync arch-install-scripts git bzr mercurial diffutils asciidoctor
     - make PREFIX=/usr
     - make PREFIX=/usr DESTDIR=build install
 
@@ -16,6 +16,6 @@ check:
   stage: test
   needs: []
   script:
-    - pacman -Syu --noconfirm m4 make openssh subversion rsync arch-install-scripts git bzr mercurial diffutils asciidoc shellcheck
+    - pacman -Syu --noconfirm m4 make openssh subversion rsync arch-install-scripts git bzr mercurial diffutils asciidoctor shellcheck
     - make check || true
     - SHELLCHECK_OPTS="-S error" make check

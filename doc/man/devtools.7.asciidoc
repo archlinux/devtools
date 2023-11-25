@@ -21,47 +21,47 @@ Programs
 The list below gives a short overview; see the respective documentation
 for details.
 
-linkman:pkgctl[1]
+pkgctl(1)
 	Unified command-line frontend for devtools
 
-linkman:archbuild[1]
+archbuild(1)
 	Build an Arch Linux package inside a clean chroot
 
-linkman:arch-nspawn[1]
+arch-nspawn(1)
 	Run a command or OS in a light-weight namespace container
 
-linkman:checkpkg[1]
+checkpkg(1)
 	Compare the current build package with the repository version
 
-linkman:diffpkg[1]
+diffpkg(1)
 	Compare package files using different modes
 
-linkman:export-pkgbuild-keys[1]
+export-pkgbuild-keys(1)
 	Export valid source signing keys from a PKGBUILD
 
-linkman:find-libdeps[1]
+find-libdeps(1)
 	Find soname dependencies for a package
 
-linkman:find-libprovides[1]
+find-libprovides(1)
 	Find soname's which are provided by a package
 
-linkman:lddd[1]
+lddd(1)
 	Find broken library links on your system
 
-linkman:mkarchroot[1]
+mkarchroot(1)
 	Creates an arch chroot in a specified location with a specified set of
 	packages
 
-linkman:makechrootpkg[1]
+makechrootpkg(1)
 	Build a PKGBUILD in a given chroot environment
 
-linkman:makerepropkg[1]
+makerepropkg(1)
 	Rebuild a package to see if it is reproducible
 
-linkman:offload-build[1]
+offload-build(1)
 	Build a PKGBUILD on a remote server using makechrootpkg
 
-linkman:sogrep[1]
+sogrep(1)
 	Find packages using a linked to a given shared library
 
 include::include/footer.asciidoc[]

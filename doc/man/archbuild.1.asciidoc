@@ -43,6 +43,6 @@ Options
 See Also
 --------
 
-linkman:devtools[7]
+devtools(7)
 
 include::include/footer.asciidoc[]

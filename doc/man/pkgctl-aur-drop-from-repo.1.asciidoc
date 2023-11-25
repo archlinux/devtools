@@ -36,6 +36,6 @@ Options
 See Also
 --------
 
-linkman:pkgctl-db-remove[1]
+pkgctl-db-remove(1)
 
 include::include/footer.asciidoc[]

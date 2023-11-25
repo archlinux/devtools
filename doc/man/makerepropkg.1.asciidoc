@@ -16,7 +16,7 @@ Given the path to a built pacman package(s), attempt to rebuild it using the
 PKGBUILD in the current directory. The package will be built in an environment
 as closely matching the environment of the initial package as possible, by
 building up a chroot to match the information exposed in the package's
-linkman:BUILDINFO[5] manifest. On success, the resulting package will be
+BUILDINFO(5) manifest. On success, the resulting package will be
 compared to the input package, and makerepropkg will report whether the
 artifacts are identical.
 

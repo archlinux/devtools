@@ -66,6 +66,6 @@ Output Options
 See Also
 --------
 
-linkman:pkgctl-auth[1]
+pkgctl-auth(1)
 
 include::include/footer.asciidoc[]

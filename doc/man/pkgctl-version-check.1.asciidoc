@@ -28,8 +28,8 @@ required to track version changes from upstream sources.
 Configuration
 -------------
 
-Uses linkman:nvchecker[1] and a `.nvchecker.toml` file located alongside the
-PKGBUILD. Refer to the configuration section in linkman:pkgctl-version[1].
+Uses nvchecker(1) and a `.nvchecker.toml` file located alongside the
+PKGBUILD. Refer to the configuration section in pkgctl-version(1).
 
 Options
 -------
@@ -60,7 +60,7 @@ On exit, return one of the following codes:
 See Also
 --------
 
-linkman:pkgctl-version[1]
-linkman:nvchecker[1]
+pkgctl-version(1)
+nvchecker(1)
 
 include::include/footer.asciidoc[]

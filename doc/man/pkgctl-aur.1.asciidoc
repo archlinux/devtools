@@ -32,6 +32,6 @@ pkgctl aur drop-from-repo::
 See Also
 --------
 
-linkman:pkgctl-aur-drop-from-repo[1]
+pkgctl-aur-drop-from-repo(1)
 
 include::include/footer.asciidoc[]

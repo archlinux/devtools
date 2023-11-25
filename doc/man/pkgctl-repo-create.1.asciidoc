@@ -33,8 +33,8 @@ Options
 See Also
 --------
 
-linkman:pkgctl-auth[1]
-linkman:pkgctl-repo-clone[1]
-linkman:pkgctl-repo-configure[1]
+pkgctl-auth(1)
+pkgctl-repo-clone(1)
+pkgctl-repo-configure(1)
 
 include::include/footer.asciidoc[]

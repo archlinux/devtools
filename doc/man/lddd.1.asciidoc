@@ -20,6 +20,6 @@ collected data is written to a temporary directory created by mktemp.
 See Also
 --------
 
-linkman:ldd[1]
+ldd(1)
 
 include::include/footer.asciidoc[]

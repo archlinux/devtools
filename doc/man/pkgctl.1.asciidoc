@@ -56,14 +56,14 @@ pkgctl version::
 See Also
 --------
 
-linkman:pkgctl-aur[1]
-linkman:pkgctl-auth[1]
-linkman:pkgctl-build[1]
-linkman:pkgctl-db[1]
-linkman:pkgctl-diff[1]
-linkman:pkgctl-release[1]
-linkman:pkgctl-repo[1]
-linkman:pkgctl-search[1]
-linkman:pkgctl-version[1]
+pkgctl-aur(1)
+pkgctl-auth(1)
+pkgctl-build(1)
+pkgctl-db(1)
+pkgctl-diff(1)
+pkgctl-release(1)
+pkgctl-repo(1)
+pkgctl-search(1)
+pkgctl-version(1)
 
 include::include/footer.asciidoc[]

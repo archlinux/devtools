@@ -27,6 +27,6 @@ Options
 See Also
 --------
 
-linkman:pkgctl-auth-login[1]
+pkgctl-auth-login(1)
 
 include::include/footer.asciidoc[]

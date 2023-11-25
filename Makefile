@@ -92,10 +92,10 @@ $(eval $(call buildInScript,build/bin,src/,.in,755))
 $(eval $(call buildInScript,build/lib,src/lib/,,644))
 $(foreach completion,$(wildcard contrib/completion/*),$(eval $(call buildInScript,build/$(completion),$(completion)/,.in,444)))
 
-$(BUILDDIR)/doc/man/%: doc/man/%.asciidoc doc/asciidoc.conf doc/man/include/footer.asciidoc
+$(BUILDDIR)/doc/man/%: doc/man/%.asciidoc doc/man/include/footer.asciidoc
 	$(GEN_MSG)
 	@mkdir -p $(BUILDDIR)/doc/man
-	@a2x --no-xmllint --asciidoc-opts="-f doc/asciidoc.conf" -d manpage -f manpage --destination-dir=$(BUILDDIR)/doc/man -a pkgdatadir=$(DATADIR) $<
+	@asciidoctor --backend=manpage --destination-dir=$(BUILDDIR)/doc/man --attribute pkgdatadir=$(DATADIR) $<
 
 conf:
 	@install -d $(BUILDDIR)/makepkg.conf.d

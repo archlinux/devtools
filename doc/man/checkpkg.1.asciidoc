@@ -38,6 +38,6 @@ Options
 See Also
 --------
 
-linkman:find-libprovides[1]
+find-libprovides(1)
 
 include::include/footer.asciidoc[]
