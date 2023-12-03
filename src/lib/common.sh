@@ -28,6 +28,7 @@ export GIT_PACKAGING_NAMESPACE_ID=11323
 export GIT_PACKAGING_URL_SSH="git@${GITLAB_HOST}:${GIT_PACKAGING_NAMESPACE}"
 export GIT_PACKAGING_URL_HTTPS="https://${GITLAB_HOST}/${GIT_PACKAGING_NAMESPACE}"
 export PACKAGING_REPO_RELEASE_HOST=repos.archlinux.org
+export PKGBASE_MAINTAINER_URL=https://archlinux.org/packages/pkgbase-maintainer
 
 # check if messages are to be printed using color
 if [[ -t 2 && "$TERM" != dumb ]] || [[ ${DEVTOOLS_COLOR} == always ]]; then
@@ -53,6 +54,11 @@ stat_done() {
 	printf "${BOLD}done${ALL_OFF}\n" >&2
 }
 
+stat_failed() {
+	# shellcheck disable=2059
+	printf "${BOLD}${RED}failed${ALL_OFF}\n" >&2
+}
+
 msg_success() {
 	local msg=$1
 	local padding
@@ -75,6 +81,15 @@ msg_warn() {
 	padding=$(echo "${msg}"|sed -E 's/( *).*/\1/')
 	msg=$(echo "${msg}"|sed -E 's/ *(.*)/\1/')
 	printf "%s %s\n" "${padding}${YELLOW}!${ALL_OFF}" "${msg}" >&2
+}
+
+print_workdir_error() {
+	if [[ ! -f "${WORKDIR}"/error ]]; then
+		return
+	fi
+	while read -r LINE; do
+		error '%s' "${LINE}"
+	done < "${WORKDIR}/error"
 }
 
 _setup_workdir=false

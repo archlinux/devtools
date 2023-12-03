@@ -8,6 +8,8 @@ DEVTOOLS_INCLUDE_REPO_CLONE_SH=1
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 # shellcheck source=src/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+# shellcheck source=src/lib/api/archweb.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/api/archweb.sh
 # shellcheck source=src/lib/api/gitlab.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/api/gitlab.sh
 # shellcheck source=src/lib/repo/configure.sh
@@ -18,6 +20,7 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
 source /usr/share/makepkg/util/message.sh
 
 set -e
+set -o pipefail
 
 
 pkgctl_repo_clone_usage() {
@@ -137,33 +140,18 @@ pkgctl_repo_clone() {
 
 	# Query packages of a maintainer
 	if [[ -n ${MAINTAINER} ]]; then
-		stat_busy "Query packages"
-		max_pages=$(curl --silent --location --fail --retry 3 --retry-delay 3 "https://archlinux.org/packages/search/json/?sort=name&maintainer=${MAINTAINER}" | jq -r '.num_pages')
-		if [[ ! ${max_pages} =~ ([[:digit:]]) ]]; then
-			stat_done
-			warning "found no packages for maintainer ${MAINTAINER}"
-			exit 0
+		mapfile -t pkgbases < <(archweb_query_maintainer_packages "${MAINTAINER}")
+		if ! wait $!; then
+			die "Failed to query maintainer packages"
 		fi
-		mapfile -t pkgbases < <(for page in $(seq "${max_pages}"); do
-			curl --silent --location --fail --retry 3 --retry-delay 3 "https://archlinux.org/packages/search/json/?sort=name&maintainer=${MAINTAINER}&page=${page}" | jq -r '.results[].pkgbase'
-			stat_progress
-		done | sort --unique)
-		stat_done
 	fi
 
 	# Query all released packages
 	if (( CLONE_ALL )); then
-		stat_busy "Query all released packages"
-		max_pages=$(curl --silent --location --fail --retry 3 --retry-delay 3 "https://archlinux.org/packages/search/json/?sort=name" | jq -r '.num_pages')
-		if [[ ! ${max_pages} =~ ([[:digit:]]) ]]; then
-			stat_done
-			die "failed to query packages"
+		mapfile -t pkgbases < <(archweb_query_all_packages)
+		if ! wait $!; then
+			die "Failed to query all packages"
 		fi
-		mapfile -t pkgbases < <(for page in $(seq "${max_pages}"); do
-			curl --silent --location --fail --retry 3 --retry-delay 3 "https://archlinux.org/packages/search/json/?sort=name&page=${page}" | jq -r '.results[].pkgbase'
-			stat_progress
-		done | sort --unique)
-		stat_done
 	fi
 
 	# parallelization

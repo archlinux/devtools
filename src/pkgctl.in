@@ -39,6 +39,8 @@ fi
 
 export _DEVTOOLS_COMMAND='pkgctl'
 
+setup_workdir
+
 load_devtools_config
 
 # command checking
