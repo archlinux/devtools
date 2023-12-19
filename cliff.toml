@@ -14,7 +14,7 @@ body = """
 		{{- commit.message | upper_first }}
 		{%- if commit.breaking %} (breaking){% endif %}
 		{%- set fixes = commit.footers | filter(attribute="token", value="Fixes") %}
-		{%- for fix in fixes %}{% if fix.separator == '#' %}{{ fix.separator }}{{ fix.value }}{% endif %}{% endfor %}
+		{%- for fix in fixes %}{% if fix.separator|trim == '#' %}{{ fix.separator }}{{ fix.value }}{% endif %}{% endfor %}
     {%- endfor %}
 {% endfor %}
 
