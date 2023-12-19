@@ -12,6 +12,7 @@ body = """
 		- {% set component = commit.footers | filter(attribute="token", value="Component") | map(attribute="value") | join(sep=", ") %}
 		{%- if component %}{{ component }}: {% elif commit.scope %}{{ commit.scope }}: {% endif %}
 		{{- commit.message | upper_first }}
+		{%- if commit.breaking %} (breaking){% endif %}
 		{%- set fixes = commit.footers | filter(attribute="token", value="Fixes") %}
 		{%- for fix in fixes %}{% if fix.separator == '#' %}{{ fix.separator }}{{ fix.value }}{% endif %}{% endfor %}
     {%- endfor %}
