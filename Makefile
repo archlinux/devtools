@@ -103,7 +103,7 @@ conf:
 	@install -d $(BUILDDIR)/pacman.conf.d
 	@cp -a $(PACMAN_CONFIGS) $(BUILDDIR)/pacman.conf.d
 	@install -d $(BUILDDIR)/git.conf.d
-	cp -a $(GIT_CONFIGS) $(BUILDDIR)/git.conf.d
+	@cp -a $(GIT_CONFIGS) $(BUILDDIR)/git.conf.d
 
 clean:
 	rm -rf $(BUILDDIR)
