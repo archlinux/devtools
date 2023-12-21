@@ -58,7 +58,7 @@ pkgctl_build_usage() {
 		    --pkgver=PKGVER      Set pkgver, reset pkgrel and update checksums
 		    --pkgrel=PKGREL      Set pkgrel to a given value
 		    --rebuild            Increment the current pkgrel variable
-		    --updpkgsums         Regenerate the checksums
+		    --update-checksums   Force computation and update of the checksums (disables auto-detection)
 		    -e, --edit           Edit the PKGBUILD before building
 
 		RELEASE OPTIONS
@@ -108,7 +108,7 @@ pkgctl_build() {
 		exit 1
 	fi
 
-	local UPDPKGSUMS=0
+	local UPDATE_CHECKSUMS=0
 	local EDIT=0
 	local REBUILD=0
 	local OFFLOAD=0
@@ -165,7 +165,7 @@ pkgctl_build() {
 				pkgctl_build_check_option_group_ver '--pkgver' "${PKGVER}" "${PKGREL}" "${REBUILD}"
 				PKGVER="${1#*=}"
 				PKGREL=1
-				UPDPKGSUMS=1
+				UPDATE_CHECKSUMS=1
 				shift
 				;;
 			--pkgrel=*)
@@ -173,8 +173,8 @@ pkgctl_build() {
 				PKGREL="${1#*=}"
 				shift
 				;;
-			--updpkgsums)
-				UPDPKGSUMS=1
+			--update-checksums)
+				UPDATE_CHECKSUMS=1
 				shift
 				;;
 			--rebuild)
@@ -407,7 +407,7 @@ pkgctl_build() {
 
 
 		# update checksums if any sources are declared
-		if (( UPDPKGSUMS )) && (( ${#source[@]} >= 1 )); then
+		if (( UPDATE_CHECKSUMS )) && (( ${#source[@]} >= 1 )); then
 			updpkgsums
 		fi
 
