@@ -63,8 +63,12 @@ PKGBUILD Options
 *--rebuild*::
 	Increment the current pkgrel variable
 
-*--updpkgsums*::
-	Regenerate the checksums
+*--update-checksums*::
+	Force computation and update of the checksums by disabling auto-detection. +
+	Should only be used in special circumstances, like when adding new patch
+	files to the source array. During regular packaging operations, checksums
+	are either automatically updated when upgrading a package using `--pkgver`
+	or should remain immutable during rebuilds.
 
 *-e, --edit*::
 	Edit the PKGBUILD before building
