@@ -295,7 +295,7 @@ _handle_subcommands() {
 				fi
 				;;
 			args)
-				local service_sub=${service_name}_$line[1]
+				local service_sub=${service_name}_${line[1]//-/_}
 				if typeset -p ${service_sub}_args &> /dev/null; then
 					local cmd_args=${service_sub}_args[@]
 					_arguments -s "${(P)cmd_args}"
