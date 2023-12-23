@@ -429,6 +429,10 @@ pkgctl_build() {
 			fi
 		done
 
+		# auto generate .SRCINFO
+		# shellcheck disable=SC2119
+		write_srcinfo_file
+
 		# release the build
 		if (( RELEASE )); then
 			pkgctl_release --repo "${pkgrepo}" "${RELEASE_OPTIONS[@]}"
