@@ -134,7 +134,7 @@ pkgctl_build() {
 	local WORKER_SLOT=
 
 	# variables
-	local _arch path pkgbase pkgrepo source
+	local _arch path pkgbase pkgrepo source pkgbuild_checksum
 
 	while (( $# )); do
 		case $1 in
@@ -311,6 +311,7 @@ pkgctl_build() {
 		. ./PKGBUILD
 		pkgbase=${pkgbase:-$pkgname}
 		pkgrepo=${REPO}
+		pkgbuild_checksum=$(b2sum PKGBUILD | awk '{print $1}')
 		msg "Building ${pkgbase}"
 
 		# auto-detection of build target
@@ -410,6 +411,12 @@ pkgctl_build() {
 		# update checksums if any sources are declared
 		if (( UPDATE_CHECKSUMS )) && (( ${#source[@]} >= 1 )); then
 			updpkgsums
+		fi
+
+		# re-source the PKGBUILD if it changed
+		if [[ ${pkgbuild_checksum} != "$(b2sum PKGBUILD | awk '{print $1}')" ]]; then
+			# shellcheck source=contrib/makepkg/PKGBUILD.proto
+			. ./PKGBUILD
 		fi
 
 		# execute build
