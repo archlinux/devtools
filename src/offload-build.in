@@ -8,6 +8,11 @@
 
 source /usr/share/makepkg/util/config.sh
 
+# Deprecation warning
+if [[ -z $_DEVTOOLS_COMMAND ]]; then
+	colorize
+	warning "${0##*/} is deprecated and will be removed. Use 'pkgctl build --offload' instead"
+fi
 
 # global defaults suitable for use by Arch staff
 repo=extra
