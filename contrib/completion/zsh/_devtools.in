@@ -9,6 +9,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 # shellcheck source=src/lib/valid-inspect.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
+# shellcheck source=src/lib/valid-search.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-search.sh
 
 _binary_arch=${DEVTOOLS_VALID_ARCHES[*]:0:-1}
 _colors=(never always auto)
@@ -140,8 +142,10 @@ _pkgctl_repo_web_args=(
 )
 
 _pkgctl_search_args=(
-	'--json[Enable printing results in JSON]'
 	'--no-default-filter[Do not apply default filter (like -path:keys/pgp/*.asc)]'
+	'--json[Enable printing results in JSON]'
+	'(-F --format)'{-F,--format}"[Controls the formatting of the results]:format:($valid_search_output_format[*])"
+	'(-N --no-line-number)'{-N,--no-line-number}"[Don't show line numbers when formatting results]"
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'1:query'
 )

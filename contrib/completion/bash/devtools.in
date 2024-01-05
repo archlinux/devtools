@@ -9,6 +9,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 # shellcheck source=src/lib/valid-inspect.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
+# shellcheck source=src/lib/valid-search.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-search.sh
 
 _binary_arch=${DEVTOOLS_VALID_ARCHES[*]:0:-1}
 _colors=(never always auto)
@@ -333,11 +335,15 @@ _pkgctl_repo_web_opts() { _filedir -d; }
 
 
 _pkgctl_search_args=(
-	--json
 	--no-default-filter
+	--json
+	-F --format
+	-N --no-line-number
 	-h --help
 )
 _pkgctl_search_opts() { :; }
+_pkgctl_search_args__format_opts() { _devtools_completions_search_format; }
+_pkgctl_search_args_F_opts() { _devtools_completions_search_format; }
 
 
 _pkgctl_diff_args=(
@@ -390,6 +396,9 @@ _devtools_completions_protocol() {
 }
 _devtools_completions_inspect() {
 	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_INSPECT_MODES[*]}" -- "$cur")
+}
+_devtools_completions_search_format() {
+	mapfile -t COMPREPLY < <(compgen -W "${valid_search_output_format[*]}" -- "$cur")
 }
 
 __devtools_complete() {

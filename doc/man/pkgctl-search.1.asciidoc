@@ -20,7 +20,7 @@ use glob matching.
 Available filters for the blobs scope: path, extension
 
 Every usage of the search command must be authenticated. Consult the
-'pkgctl auth' command to authenticate with GitLab or view the authentication
+`'pkgctl auth'` command to authenticate with GitLab or view the authentication
 status.
 
 Search Tips
@@ -41,14 +41,27 @@ Search Tips
 Options
 -------
 
-*--json*::
-	Enable printing results in JSON 
+*-h, --help*::
+	Show a help text
+
+Filter Options
+--------------
 
 *--no-default-filter*::
 	Do not apply default filter (like -path:keys/pgp/*.asc)
 
-*-h, --help*::
-	Show a help text
+Output Options
+--------------
+
+*--json*::
+	Enable printing in JSON; Shorthand for `'--format json'`
+
+*-F, --format* 'FORMAT'::
+	Controls the formatting of the results; `FORMAT` is `'pretty'`, `'plain'`,
+	or `'json'` (default `pretty`)
+
+*-N, --no-line-number*::
+	Don't show line numbers when formatting results
 
 See Also
 --------

@@ -33,9 +33,11 @@ export PKGBASE_MAINTAINER_URL=https://archlinux.org/packages/pkgbase-maintainer
 # check if messages are to be printed using color
 if [[ -t 2 && "$TERM" != dumb ]] || [[ ${DEVTOOLS_COLOR} == always ]]; then
 	colorize
+	PURPLE="$(tput setaf 5)"
+	DARK_GREEN="$(tput setaf 2)"
 else
 	# shellcheck disable=2034
-	declare -gr ALL_OFF='' BOLD='' BLUE='' GREEN='' RED='' YELLOW=''
+	declare -gr ALL_OFF='' BOLD='' BLUE='' GREEN='' RED='' YELLOW='' PURPLE=''
 fi
 
 stat_busy() {

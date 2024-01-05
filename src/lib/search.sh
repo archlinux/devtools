@@ -12,7 +12,10 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/cache.sh
 # shellcheck source=src/lib/api/gitlab.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/api/gitlab.sh
+# shellcheck source=src/lib/valid-search.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-search.sh
 
+source /usr/share/makepkg/util/util.sh
 source /usr/share/makepkg/util/message.sh
 
 set -eo pipefail
@@ -48,14 +51,31 @@ pkgctl_search_usage() {
 		    !       Merge request  !23456
 
 		OPTIONS
-		    --json               Enable printing results in JSON
-		    --no-default-filter  Do not apply default filter (like -path:keys/pgp/*.asc)
-		    -h, --help           Show this help text
+		    -h, --help            Show this help text
+
+		FILTER OPTIONS
+		    --no-default-filter   Do not apply default filter (like -path:keys/pgp/*.asc)
+
+		OUTPUT OPTIONS
+		    --json                Enable printing in JSON; Shorthand for '--format json'
+		    -F, --format FORMAT   Controls the formatting of the results; FORMAT is 'pretty',
+		                          'plain', or 'json' (default: pretty)
+		    -N, --no-line-number  Don't show line numbers when formatting results
 
 		EXAMPLES
 		    $ ${COMMAND} linux
-		    $ ${COMMAND} '"pytest -v" +PYTHONPATH'
+		    $ ${COMMAND} --json '"pytest -v" +PYTHONPATH'
 _EOF_
+}
+
+pkgctl_search_check_option_group_format() {
+	local option=$1
+	local output_format=$2
+	if [[ -n ${output_format} ]]; then
+		die "The argument '%s' cannot be used with one or more of the other specified arguments" "${option}"
+		exit 1
+	fi
+	return 0
 }
 
 pkgctl_search() {
@@ -66,15 +86,17 @@ pkgctl_search() {
 
 	# options
 	local search
-	local formatter=pretty
+	local output_format=
 	local use_default_filter=1
+	local line_numbers=1
 
 	# variables
+	local bats_style="header,grid"
 	local default_filter="-path:keys/pgp/*.asc"
 	local graphql_lookup_batch=200
 	local output result query entries from until length
 	local project_name_cache_file project_name_lookup project_ids project_id project_name project_slice
-	local mapping_output path startline data
+	local mapping_output path startline currentline data line
 
 	while (( $# )); do
 		case $1 in
@@ -82,12 +104,26 @@ pkgctl_search() {
 				pkgctl_search_usage
 				exit 0
 				;;
-			--json)
-				formatter=json
-				shift
-				;;
 			--no-default-filter)
 				use_default_filter=0
+				shift
+				;;
+			--json)
+				pkgctl_search_check_option_group_format "$1" "${output_format}"
+				output_format=json
+				shift
+				;;
+			-F|--format)
+				(( $# <= 1 )) && die "missing argument for %s" "$1"
+				pkgctl_search_check_option_group_format "$1" "${output_format}"
+				output_format="${2}"
+				if ! in_array "${output_format}" "${valid_search_output_format[@]}"; then
+					die "Unknown output format: %s" "${output_format}"
+				fi
+				shift 2
+				;;
+			-N|--no-line-number)
+				line_numbers=0
 				shift
 				;;
 			--)
@@ -114,16 +150,35 @@ pkgctl_search() {
 		search+=" ${default_filter}"
 	fi
 
+	# assign default output format
+	if [[ -z ${output_format} ]]; then
+		output_format=pretty
+	fi
+
+	# check for optional dependencies
+	if [[ ${output_format} == pretty ]] && ! command -v bats &>/dev/null; then
+		warning "Failed to find optional dependency 'bats': falling back to plain output"
+		output_format=plain
+	fi
+
+	# populate line numbers option
+	if (( line_numbers )); then
+		bats_style="numbers,${bats_style}"
+	fi
+
+	# call the gitlab search API
 	stat_busy "Querying gitlab search api"
 	output=$(gitlab_api_search "${search}")
 	stat_done
 
+	# collect project ids whose name needs to be looked up
 	project_name_cache_file=$(get_cache_file gitlab/project_id_to_name)
 	lock 11 "${project_name_cache_file}" "Locking project name cache"
 	mapfile -t project_ids < <(
 		jq --raw-output '[.[].project_id] | unique[]' <<< "${output}" | \
 			grep --invert-match --file <(awk '{ print $1 }' < "${project_name_cache_file}" ))
 
+	# look up project names
 	stat_busy "Querying project names"
 	local entries="${#project_ids[@]}"
 	local until=0
@@ -171,7 +226,7 @@ pkgctl_search() {
 	lock_close 11
 
 	# output mode JSON
-	if [[ ${formatter} == json ]]; then
+	if [[ ${output_format} == json ]]; then
 		jq --from-file <(
 			for project_id in $(jq '.[].project_id' <<< "${output}"); do
 				project_name=${project_name_lookup[${project_id}]}
@@ -197,6 +252,23 @@ pkgctl_search() {
 			unset "data[${#data[@]}-1]"
 		fi
 
+		# output mode plain
+		if [[ ${output_format} == plain ]]; then
+			printf "%s%s%s\n" "${PURPLE}" "${project_name}/${path}" "${ALL_OFF}"
+
+			currentline=${startline}
+			for line in "${data[@]}"; do
+				if (( line_numbers )); then
+					line="${DARK_GREEN}${currentline}${ALL_OFF}: ${line}"
+					currentline=$(( currentline + 1 ))
+				fi
+				printf "%s\n" "${line}"
+			done
+			printf "\n"
+
+			continue
+		fi
+
 		# prepend empty lines to match startline
 		if (( startline > 1 )); then
 			mapfile -t data < <(
@@ -210,6 +282,7 @@ pkgctl_search() {
 			--line-range "${startline}:" \
 			--paging=never \
 			--force-colorization \
+			--style "${bats_style}" \
 			--map-syntax "PKGBUILD:Bourne Again Shell (bash)" \
 			--map-syntax ".SRCINFO:INI" \
 			--map-syntax "*install:Bourne Again Shell (bash)" \
