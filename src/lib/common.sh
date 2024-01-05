@@ -135,7 +135,7 @@ lock() {
 	# Only reopen the FD if it wasn't handed to us
 	if ! [[ "/dev/fd/$1" -ef "$2" ]]; then
 		mkdir -p -- "$(dirname -- "$2")"
-		eval "exec $1>"'"$2"'
+		eval "exec $1>>"'"$2"'
 	fi
 
 	if ! flock -n "$1"; then
