@@ -288,9 +288,15 @@ _pkgctl_args=(
 _pkgctl_version_cmds=(
 	"pkgctl version command"
 	"check[Check if there is an new upstream version available]"
+	"upgrade[Upgrade the PKGBUILD according to the latest available upstream version]"
 )
 
 _pkgctl_version_check_args=(
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'*:git_dir:_files -/'
+)
+
+_pkgctl_version_upgrade_args=(
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:git_dir:_files -/'
 )

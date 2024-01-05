@@ -18,7 +18,8 @@ pkgctl_version_usage() {
 		Package version related commands.
 
 		COMMANDS
-		    check    Check if there is a newer version availble
+		    check      Check if there is a newer version availble
+		    upgrade    Upgrade the PKGBUILD according to the latest available upstream version
 
 		OPTIONS
 		    -h, --help    Show this help text
@@ -46,6 +47,14 @@ pkgctl_version() {
 				# shellcheck source=src/lib/version/check.sh
 				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/version/check.sh
 				pkgctl_version_check "$@"
+				exit 0
+				;;
+			upgrade)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/version/upgrade.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/version/upgrade.sh
+				pkgctl_version_upgrade "$@"
 				exit 0
 				;;
 			*)

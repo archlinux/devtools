@@ -339,6 +339,7 @@ _pkgctl_repo_switch_opts() {
 
 _pkgctl_version_cmds=(
 	check
+	upgrade
 )
 
 _pkgctl_version_check_args=(
@@ -346,6 +347,12 @@ _pkgctl_version_check_args=(
 )
 
 _pkgctl_version_check_opts() { _filedir -d; }
+
+_pkgctl_version_upgrade_args=(
+	-h --help
+)
+
+_pkgctl_version_upgrade_opts() { _filedir -d; }
 
 _pkgctl_repo_web_args=(
 	--print

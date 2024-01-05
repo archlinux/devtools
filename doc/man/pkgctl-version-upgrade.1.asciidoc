@@ -1,0 +1,33 @@
+pkgctl-version-upgrade(1)
+=========================
+
+Name
+----
+pkgctl-version-upgrade - Upgrade the PKGBUILD according to the latest available upstream version
+
+Synopsis
+--------
+pkgctl version upgrade [OPTIONS] [PKGBASE...]
+
+Description
+-----------
+
+Upgrade the PKGBUILD according to the latest available upstream version.
+
+Uses nvchecker, a .nvchecker.toml file and the current PKGBUILD pkgver to check
+if there is a newer package version available.
+
+The current working directory is used if no PKGBASE is specified.
+
+Options
+-------
+
+*-h, --help*::
+	Show a help text
+
+See Also
+--------
+
+linkman:nvchecker[1]
+
+include::include/footer.asciidoc[]

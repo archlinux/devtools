@@ -27,9 +27,13 @@ Subcommands
 pkgctl version check::
 	Check if there is an new upstream version available
 
+pkgctl version upgrade::
+	Upgrade the PKGBUILD according to the latest available upstream version
+
 See Also
 --------
 
 linkman:pkgctl-version-check[1]
+linkman:pkgctl-version-upgrade[1]
 
 include::include/footer.asciidoc[]
