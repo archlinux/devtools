@@ -18,6 +18,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/srcinfo.sh
 # shellcheck source=src/lib/util/pacman.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/pacman.sh
+# shellcheck source=src/lib/util/pkgbuild.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/pkgbuild.sh
 # shellcheck source=src/lib/valid-repos.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 # shellcheck source=src/lib/valid-tags.sh
@@ -374,20 +376,14 @@ pkgctl_build() {
 
 		# update pkgver
 		if [[ -n ${PKGVER} ]]; then
-			if [[ $(type -t pkgver) == function ]]; then
-				# TODO: check if die or warn, if we provide _commit _gitcommit setter maybe?
-				warning 'setting pkgver variable has no effect if the PKGBUILD has a pkgver() function'
-			fi
 			msg "Bumping pkgver to ${PKGVER}"
-			grep --extended-regexp --quiet --max-count=1 "^pkgver=${pkgver}$" PKGBUILD || die "Non-standard pkgver declaration"
-			sed --regexp-extended "s|^(pkgver=)${pkgver}$|\1${PKGVER}|g" -i PKGBUILD
+			pkgbuild_set_pkgver "${PKGVER}"
 		fi
 
 		# update pkgrel
 		if [[ -n ${PKGREL} ]]; then
 			msg "Bumping pkgrel to ${PKGREL}"
-			grep --extended-regexp --quiet --max-count=1 "^pkgrel=${pkgrel}$" PKGBUILD || die "Non-standard pkgrel declaration"
-			sed --regexp-extended "s|^(pkgrel=)${pkgrel}$|\1${PKGREL}|g" -i PKGBUILD
+			pkgbuild_set_pkgrel "${PKGREL}"
 		fi
 
 		# edit PKGBUILD
