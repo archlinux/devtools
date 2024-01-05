@@ -34,6 +34,8 @@ _EOF_
 pkgctl_version_check() {
 	local path
 	local pkgbases=()
+	local path pkgbase upstream_version
+
 
 	while (( $# )); do
 		case $1 in
@@ -71,27 +73,35 @@ pkgctl_version_check() {
 
 	for path in "${pkgbases[@]}"; do
 		pushd "${path}" >/dev/null
-		run_nvchecker "${path}"
+
+		if [[ ! -f "PKGBUILD" ]]; then
+			die "No PKGBUILD found for ${path}"
+		fi
+
+		# shellcheck disable=SC2119
+		upstream_version=$(get_upstream_version)
+
+		# TODO: parse .SRCINFO file
+		# shellcheck source=contrib/makepkg/PKGBUILD.proto
+		. ./PKGBUILD
+		pkgbase=${pkgbase:-$pkgname}
+
+		if (( $(vercmp "${upstream_version}" "${pkgver}") > 0 )); then
+			msg2 "New ${pkgbase} version ${upstream_version} is available upstream"
+		fi
+
 		popd >/dev/null
 	done
 }
 
-run_nvchecker() {
-	local path=$1
-	local pkgbase latest_version
+get_upstream_version() {
+	local config=${1:-.nvchecker.toml}
+	local upstream_version
 
-	if [[ ! -f ".nvchecker.toml" || ! -f "PKGBUILD" ]]; then
-		die "No .nvchecker.toml or PKGBUILD found for ${path}"
-		exit 1
+	if [[ ! -f $config ]]; then
+		die "No $config found"
 	fi
 
-	# TODO: parse .SRCINFO file
-	# shellcheck source=contrib/makepkg/PKGBUILD.proto
-	. ./PKGBUILD
-	pkgbase=${pkgbase:-$pkgname}
-
-	latest_version=$(nvchecker -c .nvchecker.toml --logger json | jq --raw-output 'select( .version ) | .version')
-	if (( $(vercmp "${latest_version}" "${pkgver}") > 0 )); then
-		msg2 "New ${pkgbase} version ${latest_version} is available upstream"
-	fi
+	upstream_version=$(nvchecker -c "$config" --logger json | jq --raw-output 'select( .version ) | .version')
+	printf "%s" "$upstream_version"
 }
