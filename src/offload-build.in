@@ -6,11 +6,16 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+_DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
+# shellcheck source=src/lib/common.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+# shellcheck source=src/lib/util/makepkg.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/makepkg.sh
+
 source /usr/share/makepkg/util/config.sh
 
 # Deprecation warning
 if [[ -z $_DEVTOOLS_COMMAND ]]; then
-	colorize
 	warning "${0##*/} is deprecated and will be removed. Use 'pkgctl build --offload' instead"
 fi
 
@@ -18,8 +23,6 @@ fi
 repo=extra
 arch=x86_64
 server=build.archlinux.org
-
-die() { printf "error: $1\n" "${@:2}"; exit 1; }
 
 usage() {
     cat <<- _EOF_
@@ -84,7 +87,7 @@ load_makepkg_config
 # transferred, including local sources, install scripts, and changelogs.
 export TEMPDIR=$(mktemp -d --tmpdir offload-build.XXXXXXXXXX)
 export SRCPKGDEST=${TEMPDIR}
-makepkg --source || die "unable to make source package"
+makepkg_source_package || die "unable to make source package"
 
 # Temporary cosmetic workaround makepkg if SRCDEST is set somewhere else
 # but an empty src dir is created in PWD. Remove once fixed in makepkg.
