@@ -23,6 +23,9 @@ pkgctl_version_check_usage() {
 
 		The current working directory is used if no PKGBASE is specified.
 
+		To provide GitHub or GitLab tokens to nvchecker, a keyfile.toml
+		will be supplied from \${XDG_CONFIG_HOME}/nvchecker.
+
 		OPTIONS
 		    -h, --help          Show this help text
 
@@ -110,6 +113,8 @@ get_upstream_version() {
 	local config=.nvchecker.toml
 	local output errors upstream_version
 	local output
+	local opts=()
+	local keyfile="${XDG_CONFIG_HOME:-${HOME}/.config}/nvchecker/keyfile.toml"
 
 	# check nvchecker config file
 	if ! errors=$(nvchecker_check_config "${config}"); then
@@ -117,7 +122,12 @@ get_upstream_version() {
 		return 1
 	fi
 
-	if ! output=$(nvchecker --file "${config}" --logger json 2>&1 | \
+	# populate keyfile to nvchecker opts
+	if [[ -f ${keyfile} ]]; then
+		opts+=(--keyfile "${keyfile}")
+	fi
+
+	if ! output=$(nvchecker --file "${config}" --logger json "${opts[@]}" 2>&1 | \
 			jq --raw-output 'select(.level != "debug")'); then
 		printf "failed to run nvchecker: %s" "${output}"
 		return 1

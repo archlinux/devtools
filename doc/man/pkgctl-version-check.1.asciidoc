@@ -18,7 +18,13 @@ which this package could possibly be upgraded.
 
 The current working directory is used if no PKGBASE is specified.
 
-See the section on configuration files in **nvchecker**(1) for possible options
+Configuration
+-------------
+
+To provide GitHub or GitLab tokens to nvchecker, a `keyfile.toml` will be
+supplied from `$XDG_CONFIG_HOME`/nvchecker.
+
+See the section on configuration files in linkman:nvchecker[1] for possible options
 which can be utilized in .nvchecker.toml.
 
 Options
