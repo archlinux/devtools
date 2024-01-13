@@ -11,7 +11,7 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 
 source /usr/share/makepkg/util/message.sh
 
-set -e
+set -eo pipefail
 
 pkgctl_version_check_usage() {
 	local -r COMMAND=${_DEVTOOLS_COMMAND:-${BASH_SOURCE[0]##*/}}
@@ -34,8 +34,7 @@ _EOF_
 pkgctl_version_check() {
 	local path
 	local pkgbases=()
-	local path pkgbase upstream_version
-
+	local path pkgbase upstream_version result
 
 	while (( $# )); do
 		case $1 in
@@ -78,15 +77,28 @@ pkgctl_version_check() {
 			die "No PKGBUILD found for ${path}"
 		fi
 
-		# shellcheck disable=SC2119
-		upstream_version=$(get_upstream_version)
-
-		# TODO: parse .SRCINFO file
+		# reset common PKGBUILD variables
+		unset pkgbase pkgname arch source pkgver pkgrel validpgpkeys
 		# shellcheck source=contrib/makepkg/PKGBUILD.proto
 		. ./PKGBUILD
 		pkgbase=${pkgbase:-$pkgname}
 
-		if (( $(vercmp "${upstream_version}" "${pkgver}") > 0 )); then
+		if ! result=$(get_upstream_version); then
+			msg_error "${pkgbase}: ${result}"
+			popd >/dev/null
+			continue
+		fi
+		upstream_version=${result}
+
+		if ! result=$(vercmp "${upstream_version}" "${pkgver}"); then
+			result="${BOLD}${pkgbase}${ALL_OFF}: failed to compare version ${upstream_version} against ${pkgver}"
+			msg_error "${result}"
+
+			popd >/dev/null
+			continue
+		fi
+
+		if (( result > 0 )); then
 			msg2 "New ${pkgbase} version ${upstream_version} is available upstream"
 		fi
 
@@ -95,13 +107,80 @@ pkgctl_version_check() {
 }
 
 get_upstream_version() {
-	local config=${1:-.nvchecker.toml}
-	local upstream_version
+	local config=.nvchecker.toml
+	local output errors upstream_version
+	local output
 
-	if [[ ! -f $config ]]; then
-		die "No $config found"
+	# check nvchecker config file
+	if ! errors=$(nvchecker_check_config "${config}"); then
+		printf "%s" "${errors}"
+		return 1
 	fi
 
-	upstream_version=$(nvchecker -c "$config" --logger json | jq --raw-output 'select( .version ) | .version')
-	printf "%s" "$upstream_version"
+	if ! output=$(nvchecker --file "${config}" --logger json 2>&1 | \
+			jq --raw-output 'select(.level != "debug")'); then
+		printf "failed to run nvchecker: %s" "${output}"
+		return 1
+	fi
+
+	if ! errors=$(nvchecker_check_error "${output}"); then
+		printf "%s" "${errors}"
+		return 1
+	fi
+
+	if ! upstream_version=$(jq --raw-output --exit-status '.version' <<< "${output}"); then
+		printf "failed to select version from result"
+		return 1
+	fi
+
+	printf "%s" "${upstream_version}"
+	return 0
+}
+
+nvchecker_check_config() {
+	local config=$1
+
+	local restricted_properties=(keyfile httptoken token)
+	local property
+
+	# check if the config file exists
+	if [[ ! -f ${config} ]]; then
+		printf "configuration file not found: %s" "${config}"
+		return 1
+	fi
+
+	# check if config contains any restricted properties like secrets
+	for property in "${restricted_properties[@]}"; do
+		if grep --max-count=1 --quiet "^${property}" < "${config}"; then
+			printf "restricted property in %s: %s" "${config}" "${property}"
+			return 1
+		fi
+	done
+
+	# check if the config contains a pkgbase section
+	if [[ -n ${pkgbase} ]] && ! grep --max-count=1 --quiet "^\\[${pkgbase}\\]" < "${config}"; then
+		printf "missing pkgbase section in %s: %s" "${config}" "${pkgbase}"
+		return 1
+	fi
+
+	# check if the config contains any section other than pkgbase
+	if [[ -n ${pkgbase} ]] && property=$(grep --max-count=1 --perl-regexp "^\\[(?!${pkgbase}\\]).+\\]" < "${config}"); then
+		printf "none pkgbase section not supported in %s: %s" "${config}" "${property}"
+		return 1
+	fi
+}
+
+nvchecker_check_error() {
+	local result=$1
+	local errors
+
+	if ! errors=$(jq --raw-output --exit-status \
+			'select(.level == "error") | "\(.event)" + if .error then ": \(.error)" else "" end' \
+			<<< "${result}"); then
+		return 0
+	fi
+
+	mapfile -t errors <<< "${errors}"
+	printf "%s\n" "${errors[@]}"
+	return 1
 }
