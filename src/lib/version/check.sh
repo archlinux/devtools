@@ -39,6 +39,11 @@ pkgctl_version_check() {
 	local pkgbases=()
 	local path pkgbase upstream_version result
 
+	local up_to_date=()
+	local out_of_date=()
+	local failure=()
+	local section_separator=''
+
 	while (( $# )); do
 		case $1 in
 			-h|--help)
@@ -87,7 +92,8 @@ pkgctl_version_check() {
 		pkgbase=${pkgbase:-$pkgname}
 
 		if ! result=$(get_upstream_version); then
-			msg_error "${pkgbase}: ${result}"
+			result="${BOLD}${pkgbase}${ALL_OFF}: ${result}"
+			failure+=("${result}")
 			popd >/dev/null
 			continue
 		fi
@@ -95,18 +101,49 @@ pkgctl_version_check() {
 
 		if ! result=$(vercmp "${upstream_version}" "${pkgver}"); then
 			result="${BOLD}${pkgbase}${ALL_OFF}: failed to compare version ${upstream_version} against ${pkgver}"
-			msg_error "${result}"
-
+			failure+=("${result}")
 			popd >/dev/null
 			continue
 		fi
 
-		if (( result > 0 )); then
-			msg2 "New ${pkgbase} version ${upstream_version} is available upstream"
+		if (( result == 0 )); then
+			result="${BOLD}${pkgbase}${ALL_OFF}: current version ${PURPLE}${pkgver}${ALL_OFF} is latest"
+			up_to_date+=("${result}")
+		elif (( result < 0 )); then
+			result="${BOLD}${pkgbase}${ALL_OFF}: current version ${PURPLE}${pkgver}${ALL_OFF} is never than ${DARK_GREEN}${upstream_version}${ALL_OFF}"
+			up_to_date+=("${result}")
+		elif (( result > 0 )); then
+			result="${BOLD}${pkgbase}${ALL_OFF}: upgrade from version ${PURPLE}${pkgver}${ALL_OFF} to ${DARK_GREEN}${upstream_version}${ALL_OFF}"
+			out_of_date+=("${result}")
 		fi
 
 		popd >/dev/null
 	done
+
+	if (( ${#failure[@]} > 0 )); then
+		printf "%sFailure%s\n" "${section_separator}${BOLD}${UNDERLINE}" "${ALL_OFF}"
+		section_separator=$'\n'
+		for result in "${failure[@]}"; do
+			msg_error " ${result}"
+		done
+	fi
+
+	if (( ${#out_of_date[@]} > 0 )); then
+		printf "%sOut-of-date%s\n" "${section_separator}${BOLD}${UNDERLINE}" "${ALL_OFF}"
+		section_separator=$'\n'
+		for result in "${out_of_date[@]}"; do
+			msg_warn " ${result}"
+		done
+	fi
+
+	# Show summary when processing multiple packages
+	if (( ${#pkgbases[@]} > 1 )); then
+		printf '%s' "${section_separator}"
+		pkgctl_version_check_summary \
+			"${#up_to_date[@]}" \
+			"${#out_of_date[@]}" \
+			"${#failure[@]}"
+	fi
 }
 
 get_upstream_version() {
@@ -193,4 +230,29 @@ nvchecker_check_error() {
 	mapfile -t errors <<< "${errors}"
 	printf "%s\n" "${errors[@]}"
 	return 1
+}
+
+pkgctl_version_check_summary() {
+	local up_to_date_count=$1
+	local out_of_date_count=$2
+	local failure_count=$3
+
+	# print nothing if all stats are zero
+	if (( up_to_date_count == 0 )) && \
+			(( out_of_date_count == 0 )) && \
+			(( failure_count == 0 )); then
+		return 0
+	fi
+
+	# print summary for all none zero stats
+	printf "%sSummary%s\n" "${BOLD}${UNDERLINE}" "${ALL_OFF}"
+	if (( up_to_date_count > 0 )); then
+		msg_success " Up-to-date: ${BOLD}${up_to_date_count}${ALL_OFF}" 2>&1
+	fi
+	if (( failure_count > 0 )); then
+		msg_error " Failure: ${BOLD}${failure_count}${ALL_OFF}" 2>&1
+	fi
+	if (( out_of_date_count > 0 )); then
+		msg_warn " Out-of-date: ${BOLD}${out_of_date_count}${ALL_OFF}" 2>&1
+	fi
 }

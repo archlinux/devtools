@@ -36,9 +36,10 @@ if [[ -t 2 && "$TERM" != dumb ]] || [[ ${DEVTOOLS_COLOR} == always ]]; then
 	colorize
 	PURPLE="$(tput setaf 5)"
 	DARK_GREEN="$(tput setaf 2)"
+	UNDERLINE="$(tput smul)"
 else
 	# shellcheck disable=2034
-	declare -gr ALL_OFF='' BOLD='' BLUE='' GREEN='' RED='' YELLOW='' PURPLE=''
+	declare -gr ALL_OFF='' BOLD='' BLUE='' GREEN='' RED='' YELLOW='' PURPLE='' DARK_GREEN='' UNDERLINE=''
 fi
 
 stat_busy() {
