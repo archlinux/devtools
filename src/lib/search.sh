@@ -91,7 +91,7 @@ pkgctl_search() {
 	local line_numbers=1
 
 	# variables
-	local bats_style="header,grid"
+	local bat_style="header,grid"
 	local default_filter="-path:keys/pgp/*.asc"
 	local graphql_lookup_batch=200
 	local output result query entries from until length
@@ -156,14 +156,14 @@ pkgctl_search() {
 	fi
 
 	# check for optional dependencies
-	if [[ ${output_format} == pretty ]] && ! command -v bats &>/dev/null; then
-		warning "Failed to find optional dependency 'bats': falling back to plain output"
+	if [[ ${output_format} == pretty ]] && ! command -v bat &>/dev/null; then
+		warning "Failed to find optional dependency 'bat': falling back to plain output"
 		output_format=plain
 	fi
 
 	# populate line numbers option
 	if (( line_numbers )); then
-		bats_style="numbers,${bats_style}"
+		bat_style="numbers,${bat_style}"
 	fi
 
 	# call the gitlab search API
@@ -282,7 +282,7 @@ pkgctl_search() {
 			--line-range "${startline}:" \
 			--paging=never \
 			--force-colorization \
-			--style "${bats_style}" \
+			--style "${bat_style}" \
 			--map-syntax "PKGBUILD:Bourne Again Shell (bash)" \
 			--map-syntax ".SRCINFO:INI" \
 			--map-syntax "*install:Bourne Again Shell (bash)" \
