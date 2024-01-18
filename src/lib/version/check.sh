@@ -29,7 +29,8 @@ pkgctl_version_check_usage() {
 		will be supplied from \${XDG_CONFIG_HOME}/nvchecker.
 
 		OPTIONS
-		    -h, --help          Show this help text
+		    -v, --verbose    Display results including up-to-date versions
+		    -h, --help       Show this help text
 
 		EXAMPLES
 		    $ ${COMMAND} neovim vim
@@ -37,9 +38,10 @@ _EOF_
 }
 
 pkgctl_version_check() {
-	local path
 	local pkgbases=()
-	local status_file path pkgbase upstream_version result
+	local verbose=0
+
+	local path status_file path pkgbase upstream_version result
 
 	local up_to_date=()
 	local out_of_date=()
@@ -52,6 +54,10 @@ pkgctl_version_check() {
 			-h|--help)
 				pkgctl_version_check_usage
 				exit 0
+				;;
+			-v|--verbose)
+				verbose=1
+				shift
 				;;
 			--)
 				shift
@@ -79,6 +85,11 @@ pkgctl_version_check() {
 			pkgctl_version_check_usage
 			exit 1
 		fi
+	fi
+
+	# enable verbose mode when we only have a single item to check
+	if (( ${#pkgbases[@]} == 1 )); then
+		verbose=1
 	fi
 
 	# start a terminal spinner as checking versions takes time
@@ -139,6 +150,14 @@ pkgctl_version_check() {
 
 	# stop the terminal spinner after all checks
 	term_spinner_stop "${status_dir}"
+
+	if (( verbose )) && (( ${#up_to_date[@]} > 0 )); then
+		printf "%sUp-to-date%s\n" "${section_separator}${BOLD}${UNDERLINE}" "${ALL_OFF}"
+		section_separator=$'\n'
+		for result in "${up_to_date[@]}"; do
+			msg_success " ${result}"
+		done
+	fi
 
 	if (( ${#failure[@]} > 0 )); then
 		printf "%sFailure%s\n" "${section_separator}${BOLD}${UNDERLINE}" "${ALL_OFF}"

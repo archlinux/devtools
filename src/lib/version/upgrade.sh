@@ -32,7 +32,8 @@ pkgctl_version_upgrade_usage() {
 		The current working directory is used if no PKGBASE is specified.
 
 		OPTIONS
-		    -h, --help          Show this help text
+		    -v, --verbose    Display results including up-to-date versions
+		    -h, --help       Show this help text
 
 		EXAMPLES
 		    $ ${COMMAND} neovim vim
@@ -42,6 +43,7 @@ _EOF_
 pkgctl_version_upgrade() {
 	local path upstream_version result
 	local pkgbases=()
+	local verbose=0
 	local exit_code=0
 	local current_item=0
 
@@ -50,6 +52,10 @@ pkgctl_version_upgrade() {
 			-h|--help)
 				pkgctl_version_upgrade_usage
 				exit 0
+				;;
+			-v|--verbose)
+				verbose=1
+				shift
 				;;
 			--)
 				shift
@@ -77,6 +83,11 @@ pkgctl_version_upgrade() {
 			pkgctl_version_upgrade_usage
 			exit 1
 		fi
+	fi
+
+	# enable verbose mode when we only have a single item to check
+	if (( ${#pkgbases[@]} == 1 )); then
+		verbose=1
 	fi
 
 	# start a terminal spinner as checking versions takes time
@@ -141,6 +152,14 @@ pkgctl_version_upgrade() {
 
 	# stop the terminal spinner after all checks
 	term_spinner_stop "${status_dir}"
+
+	if (( verbose )) && (( ${#up_to_date[@]} > 0 )); then
+		printf "%sUp-to-date%s\n" "${section_separator}${BOLD}${UNDERLINE}" "${ALL_OFF}"
+		section_separator=$'\n'
+		for result in "${up_to_date[@]}"; do
+			msg_success " ${result}"
+		done
+	fi
 
 	if (( ${#failure[@]} > 0 )); then
 		exit_code=1

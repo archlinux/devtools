@@ -22,6 +22,9 @@ The current working directory is used if no PKGBASE is specified.
 Options
 -------
 
+*-v, --verbose*::
+	Display results including up-to-date versions
+
 *-h, --help*::
 	Show a help text
 

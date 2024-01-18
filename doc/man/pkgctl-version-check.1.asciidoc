@@ -30,6 +30,9 @@ which can be utilized in .nvchecker.toml.
 Options
 -------
 
+*-v, --verbose*::
+	Display results including up-to-date versions
+
 *-h, --help*::
 	Show a help text
 

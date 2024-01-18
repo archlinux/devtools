@@ -343,12 +343,14 @@ _pkgctl_version_cmds=(
 )
 
 _pkgctl_version_check_args=(
+	-v --verbose
 	-h --help
 )
 
 _pkgctl_version_check_opts() { _filedir -d; }
 
 _pkgctl_version_upgrade_args=(
+	-v --verbose
 	-h --help
 )
 
