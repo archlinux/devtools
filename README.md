@@ -88,7 +88,7 @@ Component: pkgctl db remove
 
 ### Optional Dependencies
 
-- bats (pretty printing)
+- bat (pretty printing)
 - nvchecker (version checking)
 
 ### Development Dependencies
