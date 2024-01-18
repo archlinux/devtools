@@ -15,6 +15,14 @@ source /usr/share/makepkg/util/message.sh
 
 set -eo pipefail
 
+readonly PKGCTL_VERSION_CHECK_EXIT_UP_TO_DATE=0
+export PKGCTL_VERSION_CHECK_EXIT_UP_TO_DATE
+readonly PKGCTL_VERSION_CHECK_EXIT_OUT_OF_DATE=2
+export PKGCTL_VERSION_CHECK_EXIT_OUT_OF_DATE
+readonly PKGCTL_VERSION_CHECK_EXIT_FAILURE=3
+export PKGCTL_VERSION_CHECK_EXIT_FAILURE
+
+
 pkgctl_version_check_usage() {
 	local -r COMMAND=${_DEVTOOLS_COMMAND:-${BASH_SOURCE[0]##*/}}
 	cat <<- _EOF_
@@ -48,6 +56,7 @@ pkgctl_version_check() {
 	local failure=()
 	local current_item=0
 	local section_separator=''
+	local exit_code=${PKGCTL_VERSION_CHECK_EXIT_UP_TO_DATE}
 
 	while (( $# )); do
 		case $1 in
@@ -160,6 +169,7 @@ pkgctl_version_check() {
 	fi
 
 	if (( ${#failure[@]} > 0 )); then
+		exit_code=${PKGCTL_VERSION_CHECK_EXIT_FAILURE}
 		printf "%sFailure%s\n" "${section_separator}${BOLD}${UNDERLINE}" "${ALL_OFF}"
 		section_separator=$'\n'
 		for result in "${failure[@]}"; do
@@ -168,6 +178,7 @@ pkgctl_version_check() {
 	fi
 
 	if (( ${#out_of_date[@]} > 0 )); then
+		exit_code=${PKGCTL_VERSION_CHECK_EXIT_OUT_OF_DATE}
 		printf "%sOut-of-date%s\n" "${section_separator}${BOLD}${UNDERLINE}" "${ALL_OFF}"
 		section_separator=$'\n'
 		for result in "${out_of_date[@]}"; do
@@ -183,6 +194,9 @@ pkgctl_version_check() {
 			"${#out_of_date[@]}" \
 			"${#failure[@]}"
 	fi
+
+	# return status based on results
+	return "${exit_code}"
 }
 
 get_upstream_version() {

@@ -36,6 +36,23 @@ Options
 *-h, --help*::
 	Show a help text
 
+Errors
+------
+
+On exit, return one of the following codes:
+
+*0*::
+	Normal exit condition, all checked versions are up-to-date
+
+*1*::
+	Unknown cause of failure
+
+*2*::
+	Normal exit condition, but there are out-of-date versions
+
+*3*::
+	Failed to run some version checks
+
 See Also
 --------
 

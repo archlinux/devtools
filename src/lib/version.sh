@@ -47,7 +47,7 @@ pkgctl_version() {
 				# shellcheck source=src/lib/version/check.sh
 				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/version/check.sh
 				pkgctl_version_check "$@"
-				exit 0
+				exit $?
 				;;
 			upgrade)
 				_DEVTOOLS_COMMAND+=" $1"
@@ -55,7 +55,7 @@ pkgctl_version() {
 				# shellcheck source=src/lib/version/upgrade.sh
 				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/version/upgrade.sh
 				pkgctl_version_upgrade "$@"
-				exit 0
+				exit $?
 				;;
 			*)
 				die "invalid argument: %s" "$1"
