@@ -14,6 +14,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/cache.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/api/gitlab.sh
 # shellcheck source=src/lib/valid-search.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-search.sh
+# shellcheck source=src/lib/util/term.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/term.sh
 
 source /usr/share/makepkg/util/util.sh
 source /usr/share/makepkg/util/message.sh
@@ -167,9 +169,12 @@ pkgctl_search() {
 	fi
 
 	# call the gitlab search API
-	stat_busy "Querying gitlab search api"
-	output=$(gitlab_api_search "${search}")
-	stat_done
+	status_dir=$(mktemp --tmpdir="${WORKDIR}" --directory pkgctl-gitlab-api.XXXXXXXXXX)
+	printf "📡 Querying GitLab search API..." > "${status_dir}/status"
+	term_spinner_start "${status_dir}"
+	output=$(gitlab_api_search "${search}" "${status_dir}/status")
+	term_spinner_stop "${status_dir}"
+	msg_success "Querying GitLab search API"
 
 	# collect project ids whose name needs to be looked up
 	project_name_cache_file=$(get_cache_file gitlab/project_id_to_name)
@@ -179,7 +184,9 @@ pkgctl_search() {
 			grep --invert-match --file <(awk '{ print $1 }' < "${project_name_cache_file}" ))
 
 	# look up project names
-	stat_busy "Querying project names"
+	tmp_file=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api-spinner.tmp.XXXXXXXXXX)
+	printf "📡 Querying GitLab project names..." > "${status_dir}/status"
+	term_spinner_start "${status_dir}"
 	local entries="${#project_ids[@]}"
 	local until=0
 	while (( until < entries )); do
@@ -189,6 +196,12 @@ pkgctl_search() {
 			until=${entries}
 		fi
 		length=$(( until - from ))
+
+		percentage=$(( 100 * until / entries ))
+		printf "📡 Querying GitLab project names: %s/%s [%s] %%spinner%%" \
+			"${BOLD}${until}" "${entries}" "${percentage}%${ALL_OFF}"  \
+			> "${tmp_file}"
+		mv "${tmp_file}" "${status_dir}/status"
 
 		project_slice=("${project_ids[@]:${from}:${length}}")
 		printf -v projects '"gid://gitlab/Project/%s",' "${project_slice[@]}"
@@ -214,7 +227,8 @@ pkgctl_search() {
 			'.[] | "\(.id | rindex("/") as $lastSlash | .[$lastSlash+1:]) \(.name)"' \
 			<<< "${mapping_output}")
 	done
-	stat_done
+	term_spinner_stop "${status_dir}"
+	msg_success "Querying GitLab project names"
 
 	# read project_id to name mapping from cache
 	declare -A project_name_lookup=()

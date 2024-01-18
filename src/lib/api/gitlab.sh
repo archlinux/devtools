@@ -97,9 +97,10 @@ gitlab_api_call() {
 
 gitlab_api_call_paged() {
 	local outfile=$1
-	local request=$2
-	local endpoint=$3
-	local data=${4:-}
+	local status_file=$2
+	local request=$3
+	local endpoint=$4
+	local data=${5:-}
 	local result header
 
 	# empty token
@@ -110,9 +111,18 @@ gitlab_api_call_paged() {
 
 	[[ -z ${WORKDIR:-} ]] && setup_workdir
 	api_workdir=$(mktemp --tmpdir="${WORKDIR}" --directory pkgctl-gitlab-api.XXXXXXXXXX)
+	tmp_file=$(mktemp --tmpdir="${api_workdir}" spinner.tmp.XXXXXXXXXX)
 
-	next_page=1
+	local next_page=1
+	local total_pages=1
+
 	while [[ -n "${next_page}" ]]; do
+		percentage=$(( 100 * next_page / total_pages ))
+		printf "📡 Querying GitLab: %s/%s [%s] %%spinner%%" \
+			"${BOLD}${next_page}" "${total_pages}" "${percentage}%${ALL_OFF}"  \
+			> "${tmp_file}"
+		mv "${tmp_file}" "${status_file}"
+
 		result="${api_workdir}/result.${next_page}"
 		header="${api_workdir}/header"
 		if ! curl --request "${request}" \
@@ -133,6 +143,7 @@ gitlab_api_call_paged() {
 		fi
 
 		next_page=$(grep "x-next-page" "${header}" | tr -d '\r' | awk '{ print $2 }')
+		total_pages=$(grep "x-total-pages" "${header}" | tr -d '\r' | awk '{ print $2 }')
 	done
 
 	jq --slurp add "${api_workdir}"/result.* > "${outfile}"
@@ -277,12 +288,13 @@ gitlab_api_create_project() {
 # https://docs.gitlab.com/ee/api/search.html#scope-blobs
 gitlab_api_search() {
 	local search=$1
+	local status_file=$2
 	local outfile
 
 	[[ -z ${WORKDIR:-} ]] && setup_workdir
 	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
 
-	if ! gitlab_api_call_paged "${outfile}" GET "/groups/archlinux%2fpackaging%2fpackages/search?scope=blobs" "search=${search}"; then
+	if ! gitlab_api_call_paged "${outfile}" "${status_file}" GET "/groups/archlinux%2fpackaging%2fpackages/search?scope=blobs" "search=${search}"; then
 		return 1
 	fi
 
