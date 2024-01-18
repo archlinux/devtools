@@ -13,7 +13,7 @@ set +u +o posix
 $DEVTOOLS_INCLUDE_COMMON_SH
 
 # Avoid any encoding problems
-export LANG=C
+export LANG=C.UTF-8
 
 # Set buildtool properties
 export BUILDTOOL=devtools
@@ -108,6 +108,7 @@ cleanup() {
 	if [[ -n ${WORKDIR:-} ]] && $_setup_workdir; then
 		rm -rf "$WORKDIR"
 	fi
+	tput cnorm >&2
 	exit "${1:-0}"
 }
 
