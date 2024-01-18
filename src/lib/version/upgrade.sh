@@ -12,6 +12,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/version/check.sh
 # shellcheck source=src/lib/util/pkgbuild.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/pkgbuild.sh
+# shellcheck source=src/lib/util/term.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/term.sh
 
 source /usr/share/makepkg/util/message.sh
 
@@ -41,6 +43,7 @@ pkgctl_version_upgrade() {
 	local path upstream_version result
 	local pkgbases=()
 	local exit_code=0
+	local current_item=0
 
 	while (( $# )); do
 		case $1 in
@@ -76,12 +79,26 @@ pkgctl_version_upgrade() {
 		fi
 	fi
 
+	# start a terminal spinner as checking versions takes time
+	status_dir=$(mktemp --tmpdir="${WORKDIR}" --directory pkgctl-version-check-spinner.XXXXXXXXXX)
+	term_spinner_start "${status_dir}"
+
 	for path in "${pkgbases[@]}"; do
 		pushd "${path}" >/dev/null
 
 		if [[ ! -f "PKGBUILD" ]]; then
 			die "No PKGBUILD found for ${path}"
 		fi
+
+		# update the current terminal spinner status
+		(( ++current_item ))
+		pkgctl_version_upgrade_spinner \
+			"${status_dir}" \
+			"${#up_to_date[@]}" \
+			"${#out_of_date[@]}" \
+			"${#failure[@]}" \
+			"${current_item}" \
+			"${#pkgbases[@]}"
 
 		# reset common PKGBUILD variables
 		unset pkgbase pkgname arch source pkgver pkgrel validpgpkeys
@@ -121,6 +138,9 @@ pkgctl_version_upgrade() {
 
 		popd >/dev/null
 	done
+
+	# stop the terminal spinner after all checks
+	term_spinner_stop "${status_dir}"
 
 	if (( ${#failure[@]} > 0 )); then
 		exit_code=1
@@ -175,4 +195,31 @@ pkgctl_version_upgrade_summary() {
 	if (( out_of_date_count > 0 )); then
 		msg_warn " Upgraded: ${BOLD}${out_of_date_count}${ALL_OFF}" 2>&1
 	fi
+}
+
+pkgctl_version_upgrade_spinner() {
+	local status_dir=$1
+	local up_to_date_count=$2
+	local out_of_date_count=$3
+	local failure_count=$4
+	local current=$5
+	local total=$6
+
+	local percentage=$(( 100 * current / total ))
+	local tmp_file="${status_dir}/tmp"
+	local status_file="${status_dir}/status"
+
+	# print the current summary
+	pkgctl_version_upgrade_summary \
+		"${up_to_date_count}" \
+		"${out_of_date_count}" \
+		"${failure_count}" > "${tmp_file}"
+
+	# print the progress status
+	printf "📡 Upgrading: %s/%s [%s] %%spinner%%" \
+		"${BOLD}${current}" "${total}" "${percentage}%${ALL_OFF}"  \
+		>> "${tmp_file}"
+
+	# swap the status file
+	mv "${tmp_file}" "${status_file}"
 }
