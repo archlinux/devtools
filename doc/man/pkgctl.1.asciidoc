@@ -51,7 +51,7 @@ pkgctl search::
 	Search for an expression across the GitLab packaging group
 
 pkgctl version::
-	Package version related commands
+	Check and manage package versions against upstream
 
 See Also
 --------

@@ -15,11 +15,11 @@ pkgctl_version_usage() {
     cat <<- _EOF_
 		Usage: ${COMMAND} [COMMAND] [OPTIONS]
 
-		Package version related commands.
+		Check and manage package versions against upstream.
 
 		COMMANDS
-		    check      Check if there is a newer version availble
-		    upgrade    Upgrade the PKGBUILD according to the latest available upstream version
+		    check      Compares local package versions against upstream
+		    upgrade    Adjust the PKGBUILD to match the latest upstream version
 
 		OPTIONS
 		    -h, --help    Show this help text

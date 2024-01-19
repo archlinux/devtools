@@ -3,7 +3,7 @@ pkgctl-version-check(1)
 
 Name
 ----
-pkgctl-version-check - Check if there is an new upstream version available
+pkgctl-version-check - Compares local package versions against upstream
 
 Synopsis
 --------
@@ -12,20 +12,24 @@ pkgctl version check [OPTIONS] [PKGBASE...]
 Description
 -----------
 
-Uses nvchecker, a .nvchecker.toml file and the version specified in the current
-PKGBUILDs pkgver to check if there is a newer package version available to
-which this package could possibly be upgraded.
+Compares the versions of packages in the local packaging repository against
+their latest upstream versions.
 
-The current working directory is used if no PKGBASE is specified.
+Upon execution, it generates a grouped list that provides detailed insights
+into each package's status. For each package, it displays the current local
+version alongside the latest version available upstream.
+
+Outputs a summary of up-to-date packages, out-of-date packages, and any check
+failures.
+
+This simplifies the maintenance of PKGBUILD files, reducing the manual effort
+required to track version changes from upstream sources.
 
 Configuration
 -------------
 
-To provide GitHub or GitLab tokens to nvchecker, a `keyfile.toml` will be
-supplied from `$XDG_CONFIG_HOME`/nvchecker.
-
-See the section on configuration files in linkman:nvchecker[1] for possible options
-which can be utilized in .nvchecker.toml.
+Uses linkman:nvchecker[1] and a `.nvchecker.toml` file located alongside the
+PKGBUILD. Refer to the configuration section in linkman:pkgctl-version[1].
 
 Options
 -------
@@ -36,8 +40,8 @@ Options
 *-h, --help*::
 	Show a help text
 
-Errors
-------
+Exit Codes
+----------
 
 On exit, return one of the following codes:
 
@@ -56,6 +60,7 @@ On exit, return one of the following codes:
 See Also
 --------
 
+linkman:pkgctl-version[1]
 linkman:nvchecker[1]
 
 include::include/footer.asciidoc[]

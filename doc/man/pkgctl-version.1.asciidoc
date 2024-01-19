@@ -3,7 +3,7 @@ pkgctl-version(1)
 
 Name
 ----
-pkgctl-version - Package version related commands.
+pkgctl-version - Check and manage package versions against upstream
 
 
 Synopsis
@@ -13,7 +13,28 @@ pkgctl version [OPTIONS] [SUBCOMMAND]
 Description
 -----------
 
-Package version related commands such as checking if a package is out of date.
+Commands related to package versions, including checks for outdated packages.
+
+Uses linkman:nvchecker[1] and a `.nvchecker.toml` file located alongside the
+PKGBUILD.
+
+Configuration
+-------------
+
+The `.nvchecker.toml` file must contain a section that matches the
+package's pkgbase. The pkgbase section within the `.nvchecker.toml` file
+specifies the source and method for checking the latest version of the
+corresponding package.
+
+For detailed information on the various configuration options available for the
+`.nvchecker.toml` file, refer to the configuration files section in
+linkman:nvchecker[1]. This documentation provides insights into the possible
+options that can be utilized to customize the version checking process.
+
+To supply GitHub or GitLab tokens to nvchecker, a `keyfile.toml` should be
+placed in the `$XDG_CONFIG_HOME`/nvchecker` directory. This keyfile is
+used for providing the necessary authentication tokens required for
+accessing the GitHub or GitLab API.
 
 Options
 -------
@@ -25,10 +46,10 @@ Subcommands
 -----------
 
 pkgctl version check::
-	Check if there is an new upstream version available
+	Compares local package versions against upstream
 
 pkgctl version upgrade::
-	Upgrade the PKGBUILD according to the latest available upstream version
+	Adjust the PKGBUILD to match the latest upstream version
 
 See Also
 --------

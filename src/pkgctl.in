@@ -27,7 +27,7 @@ usage() {
 		    release Release step to commit, tag and upload build artifacts
 		    repo    Manage Git packaging repositories and their configuration
 		    search  Search for an expression across the GitLab packaging group
-		    version Package version related commands
+		    version Check and manage package versions against upstream
 
 		OPTIONS
 		    -h, --help     Show this help text

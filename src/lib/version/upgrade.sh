@@ -24,12 +24,16 @@ pkgctl_version_upgrade_usage() {
 	cat <<- _EOF_
 		Usage: ${COMMAND} [OPTIONS] [PKGBASE]...
 
-		Upgrade the PKGBUILD according to the latest available upstream version
+		Streamlines the process of keeping PKGBUILD files up-to-date with the latest
+		upstream versions.
 
-		Uses nvchecker, a .nvchecker.toml file and the current PKGBUILD
-		pkgver to check if there is a newer package version available.
+		Upon execution, it automatically adjusts the PKGBUILD file, ensuring that the
+		pkgver field is set to match the latest version available from the upstream
+		source. In addition to updating the pkgver, this command also resets the pkgrel
+		to 1.
 
-		The current working directory is used if no PKGBASE is specified.
+		Outputs a summary of upgraded packages, up-to-date packages, and any check
+		failures.
 
 		OPTIONS
 		    -v, --verbose    Display results including up-to-date versions

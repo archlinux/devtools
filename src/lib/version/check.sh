@@ -28,13 +28,15 @@ pkgctl_version_check_usage() {
 	cat <<- _EOF_
 		Usage: ${COMMAND} [OPTIONS] [PKGBASE]...
 
-		Uses nvchecker, a .nvchecker.toml file and the current PKGBUILD
-		pkgver to check if there is a newer package version available.
+		Compares the versions of packages in the local packaging repository against
+		their latest upstream versions.
 
-		The current working directory is used if no PKGBASE is specified.
+		Upon execution, it generates a grouped list that provides detailed insights
+		into each package's status. For each package, it displays the current local
+		version alongside the latest version available upstream.
 
-		To provide GitHub or GitLab tokens to nvchecker, a keyfile.toml
-		will be supplied from \${XDG_CONFIG_HOME}/nvchecker.
+		Outputs a summary of up-to-date packages, out-of-date packages, and any
+		check failures.
 
 		OPTIONS
 		    -v, --verbose    Display results including up-to-date versions

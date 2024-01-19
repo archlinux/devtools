@@ -3,7 +3,7 @@ pkgctl-version-upgrade(1)
 
 Name
 ----
-pkgctl-version-upgrade - Upgrade the PKGBUILD according to the latest available upstream version
+pkgctl-version-upgrade - Adjust the PKGBUILD to match the latest upstream version
 
 Synopsis
 --------
@@ -12,12 +12,25 @@ pkgctl version upgrade [OPTIONS] [PKGBASE...]
 Description
 -----------
 
-Upgrade the PKGBUILD according to the latest available upstream version.
+Streamlines the process of keeping PKGBUILD files up-to-date with the latest
+upstream versions.
 
-Uses nvchecker, a .nvchecker.toml file and the current PKGBUILD pkgver to check
-if there is a newer package version available.
+Upon execution, it automatically adjusts the PKGBUILD file, ensuring that the
+pkgver field is set to match the latest version available from the upstream
+source. In addition to updating the pkgver, this command also resets the pkgrel
+to 1.
 
-The current working directory is used if no PKGBASE is specified.
+Outputs a summary of upgraded packages, up-to-date packages, and any check
+failures.
+
+This simplifies the maintenance of PKGBUILD files, reducing the manual effort
+required to track and implement version changes from upstream sources.
+
+Configuration
+-------------
+
+Uses linkman:nvchecker[1] and a `.nvchecker.toml` file located alongside the
+PKGBUILD. Refer to the configuration section in linkman:pkgctl-version[1].
 
 Options
 -------
@@ -31,6 +44,7 @@ Options
 See Also
 --------
 
+linkman:pkgctl-version[1]
 linkman:nvchecker[1]
 
 include::include/footer.asciidoc[]
