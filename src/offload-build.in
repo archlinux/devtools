@@ -107,6 +107,7 @@ mapfile -t files < <(
             cd "$temp" &&
             {
                 bsdtar --strip-components 1 -xvf - &&
+                export LOGDEST="" &&
                 script -qefc "'"${archbuild_cmd[@]@Q}"'" /dev/null &&
                 printf "%s\n" "" "-> build complete" &&
                 printf "\t%s\n" "$temp"/*
@@ -120,14 +121,25 @@ mapfile -t files < <(
                 [[ -f "${file}" ]] && printf "%s\n" "${file}" ||:
             done < <(makepkg --config <(cat "${makepkg_user_config}" "${makepkg_config}" 2>/dev/null) --packagelist) &&
             printf "%s\n" "${temp}/PKGBUILD"
+
+            find "${temp}" -name "*.log"
 ')
 
 
 if (( ${#files[@]} )); then
-    printf '%s\n' '' '-> copying files...'
+    msg 'Downloading files...'
     rsync "${rsyncopts[@]}" "${files[@]/#/$server:}" "${TEMPDIR}/" || die
-    mv "${TEMPDIR}"/*.pkg.tar* "${PKGDEST:-${PWD}}/"
+
+    if is_globfile "${TEMPDIR}"/*.log; then
+        mv "${TEMPDIR}"/*.log "${LOGDEST:-${PWD}}/"
+    fi
+    # missing PKGBUILD download means the build failed
+    if [[ ! -f "${TEMPDIR}/PKGBUILD" ]]; then
+        error "Build failed, check logs in ${LOGDEST:-${PWD}}"
+        exit 1
+    fi
     mv "${TEMPDIR}/PKGBUILD" "${PWD}/"
+    mv "${TEMPDIR}"/*.pkg.tar* "${PKGDEST:-${PWD}}/"
 else
     exit 1
 fi

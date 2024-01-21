@@ -354,6 +354,14 @@ is_debug_package() {
 	[[ ${pkgdesc} == "Detached debugging symbols for "* && ${pkgbase}-debug = "${pkgname}" ]]
 }
 
+# Proxy function to check if a file exists. Using [[ -f ... ]] directly is not
+# always wanted because we might want to expand bash globs first. This way we
+# can pass unquoted globs to is_globfile() and have them expanded as function
+# arguments before being checked.
+is_globfile() {
+	[[ -f $1 ]]
+}
+
 join_by() {
 	local IFS="$1"
 	shift
