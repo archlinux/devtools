@@ -342,3 +342,9 @@ is_debug_package() {
 	pkgdesc="$(getpkgdesc "${pkgfile}")"
 	[[ ${pkgdesc} == "Detached debugging symbols for "* && ${pkgbase}-debug = "${pkgname}" ]]
 }
+
+join_by() {
+	local IFS="$1"
+	shift
+	echo "$*"
+}

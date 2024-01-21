@@ -350,6 +350,7 @@ _pkgctl_repo_switch_opts() {
 
 _pkgctl_version_cmds=(
 	check
+	setup
 	upgrade
 )
 
@@ -359,6 +360,17 @@ _pkgctl_version_check_args=(
 )
 
 _pkgctl_version_check_opts() { _filedir -d; }
+
+_pkgctl_version_setup_args=(
+	--prefer-platform-api
+	--url
+	--no-check
+	-f --force
+	-h --help
+)
+
+_pkgctl_version_setup_opts() { _filedir -d; }
+_pkgctl_version_setup_args__url_opts() { :; }
 
 _pkgctl_version_upgrade_args=(
 	-v --verbose

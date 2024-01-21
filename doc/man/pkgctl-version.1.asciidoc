@@ -26,6 +26,9 @@ package's pkgbase. The pkgbase section within the `.nvchecker.toml` file
 specifies the source and method for checking the latest version of the
 corresponding package.
 
+Use pkgctl-version-setup(1) to automatically detect and setup a basic nvchecker
+config based on the source array of the package PKGBUILD.
+
 For detailed information on the various configuration options available for the
 `.nvchecker.toml` file, refer to the configuration files section in
 nvchecker(1). This documentation provides insights into the possible
@@ -48,6 +51,9 @@ Subcommands
 pkgctl version check::
 	Compares local package versions against upstream
 
+pkgctl version setup::
+	Automatically detect and setup a basic nvchecker config
+
 pkgctl version upgrade::
 	Adjust the PKGBUILD to match the latest upstream version
 
@@ -55,6 +61,7 @@ See Also
 --------
 
 pkgctl-version-check(1)
+pkgctl-version-setup(1)
 pkgctl-version-upgrade(1)
 
 include::include/footer.asciidoc[]

@@ -1,0 +1,120 @@
+pkgctl-version-setup(1)
+=======================
+
+Name
+----
+pkgctl-version-setup - Automatically detect and setup a basic nvchecker config
+
+Synopsis
+--------
+pkgctl version setup [OPTIONS] [PKGBASE...]
+
+Description
+-----------
+
+This subcommand automates the creation of a basic nvchecker(1) configuration
+file by analyzing the source array specified in the PKGBUILD(1) file of a
+package. This command intelligently detects various platforms and APIs (e.g.,
+GitHub, GitLab, PyPI) used by the package sources and generates a corresponding
+`.nvchecker.toml` configuration based on its best guess.
+
+This is particularly useful for initializing nvchecker(1) settings for a
+package without manually crafting the `.nvchecker.toml` file. It simplifies the
+process of setting up version checks, especially when transitioning a package's
+monitoring from one source platform to another or starting version checks for a
+new package.
+
+If no `PKGBASE` is specified, the command defaults to using the current working
+directory.
+
+To obtain a list of supported sources and their expected URL formats, please
+consult the sources section.
+
+Options
+-------
+
+*-f, --force*::
+	Overwrite existing nvchecker(1) configuration
+
+*--prefer-platform-api*::
+	Prefer platform specific GitHub/GitLab API over git for complex cases
+
+*--url* 'URL'::
+	Derive check target from the given URL instead of the source array entries
+
+
+*--no-check*::
+	Do not run pkgctl-version-check(1) after setup
+
+*-h, --help*::
+	Show a help text
+
+Sources
+-------
+
+Here are the currently supported platforms and sources, along with examples of
+URL formats that enable their automatic detection as specific source types:
+
+*Git*::
+	* https://github.com/example/project
+	* https://gitlab.com/example/group/project
+	* git://git.foobar.org/example
+	* git+https://git.foobar.org/example
+
+*GitHub*::
+	* https://github.com/example/project
+	* https://github.com/example/project/archive/v1.0/project-v1.0.tar.gz
+
+*GitLab*::
+	* https://gitlab.com/example/group/project
+	* https://gitlab.archlinux.org/archlinux/devtools.git
+	* https://gitlab.archlinux.org/archlinux/devtools/-/releases/v1.1.0/downloads/devtools-v1.1.0.tar.gz
+
+*Hackage*::
+	* https://hackage.haskell.org/package/xmonad
+	* https://hackage.haskell.org/package/xmonad-0.18.0/xmonad-0.18.0.tar.gz
+	* https://hackage.haskell.org/packages/archive/xmonad/0.18.0/xmonad-0.18.0.tar.gz
+
+*NPM*::
+	* https://registry.npmjs.org/node-gyp/-/node-gyp-10.0.1.tgz
+	* https://www.npmjs.com/package/node-gyp
+
+*PyPI*::
+	* https://pypi.io/packages/source/p/pyflakes
+	* https://pypi.org/packages/source/b/bleach
+	* https://files.pythonhosted.org/packages/source/p/pyflakes
+	* https://pypi.org/project/SQLAlchemy/
+
+*RubyGems*::
+	* https://rubygems.org/downloads/diff-lcs-1.5.1.gem
+	* https://rubygems.org/gems/diff-lcs
+
+*CPAN*::
+	* https://search.cpan.org/CPAN/authors/id/C/CO/COSIMO/Locale-PO-0.27.tar.gz
+	* https://cpan.metacpan.org/authors/id/C/CO/COSIMO/Locale-PO-0.27.tar.gz
+
+*crates.io*::
+	* https://static.crates.io/crates/shotgun/shotgun-1.0.crate
+	* https://crates.io/api/v1/crates/shotgun/1.0/download
+	* https://crates.io/crates/git-smash
+
+Examples
+--------
+
+*pkgctl version setup*::
+	Detects the source from the current directory's PKGBUILD(1) and
+	sets up a basic `.nvchecker.toml`.
+
+*pkgctl version setup --url https://github.com/example/project*::
+	Generates an `.nvchecker.toml` for the current PKGBUILD(1) but
+	overrides the source URL with the specified GitHub project.
+
+See Also
+--------
+
+pkgctl-version(1)
+pkgctl-version-check(1)
+nvchecker(1)
+PKGBUILD(5)
+
+include::include/footer.asciidoc[]

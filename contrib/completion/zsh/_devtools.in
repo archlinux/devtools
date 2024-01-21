@@ -291,11 +291,21 @@ _pkgctl_args=(
 _pkgctl_version_cmds=(
 	"pkgctl version command"
 	"check[Compares local package versions against upstream versions]"
+	"setup[Automatically detect and setup a basic nvchecker config]"
 	"upgrade[Adjust the PKGBUILD to match the latest upstream version]"
 )
 
 _pkgctl_version_check_args=(
 	'(-v --verbose)'{-v,--verbose}'[Display results including up-to-date versions]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'*:git_dir:_files -/'
+)
+
+_pkgctl_version_setup_args=(
+	'(-f --force)'{-f,--force}'[Do not prompt before overwriting]'
+	'--prefer-platform-api[Prefer platform specific GitHub/GitLab API for complex cases]'
+	'--url[Derive check target from URL instead of source array]:url:'
+	'--no-check[Do not run version check after setup]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:git_dir:_files -/'
 )

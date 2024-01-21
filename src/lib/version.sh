@@ -19,6 +19,7 @@ pkgctl_version_usage() {
 
 		COMMANDS
 		    check      Compares local package versions against upstream
+		    setup      Automatically detect and setup a basic nvchecker config
 		    upgrade    Adjust the PKGBUILD to match the latest upstream version
 
 		OPTIONS
@@ -26,6 +27,7 @@ pkgctl_version_usage() {
 
 		EXAMPLES
 		    $ ${COMMAND} check libfoo linux libbar
+		    $ ${COMMAND} setup libfoo
 _EOF_
 }
 
@@ -56,6 +58,14 @@ pkgctl_version() {
 				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/version/upgrade.sh
 				pkgctl_version_upgrade "$@"
 				exit $?
+				;;
+			setup)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/version/setup.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/version/setup.sh
+				pkgctl_version_setup "$@"
+				exit 0
 				;;
 			*)
 				die "invalid argument: %s" "$1"
