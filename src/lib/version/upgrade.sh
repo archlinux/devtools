@@ -140,7 +140,7 @@ pkgctl_version_upgrade() {
 			result="${BOLD}${pkgbase}${ALL_OFF}: current version ${PURPLE}${pkgver}${ALL_OFF} is latest"
 			up_to_date+=("${result}")
 		elif (( result < 0 )); then
-			result="${BOLD}${pkgbase}${ALL_OFF}: current version ${PURPLE}${pkgver}${ALL_OFF} is never than ${DARK_GREEN}${upstream_version}${ALL_OFF}"
+			result="${BOLD}${pkgbase}${ALL_OFF}: current version ${PURPLE}${pkgver}${ALL_OFF} is newer than ${DARK_GREEN}${upstream_version}${ALL_OFF}"
 			up_to_date+=("${result}")
 		elif (( result > 0 )); then
 			result="${BOLD}${pkgbase}${ALL_OFF}: upgraded from version ${PURPLE}${pkgver}${ALL_OFF} to ${DARK_GREEN}${upstream_version}${ALL_OFF}"
