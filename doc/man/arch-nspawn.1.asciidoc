@@ -28,8 +28,9 @@ Options
 *-c* <dir>::
 	Set pacman cache, if no directory is specified the passed pacman.conf's cachedir is used with a fallback to '/etc/pacman.conf'
 
-*-f* <file>::
-	Copy file from the host to the chroot
+*-f* <src>[:<dst>]::
+	Copy file from the host to the chroot.
+	If 'dst' is not provided, it defaults to 'src' inside of the chroot.
 
 *-s*::
 	Do not run setarch

@@ -237,6 +237,7 @@ _mkarchroot_args=(
 	'-C[Location of a pacman config file]:pacman_config:_files -g "*.conf(.)"'
 	'-M[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
 	'-c[Set pacman cache]:pacman_cache:_files -/'
+	'-f[Copy src file from the host to the chroot]:target:_files -/'
 	'-h[Display usage]'
 	'1:working_dir:_files -/'
 	'*:packages:_devtools_completions_all_packages'

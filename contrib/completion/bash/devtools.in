@@ -61,12 +61,14 @@ _mkarchroot_args=(
 	-C
 	-M
 	-c
+	-f
 	-h
 )
 _mkarchroot_args_U_opts() { _filedir '*.pkg.tar.*'; }
 _mkarchroot_args_C_opts() { _filedir '*.conf'; }
 _mkarchroot_args_M_opts() { _filedir '*.conf'; }
 _mkarchroot_args_c_opts() { _filedir -d; }
+_mkarchroot_args_f_opts() { _filedir -d; }
 _mkarchroot_opts() {
 	local args
 	args=$(__pkgctl_word_count_after_subcommand)

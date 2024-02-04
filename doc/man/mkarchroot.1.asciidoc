@@ -32,8 +32,9 @@ Options
 *-c* <dir>::
 	Set pacman cache.
 
-*-f* <file>::
+*-f* <src>[:<dst>]::
 	Copy file from the host to the chroot.
+	If 'dst' is not provided, it defaults to 'src' inside of the chroot.
 
 *-s*::
 	Do not run setarch.

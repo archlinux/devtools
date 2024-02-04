@@ -22,12 +22,13 @@ usage() {
 	echo "A wrapper around systemd-nspawn. Provides support for pacman."
 	echo
 	echo ' options:'
-	echo '    -C <file>     Location of a pacman config file'
-	echo '    -M <file>     Location of a makepkg config file'
-	echo '    -c <dir>      Set pacman cache'
-	echo '    -f <file>     Copy file from the host to the chroot'
-	echo '    -s            Do not run setarch'
-	echo '    -h            This message'
+	echo '    -C <file>           Location of a pacman config file'
+	echo '    -M <file>           Location of a makepkg config file'
+	echo '    -c <dir>            Set pacman cache'
+	echo '    -f <src>[:<dst>]    Copy src file from the host to the chroot.'
+	echo '                        If dst file is not provided, it defaults to src'
+	echo '    -s                  Do not run setarch'
+	echo '    -h                  This message'
 	exit 1
 }
 
@@ -114,8 +115,10 @@ copy_hostconf () {
 
 	local file
 	for file in "${files[@]}"; do
-		mkdir -p "$(dirname "$working_dir$file")"
-		cp -T "$file" "$working_dir$file"
+		src="${file%%:*}"
+		dst="${file#*:}"
+		mkdir -p "$(dirname "$working_dir$dst")"
+		cp -T "$src" "$working_dir$dst"
 	done
 
 	sed -r "s|^#?\\s*CacheDir.+|CacheDir = ${cache_dirs[*]}|g" -i "$working_dir/etc/pacman.conf"
