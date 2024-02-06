@@ -38,6 +38,11 @@ get_pacman_repo_from_pkgbuild() {
 		return
 	fi
 
+	# update the pacman repo cache if it doesn't exist yet
+	if [[ ! -d "${_DEVTOOLS_PACMAN_CACHE_DIR}" ]]; then
+		update_pacman_repo_cache
+	fi
+
 	slock 10 "${_DEVTOOLS_PACMAN_CACHE_DIR}.lock" "Locking pacman database cache"
 	# query repo of passed pkgname, specify --nodeps twice to skip all dependency checks
 	mapfile -t repos < <(pacman --config "${_DEVTOOLS_PACMAN_CONF_DIR}/multilib.conf" \
@@ -47,7 +52,7 @@ get_pacman_repo_from_pkgbuild() {
 		--nodeps \
 		--print \
 		--print-format '%n %r' \
-		"${pkgnames[0]}" | awk '$1=="'"${pkgnames[0]}"'"{print $2}'
+		"${pkgnames[0]}" 2>/dev/null | awk '$1=="'"${pkgnames[0]}"'"{print $2}'
 	)
 	lock_close 10
 

@@ -47,7 +47,7 @@ pkgctl_build_usage() {
 
 		BUILD OPTIONS
 		    --arch ARCH          Specify architectures to build for (disables auto-detection)
-		    --repo REPO          Specify a target repository (disables auto-detection)
+		    --repo REPO          Specify target repository for new packages not in any official repo
 		    -s, --staging        Build against the staging counterpart of the auto-detected repo
 		    -t, --testing        Build against the testing counterpart of the auto-detected repo
 		    -o, --offload        Build on a remote server and transfer artifacts afterwards
@@ -84,8 +84,7 @@ pkgctl_build_check_option_group_repo() {
 	local repo=$2
 	local testing=$3
 	local staging=$4
-	if ( (( testing )) && (( staging )) ) ||
-		( [[ $repo =~ ^.*-(staging|testing)$ ]] && ( (( testing )) || (( staging )) )); then
+	if [[ -n "${repo}" ]] || (( testing )) || (( staging )); then
 		die "The argument '%s' cannot be used with one or more of the other specified arguments" "${option}"
 		exit 1
 	fi
@@ -146,8 +145,8 @@ pkgctl_build() {
 				;;
 			--repo)
 				(( $# <= 1 )) && die "missing argument for %s" "$1"
-				REPO="${2}"
 				pkgctl_build_check_option_group_repo '--repo' "${REPO}" "${TESTING}" "${STAGING}"
+				REPO="${2}"
 				shift 2
 				;;
 			--arch)
@@ -196,13 +195,13 @@ pkgctl_build() {
 				shift
 				;;
 			-s|--staging)
-				STAGING=1
 				pkgctl_build_check_option_group_repo '--staging' "${REPO}" "${TESTING}" "${STAGING}"
+				STAGING=1
 				shift
 				;;
 			-t|--testing)
-				TESTING=1
 				pkgctl_build_check_option_group_repo '--testing' "${REPO}" "${TESTING}" "${STAGING}"
+				TESTING=1
 				shift
 				;;
 			-c|--clean)
@@ -316,14 +315,22 @@ pkgctl_build() {
 		pkgbuild_checksum=$(b2sum PKGBUILD | awk '{print $1}')
 		msg "Building ${pkgbase}"
 
-		# auto-detection of build target
-		if [[ -z ${pkgrepo} ]]; then
-			if ! pkgrepo=$(get_pacman_repo_from_pkgbuild PKGBUILD); then
-				die 'failed to get pacman repo'
-			fi
-			if [[ -z "${pkgrepo}" ]]; then
-				die 'unknown repo, specify --repo for packages not currently in any official repo'
-			fi
+		# auto-detect target repository
+		if ! repo=$(get_pacman_repo_from_pkgbuild PKGBUILD); then
+			die 'Failed to query pacman repo'
+		fi
+
+		# fail if an existing package specifies --repo
+		if [[ -n "${repo}" ]] && [[ -n ${pkgrepo} ]]; then
+			die 'Using --repo for packages that exist in official repositories is disallowed'
+		fi
+
+		# assign auto-detected target repository
+		if [[ -n ${repo} ]]; then
+			pkgrepo=${repo}
+		# fallback to extra for unreleased packages
+		elif [[ -z ${pkgrepo} ]]; then
+			pkgrepo=extra
 		fi
 
 		# special cases to resolve final build target
