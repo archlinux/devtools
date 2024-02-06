@@ -35,7 +35,7 @@ pkgctl_release_usage() {
 
 		OPTIONS
 		    -m, --message MSG   Use the given <msg> as the commit message
-		    -r, --repo REPO     Specify a target repository (disables auto-detection)
+		    -r, --repo REPO     Specify target repository for new packages not in any official repo
 		    -s, --staging       Release to the staging counterpart of the auto-detected repo
 		    -t, --testing       Release to the testing counterpart of the auto-detected repo
 		    -u, --db-update     Automatically update the pacman database after uploading
@@ -43,8 +43,8 @@ pkgctl_release_usage() {
 
 		EXAMPLES
 		    $ ${COMMAND}
-		    $ ${COMMAND} --repo core-testing --message 'libyay 0.42 rebuild' libfoo libbar
-		    $ ${COMMAND} --staging --db-update libfoo
+		    $ ${COMMAND} --staging --message 'libyay 0.42 rebuild' libfoo libbar
+		    $ ${COMMAND} --repo extra --db-update new-package
 _EOF_
 }
 
@@ -134,15 +134,22 @@ pkgctl_release() {
 		pushd "${path}" >/dev/null
 		pkgbase=$(basename "${path}")
 
-		if [[ -n ${REPO} ]]; then
+		# auto-detect target repository
+		if ! repo=$(get_pacman_repo_from_pkgbuild PKGBUILD); then
+			die 'Failed to query pacman repo'
+		fi
+
+		# fail if an existing package specifies --repo
+		if [[ -n "${repo}" ]] && [[ -n ${REPO} ]]; then
+			die 'Using --repo for packages that exist in official repositories is disallowed'
+		fi
+
+		# fail if a new package does not specify --repo
+		if [[ -z "${repo}" ]]; then
+			if [[ -z ${REPO} ]]; then
+				die 'Specify --repo for packages that do not yet exist in official repositories'
+			fi
 			repo=${REPO}
-		else
-			if ! repo=$(get_pacman_repo_from_pkgbuild PKGBUILD); then
-				die 'Failed to get pacman repo'
-			fi
-			if [[ -z "${repo}" ]]; then
-				die 'Unknown repo, please specify --repo for new packages'
-			fi
 		fi
 
 		if (( TESTING )); then

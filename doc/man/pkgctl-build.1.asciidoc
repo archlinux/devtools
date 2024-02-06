@@ -21,7 +21,10 @@ Build Options
 	Specify architectures to build for (disables auto-detection)
 
 *--repo* 'REPO'::
-	Specify a target repository (disables auto-detection)
+	Specify target repository for new packages not in any official repo.
+	Fallback to `'extra'` when building packages that are not present in any
+	official repository yet. Using this option is disallowed if the package is
+	already released, as it would circumvent the auto-detection safeguard.
 
 *-s, --staging*::
 	Build against the staging counterpart of the auto-detected repo

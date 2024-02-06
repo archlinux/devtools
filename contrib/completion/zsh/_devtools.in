@@ -91,7 +91,7 @@ _pkgctl_db_update_args=(
 
 _pkgctl_release_args=(
 	'(-m --message=)'{-m,--message=}"[Use the given <msg> as the commit message]:message:"
-	'(-r --repo=)'{-r,--repo=}"[Specify a target repository (disables auto-detection)]:repo:($DEVTOOLS_VALID_REPOS[*])"
+	'(-r --repo=)'{-r,--repo=}"[Specify a target repository for new packages]:repo:($DEVTOOLS_VALID_REPOS[*])"
 	'(-s --staging)'{-s,--staging}'[Release to the staging counterpart of the auto-detected repo]'
 	'(-t --testing)'{-t,--testing}'[Release to the testing counterpart of the auto-detected repo]'
 	'(-u --db-update)'{-u,--db-update}'[Automatically update the pacman database after uploading]'

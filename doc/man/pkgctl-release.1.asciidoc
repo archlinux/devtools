@@ -27,7 +27,9 @@ Options
 	Use the given <msg> as the commit message
 
 *-r, --repo* 'REPO'::
-	Specify a target repository (disables auto-detection)
+	Specify target repository for new packages not in any official repo.
+	Using this option is disallowed if the package is already released, as it
+	would circumvent the auto-detection safeguard.
 
 *-s, --staging*::
 	Build against the staging counterpart of the auto-detected repo
