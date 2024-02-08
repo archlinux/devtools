@@ -69,6 +69,7 @@ Component: pkgctl db remove
 - bash
 - binutils
 - coreutils
+- curl
 - diffutils
 - fakeroot
 - findutils
