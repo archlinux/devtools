@@ -337,7 +337,12 @@ pkgctl_build() {
 
 		# fail if an existing package specifies --repo
 		if [[ -n "${repo}" ]] && [[ -n ${pkgrepo} ]]; then
-			die 'Using --repo for packages that exist in official repositories is disallowed'
+			# allow unstable to use --repo
+			if [[ ${pkgrepo} == *unstable ]]; then
+				repo=${pkgrepo}
+			else
+				die 'Using --repo for packages that exist in official repositories is disallowed'
+			fi
 		fi
 
 		# assign auto-detected target repository

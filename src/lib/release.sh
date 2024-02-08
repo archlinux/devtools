@@ -141,7 +141,12 @@ pkgctl_release() {
 
 		# fail if an existing package specifies --repo
 		if [[ -n "${repo}" ]] && [[ -n ${REPO} ]]; then
-			die 'Using --repo for packages that exist in official repositories is disallowed'
+			# allow unstable to use --repo
+			if [[ ${REPO} == *unstable ]]; then
+				repo=${REPO}
+			else
+				die 'Using --repo for packages that exist in official repositories is disallowed'
+			fi
 		fi
 
 		# fail if a new package does not specify --repo
