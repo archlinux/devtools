@@ -114,7 +114,9 @@ mapfile -t files < <(
             if [[ -f /usr/share/devtools/makepkg.conf.d/'"${repo}"'-'"${arch}"'.conf ]]; then
                 makepkg_config="/usr/share/devtools/makepkg.conf.d/'"${repo}"'-'"${arch}"'.conf"
             fi &&
-            makepkg --config <(cat "${makepkg_user_config}" "${makepkg_config}" 2>/dev/null) --packagelist &&
+            while read -r file; do
+                [[ -f "${file}" ]] && printf "%s\n" "${file}" ||:
+            done < <(makepkg --config <(cat "${makepkg_user_config}" "${makepkg_config}" 2>/dev/null) --packagelist) &&
             printf "%s\n" "${temp}/PKGBUILD"
 ')
 
