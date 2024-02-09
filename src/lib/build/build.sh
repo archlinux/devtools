@@ -154,6 +154,7 @@ pkgctl_build() {
 				(( $# <= 1 )) && die "missing argument for %s" "$1"
 				pkgctl_build_check_option_group_repo '--repo' "${REPO}" "${TESTING}" "${STAGING}"
 				REPO="${2}"
+				RELEASE_OPTIONS+=("--repo" "${REPO}")
 				shift 2
 				;;
 			--arch)
@@ -204,11 +205,13 @@ pkgctl_build() {
 			-s|--staging)
 				pkgctl_build_check_option_group_repo '--staging' "${REPO}" "${TESTING}" "${STAGING}"
 				STAGING=1
+				RELEASE_OPTIONS+=("--staging")
 				shift
 				;;
 			-t|--testing)
 				pkgctl_build_check_option_group_repo '--testing' "${REPO}" "${TESTING}" "${STAGING}"
 				TESTING=1
+				RELEASE_OPTIONS+=("--testing")
 				shift
 				;;
 			-c|--clean)
@@ -495,7 +498,7 @@ pkgctl_build() {
 
 		# release the build
 		if (( RELEASE )); then
-			pkgctl_release --repo "${pkgrepo}" "${RELEASE_OPTIONS[@]}"
+			pkgctl_release "${RELEASE_OPTIONS[@]}"
 		fi
 
 		# reset common PKGBUILD variables
