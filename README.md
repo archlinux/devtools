@@ -91,6 +91,7 @@ Component: pkgctl db remove
 
 - bat (pretty printing)
 - nvchecker (version checking)
+- pacman-contrib (--update-checksums options for pkgctl build)
 
 ### Development Dependencies
 
