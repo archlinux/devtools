@@ -34,9 +34,15 @@ export AUR_URL_SSH=aur@aur.archlinux.org
 # check if messages are to be printed using color
 if [[ -t 2 && "$TERM" != dumb ]] || [[ ${DEVTOOLS_COLOR} == always ]]; then
 	colorize
-	PURPLE="$(tput setaf 5)"
-	DARK_GREEN="$(tput setaf 2)"
-	UNDERLINE="$(tput smul)"
+	if tput setaf 0 &>/dev/null; then
+		PURPLE="$(tput setaf 5)"
+		DARK_GREEN="$(tput setaf 2)"
+		UNDERLINE="$(tput smul)"
+	else
+		PURPLE="\e[35m"
+		DARK_GREEN="\e[32m"
+		UNDERLINE="\e[4m"
+	fi
 else
 	# shellcheck disable=2034
 	declare -gr ALL_OFF='' BOLD='' BLUE='' GREEN='' RED='' YELLOW='' PURPLE='' DARK_GREEN='' UNDERLINE=''
@@ -108,7 +114,9 @@ cleanup() {
 	if [[ -n ${WORKDIR:-} ]] && $_setup_workdir; then
 		rm -rf "$WORKDIR"
 	fi
-	tput cnorm >&2
+	if tput setaf 0 &>/dev/null; then
+		tput cnorm >&2
+	fi
 	exit "${1:-0}"
 }
 
