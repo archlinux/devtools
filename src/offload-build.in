@@ -99,6 +99,7 @@ mapfile -t files < <(
     # shellcheck disable=SC2145
     cat "$SRCPKGDEST"/*"$SRCEXT" |
         ssh $server '
+            export TERM="'"${TERM}"'"
             temp="${XDG_CACHE_HOME:-$HOME/.cache}/offload-build" &&
             mkdir -p "$temp" &&
             temp=$(mktemp -d -p "$temp") &&
