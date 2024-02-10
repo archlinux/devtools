@@ -92,14 +92,19 @@ pkgctl_aur_drop_from_repo() {
 	fi
 
 	for path in "${paths[@]}"; do
-		if ! realpath=$(realpath -e "${path}"); then
+		# resolve symlink for basename
+		if ! realpath=$(realpath --canonicalize-existing -- "${path}"); then
 			die "No such directory: ${path}"
+		fi
+		# skip paths that are not directories
+		if [[ ! -d "${realpath}" ]]; then
+			continue
 		fi
 
 		pkgbase=$(basename "${realpath}")
 		pkgbase=${pkgbase%.git}
 
-		if [[ ! -d "${path}/.git" ]]; then
+		if [[ ! -d "${realpath}/.git" ]]; then
 			die "Not a Git repository: ${path}"
 		fi
 

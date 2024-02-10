@@ -101,16 +101,21 @@ pkgctl_repo_switch() {
 	fi
 
 	for path in "${paths[@]}"; do
-		if ! realpath=$(realpath -e -- "${path}"); then
+		# resolve symlink for basename
+		if ! realpath=$(realpath --canonicalize-existing -- "${path}"); then
 			die "No such directory: ${path}"
 		fi
-		pkgbase=$(basename "${realpath}")
-
-		if [[ ! -d "${path}/.git" ]]; then
+		# skip paths that are not directories
+		if [[ ! -d "${realpath}" ]]; then
+			continue
+		fi
+		# skip paths that are not git repositories
+		if [[ ! -d "${realpath}/.git" ]]; then
 			error "Not a Git repository: ${path}"
 			continue
 		fi
 
+		pkgbase=$(basename "${realpath}")
 		if ! git -C "${path}" checkout "${GIT_CHECKOUT_OPTIONS[@]}" "${GIT_REF}"; then
 			die "Failed to switch ${pkgbase} to version ${VERSION}"
 		fi

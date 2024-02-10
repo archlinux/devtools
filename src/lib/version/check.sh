@@ -108,6 +108,10 @@ pkgctl_version_check() {
 	term_spinner_start "${status_dir}"
 
 	for path in "${pkgbases[@]}"; do
+		# skip paths that are not directories
+		if [[ ! -d "${path}" ]]; then
+			continue
+		fi
 		pushd "${path}" >/dev/null
 
 		if [[ ! -f "PKGBUILD" ]]; then

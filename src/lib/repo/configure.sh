@@ -207,8 +207,13 @@ pkgctl_repo_configure() {
 	fi
 
 	for path in "${paths[@]}"; do
-		if ! realpath=$(realpath -e "${path}"); then
+		# resolve symlink for basename
+		if ! realpath=$(realpath --canonicalize-existing -- "${path}"); then
 			die "No such directory: ${path}"
+		fi
+		# skip paths that aren't directories
+		if [[ ! -d "${realpath}" ]]; then
+			continue
 		fi
 
 		pkgbase=$(basename "${realpath}")

@@ -319,6 +319,10 @@ pkgctl_build() {
 	fi
 
 	for path in "${paths[@]}"; do
+		# skip paths that are not directories
+		if [[ ! -d "${path}" ]]; then
+			continue
+		fi
 		pushd "${path}" >/dev/null
 
 		if [[ ! -f PKGBUILD ]]; then
