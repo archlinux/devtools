@@ -23,7 +23,14 @@ fi
 repo=extra
 arch=x86_64
 server=build.archlinux.org
-rsyncopts=("${RSYNC_OPTS[@]}")
+
+# remove --rsh=ssh from the default rsync opts because it will be replaced below
+rsyncopts=()
+for opt in "${RSYNC_OPTS[@]}"; do
+    if [[ "$opt" != "--rsh=ssh" ]]; then
+        rsyncopts+=("$opt")
+    fi
+done
 
 usage() {
     cat <<- _EOF_
@@ -94,35 +101,53 @@ makepkg_source_package || die "unable to make source package"
 # but an empty src dir is created in PWD. Remove once fixed in makepkg.
 rmdir --ignore-fail-on-non-empty src 2>/dev/null || true
 
-mapfile -t files < <(
-    # This is sort of bash golfing but it allows running a mildly complex
-    # command over ssh with a single connection.
-    # shellcheck disable=SC2145
-    cat "$SRCPKGDEST"/*"$SRCEXT" |
-        ssh $server '
-            export TERM="'"${TERM}"'"
-            temp="${XDG_CACHE_HOME:-$HOME/.cache}/offload-build" &&
-            mkdir -p "$temp" &&
-            temp=$(mktemp -d -p "$temp") &&
-            cd "$temp" &&
-            {
-                bsdtar --strip-components 1 -xvf - &&
-                export LOGDEST="" &&
-                script -qefc "'"${archbuild_cmd[@]@Q}"'" /dev/null &&
-                printf "%s\n" "" "-> build complete" &&
-                printf "\t%s\n" "$temp"/*
-            } >&2 &&
-            makepkg_user_config="${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf" &&
-            makepkg_config="/usr/share/devtools/makepkg.conf.d/'"${arch}"'.conf" &&
-            if [[ -f /usr/share/devtools/makepkg.conf.d/'"${repo}"'-'"${arch}"'.conf ]]; then
-                makepkg_config="/usr/share/devtools/makepkg.conf.d/'"${repo}"'-'"${arch}"'.conf"
-            fi &&
-            while read -r file; do
-                [[ -f "${file}" ]] && printf "%s\n" "${file}" ||:
-            done < <(makepkg --config <(cat "${makepkg_user_config}" "${makepkg_config}" 2>/dev/null) --packagelist) &&
-            printf "%s\n" "${temp}/PKGBUILD"
+# Create an SSH master connection and use its control socket with
+# ControlMaster=no in all following SSH commands, including rsync.
+sshopts_master=(-o ControlMaster=yes -o ControlPersist=yes -o ControlPath="$TEMPDIR"/ssh.socket -N)
+sshopts=(-o ControlMaster=no -o ControlPath="$TEMPDIR"/ssh.socket)
+rsyncopts+=(--rsh="ssh ${sshopts[*]}")
+trap 'ssh "${sshopts[@]}" -O exit -q "$server"' EXIT INT TERM QUIT
+ssh "${sshopts_master[@]}" "$server" &
 
-            find "${temp}" -name "*.log"
+# Create a temporary directory on the server
+remote_temp=$(
+    ssh "${sshopts[@]}" "$server" '
+        temp="${XDG_CACHE_HOME:-$HOME/.cache}/offload-build" &&
+        mkdir -p "$temp" &&
+        mktemp --directory --tmpdir="$temp"
+')
+
+# Transfer the srcpkg to the server
+msg "Transferring source package to the server..."
+_srcpkg=("$SRCPKGDEST"/*"$SRCEXT")
+srcpkg="${_srcpkg[0]}"
+rsync "${rsyncopts[@]}" "$srcpkg" "$server":"$remote_temp" || die
+
+# Prepare the srcpkg on the server
+msg "Extracting srcpkg"
+ssh "${sshopts[@]}" "$server" "cd ${remote_temp@Q} && bsdtar --strip-components 1 -xvf $(basename "$srcpkg")" || die
+
+# Run the build command on the server
+msg "Running archbuild"
+# shellcheck disable=SC2145
+ssh "${sshopts[@]}" -t "$server" "cd ${remote_temp@Q} && export LOGDEST="" && ${archbuild_cmd[@]@Q}" || die
+msg "Build complete"
+
+# Get an array of files that should be downloaded from the server
+mapfile -t files < <(
+    ssh "${sshopts[@]}" "$server" "
+        cd ${remote_temp@Q}"' &&
+        makepkg_user_config="${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf" &&
+        makepkg_config="/usr/share/devtools/makepkg.conf.d/'"${arch}"'.conf" &&
+        if [[ -f /usr/share/devtools/makepkg.conf.d/'"${repo}"'-'"${arch}"'.conf ]]; then
+            makepkg_config="/usr/share/devtools/makepkg.conf.d/'"${repo}"'-'"${arch}"'.conf"
+        fi &&
+        while read -r file; do
+            [[ -f "${file}" ]] && printf "%s\n" "${file}" ||:
+        done < <(makepkg --config <(cat "${makepkg_user_config}" "${makepkg_config}" 2>/dev/null) --packagelist) &&
+        printf "%s\n" '"${remote_temp@Q}/PKGBUILD"'
+
+        find '"${remote_temp@Q}"' -name "*.log"
 ')
 
 
