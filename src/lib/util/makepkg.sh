@@ -28,7 +28,9 @@ makepkg_source_package() {
 		export LIBMAKEPKG_SRCINFO_SH=1
 		write_srcinfo() { print_srcinfo; }
 
-		set +e -- -F --source
+		# explicitly instruct makepkg to not sign the source package, even when
+		# the BUILDENV array in makepkg.conf contains 'sign'
+		set +e -- -F --source --nosign
 		# shellcheck source=/usr/bin/makepkg
 		source "$(command -v makepkg)"
 	)
