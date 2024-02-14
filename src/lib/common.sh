@@ -31,6 +31,9 @@ export PACKAGING_REPO_RELEASE_HOST=repos.archlinux.org
 export PKGBASE_MAINTAINER_URL=https://archlinux.org/packages/pkgbase-maintainer
 export AUR_URL_SSH=aur@aur.archlinux.org
 
+# ensure TERM is set with a fallback to dumb
+export TERM=${TERM:-dumb}
+
 # check if messages are to be printed using color
 if [[ -t 2 && "$TERM" != dumb ]] || [[ ${DEVTOOLS_COLOR} == always ]]; then
 	colorize
