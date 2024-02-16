@@ -49,6 +49,14 @@ pkgctl_version() {
 				pkgctl_version_check "$@"
 				exit $?
 				;;
+			edit)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/version/edit.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/version/edit.sh
+				pkgctl_version_edit "$@"
+				exit $?
+				;;
 			upgrade)
 				_DEVTOOLS_COMMAND+=" $1"
 				shift
