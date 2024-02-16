@@ -23,7 +23,7 @@ fi
 repo=extra
 arch=x86_64
 server=build.archlinux.org
-rsyncopts=(-e ssh -c -h -L --progress --partial -y)
+rsyncopts=("${RSYNC_OPTS[@]}")
 
 usage() {
     cat <<- _EOF_

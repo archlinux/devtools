@@ -31,6 +31,17 @@ export PACKAGING_REPO_RELEASE_HOST=repos.archlinux.org
 export PKGBASE_MAINTAINER_URL=https://archlinux.org/packages/pkgbase-maintainer
 export AUR_URL_SSH=aur@aur.archlinux.org
 
+export RSYNC_OPTS=(
+  --rsh=ssh
+  --checksum
+  --copy-links
+  --human-readable
+  --progress
+  --partial
+  --partial-dir=.partial
+  --delay-updates
+)
+
 # ensure TERM is set with a fallback to dumb
 export TERM=${TERM:-dumb}
 

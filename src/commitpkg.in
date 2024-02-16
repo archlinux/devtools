@@ -151,7 +151,7 @@ fi
 
 
 server=${PACKAGING_REPO_RELEASE_HOST}
-rsyncopts=(-e ssh -p '--chmod=ug=rw,o=r' -c -h -L --progress --partial -y)
+rsyncopts=("${RSYNC_OPTS[@]}" --perms --chmod='ug=rw,o=r')
 archreleaseopts=()
 while getopts ':l:a:s:f' flag; do
 	case $flag in
