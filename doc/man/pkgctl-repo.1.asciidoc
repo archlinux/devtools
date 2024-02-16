@@ -44,6 +44,9 @@ pkgctl repo configure::
 pkgctl repo create::
 	Create a new GitLab package repository
 
+pkgctl repo pull::
+	Update package repositories from their git remotes
+
 pkgctl repo switch::
 	Switch a package repository to a specified version
 
@@ -57,6 +60,7 @@ pkgctl-repo-clean(1)
 pkgctl-repo-clone(1)
 pkgctl-repo-configure(1)
 pkgctl-repo-create(1)
+pkgctl-repo-pull(1)
 pkgctl-repo-switch(1)
 pkgctl-repo-web(1)
 
