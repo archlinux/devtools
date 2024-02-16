@@ -31,6 +31,7 @@ pkgctl_repo_usage() {
 		    clone          Clone a package repository
 		    configure      Configure a clone according to distro specs
 		    create         Create a new GitLab package repository
+		    pull           Update package repositories from their git remote
 		    switch         Switch a package repository to a specified version
 		    web            Open the packaging repository's website
 
@@ -40,6 +41,7 @@ pkgctl_repo_usage() {
 		EXAMPLES
 		    $ ${COMMAND} clean --interactive *
 		    $ ${COMMAND} clone libfoo linux libbar
+		    $ ${COMMAND} pull libfoo linux libbar
 		    $ ${COMMAND} clone --maintainer mynickname
 		    $ ${COMMAND} configure *
 		    $ ${COMMAND} create libfoo
@@ -99,6 +101,14 @@ pkgctl_repo() {
 				# shellcheck source=src/lib/repo/switch.sh
 				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo/switch.sh
 				pkgctl_repo_switch "$@"
+				exit 0
+				;;
+			pull)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/repo/pull.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo/pull.sh
+				pkgctl_repo_pull "$@"
 				exit 0
 				;;
 			web)

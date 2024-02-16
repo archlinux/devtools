@@ -305,6 +305,7 @@ _pkgctl_repo_cmds=(
 	clone
 	configure
 	create
+	pull
 	switch
 	web
 )
@@ -333,6 +334,19 @@ _pkgctl_repo_clean_args=(
 	-h --help
 )
 _pkgctl_repo_clean_opts() { _filedir -d; }
+
+_pkgctl_repo_pull_args=(
+	--discard-changes
+	--show-diff
+	--quiet
+	--autostash
+	-f --force
+	-j --jobs
+	-h --help
+)
+_pkgctl_repo_pull_args__jobs_opts() { :; }
+_pkgctl_repo_pull_args_j_opts() { _pkgctl_repo_pull_args__jobs_opts; }
+_pkgctl_repo_pull_opts() { _filedir -d; }
 
 _pkgctl_repo_configure_args=(
 	--protocol

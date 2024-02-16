@@ -1,0 +1,50 @@
+pkgctl-repo-pull(1)
+===================
+
+Name
+----
+pkgctl-repo-pull - Pull in git changes
+
+Synopsis
+--------
+pkgctl repo pull [OPTIONS] [PATH...]
+
+Description
+-----------
+
+Update package repositories from their git remotes.
+
+If only a single package is given the command also automatically shows a diff
+of what has changed since the last time the repository was updated.
+
+Options
+-------
+
+*--discard-changes*::
+	Discard changes if the index or working tree was modified. Otherwise abort
+	if anything was modified.
+
+*--autostash*::
+	Stash before pulling and unstash afterwards
+
+*--quiet*::
+	Do not show any longer terminal output like diffs.
+
+*--show-diff*::
+	Show what has changed since the last time the repository was updated. Is
+	automatically set when only one 'PATH' is given.
+
+*-j, --jobs* 'N'::
+	Run up to N jobs in parallel. By default the number of jobs is equal to the
+	number of available processing units. For sequential processing this option
+	needs to be passed with 1.
+
+*-h, --help*::
+	Show a help text
+
+See Also
+--------
+
+git-pull(1)
+
+include::include/footer.asciidoc[]

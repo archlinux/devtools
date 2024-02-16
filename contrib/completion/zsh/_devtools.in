@@ -228,6 +228,7 @@ _pkgctl_repo_cmds=(
 	"clone[Clone a package repository]"
 	"configure[Configure a clone according to distro specs]"
 	"create[Create a new GitLab package repository]"
+	"pull[Update package repositories from their git remote]"
 	"switch[Switch a package repository to a specified version]"
 	"web[Open the packaging repository's website]"
 )
@@ -254,6 +255,17 @@ _pkgctl_repo_clone_args=(
 	'(-j --jobs)'{-j,--jobs}'[Run up to N jobs in parallel (default: number of processing units)]:jobs:'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:packages:_devtools_completions_all_packages'
+)
+
+_pkgctl_repo_pull_args=(
+	'--discard-changes[Discard changes if index or working tree is dirty]'
+	'--quiet[Disable printing longer terminal output]'
+	'--show-diff[Always enable showing the diff]'
+	'--autostash[Stash before pulling and unstash afterwards]'
+	'(-f --force)'{-f,--force}'[Alias for --discard-changes]'
+	'(-j --jobs)'{-j,--jobs}'[Run up to N jobs in parallel (default: number of processing units)]:jobs:'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'*:git_dir:_files -/'
 )
 
 _pkgctl_repo_configure_args=(
