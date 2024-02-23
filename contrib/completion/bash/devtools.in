@@ -373,6 +373,7 @@ _pkgctl_version_setup_opts() { _filedir -d; }
 _pkgctl_version_setup_args__url_opts() { :; }
 
 _pkgctl_version_upgrade_args=(
+	--no-update-checksums
 	-v --verbose
 	-h --help
 )

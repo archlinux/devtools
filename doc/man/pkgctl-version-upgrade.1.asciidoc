@@ -18,7 +18,7 @@ upstream versions.
 Upon execution, it automatically adjusts the PKGBUILD file, ensuring that the
 pkgver field is set to match the latest version available from the upstream
 source. In addition to updating the pkgver, this command also resets the pkgrel
-to 1.
+to 1 and updates checksums.
 
 Outputs a summary of upgraded packages, up-to-date packages, and any check
 failures.
@@ -35,6 +35,9 @@ PKGBUILD. Refer to the configuration section in pkgctl-version(1).
 Options
 -------
 
+*--no-update-checksums*::
+	Disable computation and update of the checksums
+
 *-v, --verbose*::
 	Display results including up-to-date versions
 
@@ -46,5 +49,6 @@ See Also
 
 pkgctl-version(1)
 nvchecker(1)
+updpkgsums(8)
 
 include::include/footer.asciidoc[]

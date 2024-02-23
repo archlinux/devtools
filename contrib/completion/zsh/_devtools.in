@@ -311,6 +311,7 @@ _pkgctl_version_setup_args=(
 )
 
 _pkgctl_version_upgrade_args=(
+	'--no-update-checksums[Disable computation and update of the checksums]'
 	'(-v --verbose)'{-v,--verbose}'[Display results including up-to-date versions]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:git_dir:_files -/'

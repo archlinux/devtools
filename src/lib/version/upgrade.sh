@@ -30,14 +30,15 @@ pkgctl_version_upgrade_usage() {
 		Upon execution, it automatically adjusts the PKGBUILD file, ensuring that the
 		pkgver field is set to match the latest version available from the upstream
 		source. In addition to updating the pkgver, this command also resets the pkgrel
-		to 1.
+		to 1 and updates checksums.
 
 		Outputs a summary of upgraded packages, up-to-date packages, and any check
 		failures.
 
 		OPTIONS
-		    -v, --verbose    Display results including up-to-date versions
-		    -h, --help       Show this help text
+		    --no-update-checksums  Disable computation and update of the checksums
+		    -v, --verbose          Display results including up-to-date versions
+		    -h, --help             Show this help text
 
 		EXAMPLES
 		    $ ${COMMAND} neovim vim
@@ -50,12 +51,17 @@ pkgctl_version_upgrade() {
 	local verbose=0
 	local exit_code=0
 	local current_item=0
+	local update_checksums=1
 
 	while (( $# )); do
 		case $1 in
 			-h|--help)
 				pkgctl_version_upgrade_usage
 				exit 0
+				;;
+			--no-update-checksums)
+				update_checksums=0
+				shift
 				;;
 			-v|--verbose)
 				verbose=1
@@ -153,6 +159,11 @@ pkgctl_version_upgrade() {
 			# change the PKGBUILD
 			pkgbuild_set_pkgver "${upstream_version}"
 			pkgbuild_set_pkgrel 1
+
+			# download sources and update the checksums
+			if (( update_checksums )); then
+				updpkgsums
+			fi
 		fi
 
 		popd >/dev/null
