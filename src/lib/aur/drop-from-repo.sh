@@ -120,7 +120,6 @@ pkgctl_aur_drop_from_repo() {
 		if [[ $(git symbolic-ref --quiet --short HEAD) == main ]]; then
 			git branch --move master
 			git config branch.master.merge refs/heads/master
-			git remote set-head origin master
 		fi
 
 		# auto generate .SRCINFO if not already present
@@ -141,6 +140,9 @@ pkgctl_aur_drop_from_repo() {
 		else
 			git push origin master
 		fi
+
+		# update the local default branch in case this clone is used in the future
+		git remote set-head origin master
 
 		if (( DISOWN )); then
 			msg "Disowning ${pkgbase} on the AUR"
