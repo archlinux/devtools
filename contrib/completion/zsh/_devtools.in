@@ -48,8 +48,8 @@ _pkgctl_build_args=(
 	'(-o --offload)'{-o,--offload}'[Build on a remote server and transfer artifacts afterwards]'
 	'(-c --clean)'{-c,--clean}'[Recreate the chroot before building]'
 	"--inspect[Spawn an interactive shell to inspect the chroot (never, always, failure)]:inspect:($DEVTOOLS_VALID_INSPECT_MODES[*])"
-	'(-I --install-to-chroot)'{-I,--install-to-chroot}'[Install a package to the working copy of the chroot]:target:_files -g "*.pkg.tar.*(.)"'
-	'(-i --install-to-host)'{-i,--install-to-host}"[Install the built packages to the host system]:mode:($DEVTOOLS_VALID_BUILD_INSTALL[*])"
+	'*'{-I,--install-to-chroot}'[Install a package to the working copy of the chroot]:target:_files -g "*.pkg.tar.*(.)"'
+	'*'{-i,--install-to-host}"[Install the built packages to the host system]:mode:($DEVTOOLS_VALID_BUILD_INSTALL[*])"
 	'(-w --worker)'{-w,--worker}'[Name of the worker slot, useful for concurrent builds (disables auto-detection)]:slot:'
 	'--nocheck[Do not run the check() function in the PKGBUILD]'
 	'--pkgver=[Set pkgver, reset pkgrel and update checksums]:pkgver:'
@@ -168,8 +168,8 @@ _pkgctl_search_args=(
 _arch_nspawn_args=(
 	'-C[Location of a pacman config file]:pacman_config:_files -g "*.conf(.)"'
 	'-M[Location of a makepkg config file]:makepkg_config:_files -g "*.conf(.)"'
-	'-c[Set pacman cache]:pacman_cache:_files -/'
-	'-f[Copy file from the host to the chroot]:copy_file:_files'
+	'*-c[Set pacman cache]:pacman_cache:_files -/'
+	'*-f[Copy file from the host to the chroot]:copy_file:_files'
 	'-s[Do not run setarch]'
 	'-h[Display usage]'
 	'1:chroot_dir:_files -/'
@@ -211,11 +211,11 @@ _finddeps_args=(
 _makechrootpkg_args=(
 	'-h[Display usage]'
 	'-c[Clean the chroot before building]'
-	'-d[Bind directory into build chroot as read-write]:bind_dir_rw:_files -/'
-	'-D[Bind directory into build chroot as read-only]:bind_dir_ro:_files -/'
+	'*-d[Bind directory into build chroot as read-write]:bind_dir_rw:_files -/'
+	'*-D[Bind directory into build chroot as read-only]:bind_dir_ro:_files -/'
 	'-u[Update the working copy of the chroot before building]'
 	'-r[The chroot dir to use]:chroot_dir:_files -/'
-	'-I[Install a package into the working copy]:target:_files -g "*.pkg.tar.*(.)"'
+	'*-I[Install a package into the working copy]:target:_files -g "*.pkg.tar.*(.)"'
 	'-l[The directory to use as the working copy]:copy_dir:_files -/'
 	'-n[Run namcap on the package]'
 	'-T[Build in a temporary directory]'
