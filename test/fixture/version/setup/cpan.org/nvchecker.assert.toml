@@ -1,0 +1,3 @@
+[perl-locale-po]
+source = "cpan"
+cpan = "Locale-PO"

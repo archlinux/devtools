@@ -1,4 +1,4 @@
-SHELL=/bin/bash
+SHELL=/bin/bash -o pipefail
 
 V=1.1.1
 BUILDTOOLVER ?= $(V)
@@ -50,6 +50,13 @@ ARCHBUILD_LINKS = \
 	gnome-unstable-x86_64-build
 
 COMPLETIONS = $(addprefix $(BUILDDIR)/,$(patsubst %.in,%,$(wildcard contrib/completion/*/*)))
+
+
+CASES ?= test/case
+JOBS ?= $(shell nproc)
+BATS_EXTRA_ARGS ?=
+BATS_ARGS ?= --jobs $(JOBS) $(BATS_EXTRA_ARGS) --verbose-run
+COVERAGE_DIR ?= $(BUILDDIR)/coverage
 
 
 all: binprogs library conf completion man
@@ -168,8 +175,17 @@ dist:
 	git archive --format=tar --prefix=devtools-$(V)/ v$(V) | gzip > devtools-$(V).tar.gz
 	gpg --detach-sign --use-agent devtools-$(V).tar.gz
 
+test: binprogs library conf completion man
+	@mkdir -p $(COVERAGE_DIR)
+	bats $(BATS_ARGS) $(CASES) | tee $(COVERAGE_DIR)/bats-report.xml
+
+coverage: binprogs library conf completion man
+	kcov --include-path=src $(COVERAGE_DIR) bats $(BATS_ARGS) $(CASES)
+	jq -r '. | ["Percent covered", .percent_covered], ["Covered lines", .covered_lines], ["Total lines", .total_lines], ["Percent low", .percent_low], ["Percent high", .percent_high] | @tsv' \
+		$(COVERAGE_DIR)/bats.*/coverage.json
+
 check: $(BINPROGS_SRC) $(LIBRARY_SRC) contrib/completion/bash/devtools.in config/makepkg/x86_64.conf contrib/makepkg/PKGBUILD.proto
 	shellcheck $^
 
-.PHONY: all binprogs library completion conf man clean install uninstall tag dist upload check
+.PHONY: all binprogs library completion conf man clean install uninstall tag dist upload test coverage check
 .DELETE_ON_ERROR:

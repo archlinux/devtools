@@ -1,0 +1,18 @@
+pkgname=xmobar
+pkgver=1.0
+pkgrel=1
+pkgdesc=''
+url='https://codeberg.org/xmobar/xmobar'
+arch=(any)
+source=(
+  dynamic-compilation.patch
+  ${pkgname}-${pkgver}.tar.gz::https://codeberg.org/xmobar/xmobar/archive/${pkgver}.tar.gz
+)
+sha512sums=('319f3a77d500c505826ab487e4011bb1a22b8cae70c17b964574a09a6488a864a1aaabb6a298468d121110dd485f179bc712a5106e49eb8ae638e02b5115190a'
+            '15db3e27d1ff957e26e706e4c67cec6e43d89f5a39cd6d81ddb5ae8426e32d938494fbba39fa322461d992a95d2e522c10b186a1ca2c5c3e996f944b6e6ef7c4')
+
+package() {
+  :
+}
+
+# vim: ts=2 sw=2 et:

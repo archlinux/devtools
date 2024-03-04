@@ -1,0 +1,4 @@
+[git-smash]
+source = "github"
+github = "anthraxx/git-smash"
+use_max_tag = true

@@ -1,0 +1,23 @@
+pkgname=python-bleach
+pkgver=6.1.0
+pkgrel=1
+
+pkgdesc="An easy whitelist-based HTML-sanitizing tool"
+url="https://pypi.org/project/bleach/"
+arch=('any')
+license=('Apache')
+depends=('python-packaging'
+         'python-six'
+         'python-webencodings')
+makedepends=('python'
+             'python-setuptools')
+checkdepends=('python-pytest')
+optdepends=('python-tinycss2: for CSS sanitisation')
+
+source=(https://pypi.org/packages/source/b/bleach/bleach-$pkgver.tar.gz)
+
+sha256sums=('0a31f1837963c41d46bbf1331b8778e1308ea0791db03cc4e7357b97cf42a8fe')
+
+package() {
+	:
+}

@@ -1,0 +1,3 @@
+[ruby-diff-lcs]
+source = "gems"
+gems = "diff-lcs"

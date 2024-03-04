@@ -1,0 +1,3 @@
+[shotgun]
+source = "cratesio"
+cratesio = "shotgun"

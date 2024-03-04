@@ -1,0 +1,17 @@
+pkgname=shotgun
+pkgver=0.3.5
+pkgrel=1
+pkgdesc='Minimal X screenshot utility'
+arch=('any')
+url='https://github.com/neXromancers/shotgun'
+license=('MIT')
+depends=('cargo')
+options=('!emptydirs')
+source=("https://crates.io/api/v1/crates/${pkgname}/${pkgver}/download")
+sha256sums=('59d66ef5e3c166431c39cb8b7c1d02af419051352f27912f6a43981b3def16af')
+
+package() {
+  :
+}
+
+# vim: ts=2 sw=2 et:

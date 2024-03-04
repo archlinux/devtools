@@ -1,0 +1,3 @@
+[libfakekey]
+source = "git"
+git = "git://git.yoctoproject.org/libfakekey"

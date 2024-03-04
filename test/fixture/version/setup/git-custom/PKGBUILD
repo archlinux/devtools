@@ -1,0 +1,14 @@
+pkgname=libfakekey
+pkgver=0.3
+pkgrel=1
+pkgdesc='X virtual keyboard library.'
+arch=('x86_64')
+url='https://www.yoctoproject.org/tools-resources/projects/matchbox'
+license=('GPL')
+depends=('libxtst')
+source=("git://git.yoctoproject.org/libfakekey")
+sha256sums=('d282fa6481a5b85f71e36e8bad4cfa938cc8eaac4c42ffa27f9203ac634813f4')
+
+package() {
+	:
+}

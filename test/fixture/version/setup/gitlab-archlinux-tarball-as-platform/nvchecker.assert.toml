@@ -1,0 +1,6 @@
+[devtools]
+source = "gitlab"
+gitlab = "archlinux/devtools"
+host = "gitlab.archlinux.org"
+use_max_tag = true
+prefix = "v"

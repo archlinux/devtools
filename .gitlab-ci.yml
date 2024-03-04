@@ -12,10 +12,33 @@ build:
     - make PREFIX=/usr
     - make PREFIX=/usr DESTDIR=build install
 
-check:
+lint:
   stage: test
   needs: []
   script:
     - pacman -Syu --noconfirm m4 make openssh subversion rsync arch-install-scripts git bzr mercurial diffutils asciidoctor shellcheck
     - make check || true
     - SHELLCHECK_OPTS="-S error" make check
+
+test:
+  stage: test
+  needs: []
+  script:
+    - pacman -Syu --noconfirm m4 make openssh subversion rsync arch-install-scripts git bzr mercurial diffutils coreutils asciidoctor shellcheck nvchecker bats
+    - make test BATS_EXTRA_ARGS='--formatter junit'
+  artifacts:
+    reports:
+      junit: build/coverage/bats-report.xml
+
+coverage:
+  stage: test
+  needs: []
+  script:
+    - pacman -Syu --noconfirm m4 make openssh subversion rsync arch-install-scripts git bzr mercurial diffutils coreutils asciidoctor shellcheck nvchecker bats kcov jq
+    - make coverage
+  coverage: '/Percent covered\s+\d+\.\d+/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: build/coverage/bats.*/cobertura.xml

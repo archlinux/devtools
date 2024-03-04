@@ -1,0 +1,15 @@
+_pyname=ipyparallel
+pkgname=python-$_pyname
+pkgver=8.6.1
+pkgrel=1
+pkgdesc='Interactive Parallel Computing in Python'
+url='https://pypi.org/project/ipyparallel/'
+arch=(any)
+license=(BSD)
+source=(https://files.pythonhosted.org/packages/source/${_pyname::1}/$_pyname/$_pyname-$pkgver.tar.gz)
+depends=(python)
+sha256sums=('a39aa5ef9560170bf0e9afedca9ff045e1b9c1832c49303377edcc91cea9fb77')
+
+package() {
+	:
+}

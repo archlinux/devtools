@@ -1,0 +1,4 @@
+[devtools]
+source = "git"
+git = "https://gitlab.archlinux.org/archlinux/devtools.git"
+prefix = "v"

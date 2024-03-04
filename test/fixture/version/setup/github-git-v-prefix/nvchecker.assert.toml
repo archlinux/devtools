@@ -1,0 +1,4 @@
+[vim]
+source = "git"
+git = "https://github.com/vim/vim.git"
+prefix = "v"

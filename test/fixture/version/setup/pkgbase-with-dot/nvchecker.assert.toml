@@ -1,0 +1,3 @@
+["git.smash"]
+source = "git"
+git = "https://github.com/anthraxx/git-smash.git"

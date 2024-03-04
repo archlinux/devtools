@@ -1,0 +1,16 @@
+pkgname=node-gyp
+pkgver=10.0.1
+pkgrel=1
+pkgdesc='Node.js native addon build tool'
+arch=('any')
+url='https://github.com/nodejs/node-gyp'
+license=('MIT')
+depends=('nodejs' 'nodejs-nopt' 'python' 'semver')
+makedepends=('npm')
+source=("https://registry.npmjs.org/$pkgname/-/$pkgname-$pkgver.tgz")
+noextract=("$pkgname-$pkgver.tgz")
+sha512sums=('820dff6c77a141f662bd055fa88cb2f304dd4b2985f724f23f808989f2bbde29b234c53c008190136a546bb74d59f98c786f5c0d517679e86244cbf42c2d6202')
+
+package() {
+	:
+}

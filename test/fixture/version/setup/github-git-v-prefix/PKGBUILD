@@ -1,0 +1,17 @@
+pkgname=vim
+pkgver=9.1.0131
+pkgrel=1
+pkgdesc="A dead-simple tool to sign files and verify digital signatures"
+arch=('x86_64')
+url="https://github.com/jedisct1/minisign"
+license=('custom:ISC')
+depends=('libsodium')
+makedepends=('cmake' 'git')
+_commit=feefda7af87f64342bd07bf446ceb0467cbd0fb4 # git rev-parse $pkgver
+source=("git+https://github.com/vim/vim.git?signed#tag=v${pkgver}")
+sha512sums=('SKIP')
+validpgpkeys=(54A2B8892CC3D6A597B92B6C210627AABA709FE1) # Frank Denis
+
+package() {
+	:
+}

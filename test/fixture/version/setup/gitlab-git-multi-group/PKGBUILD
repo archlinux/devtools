@@ -1,0 +1,30 @@
+pkgbase=kicad-library
+pkgname=($pkgbase{,-3d})
+pkgver=7.0.10
+pkgrel=1
+pkgdesc='Assorted libraries for KiCad'
+arch=('any')
+url='http://kicad.org/'
+license=('GPL')
+makedepends=('git' 'cmake')
+options=('!strip')
+source=(
+  'git+https://gitlab.com/kicad/libraries/kicad-packages3D.git#commit=f1af95360976e66472b13897a1f3f5c2a77c0461'
+  'git+https://gitlab.com/kicad/libraries/kicad-symbols.git#commit=5efa35abf67b4734a8e04cf83e31514be3329ce4'
+  'git+https://gitlab.com/kicad/libraries/kicad-templates.git#commit=ff6e3193e6ff6029f65e7cce8ab39fafeafecdd6'
+  'git+https://gitlab.com/kicad/libraries/kicad-footprints.git#commit=9fb460d078b55f2bb08c459cddd184833a853167'
+)
+sha512sums=('SKIP'
+         'SKIP'
+         'SKIP'
+         'SKIP')
+
+package_kicad-library() {
+  :
+}
+
+package_kicad-library-3d() {
+  :
+}
+
+# vim:set ts=2 sw=2 et:

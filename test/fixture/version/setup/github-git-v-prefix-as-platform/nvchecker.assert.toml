@@ -1,0 +1,5 @@
+[vim]
+source = "github"
+github = "vim/vim"
+use_max_tag = true
+prefix = "v"

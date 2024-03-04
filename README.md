@@ -98,6 +98,7 @@ Component: pkgctl db remove
 - asciidoctor
 - make
 - shellcheck
+- bats
 
 ## License
 

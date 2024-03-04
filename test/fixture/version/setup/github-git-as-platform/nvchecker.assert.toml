@@ -1,0 +1,4 @@
+[minisign]
+source = "github"
+github = "jedisct1/minisign"
+use_max_tag = true

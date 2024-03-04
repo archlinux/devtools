@@ -1,0 +1,24 @@
+pkgbase=kicad-library
+pkgname=($pkgbase{,-3d})
+pkgver=7.0.10
+pkgrel=1
+pkgdesc='Assorted libraries for KiCad'
+arch=('any')
+url='http://kicad.org/'
+license=('GPL')
+makedepends=('git' 'cmake')
+options=('!strip')
+source=(
+  https://gitlab.com/kicad/libraries/kicad-packages3D/-/archive/8.0.0/kicad-packages3D-8.0.0.tar.gz
+)
+sha512sums=('SKIP')
+
+package_kicad-library() {
+  :
+}
+
+package_kicad-library-3d() {
+  :
+}
+
+# vim:set ts=2 sw=2 et:

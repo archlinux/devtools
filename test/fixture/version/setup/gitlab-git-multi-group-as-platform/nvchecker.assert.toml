@@ -1,0 +1,4 @@
+[kicad-library]
+source = "gitlab"
+gitlab = "kicad/libraries/kicad-packages3D"
+use_max_tag = true

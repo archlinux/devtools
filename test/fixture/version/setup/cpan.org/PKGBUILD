@@ -1,0 +1,14 @@
+pkgname=perl-locale-po
+pkgver=0.3.5
+pkgrel=1
+pkgdesc=''
+arch=(any)
+url='http://polyglot.rubyforge.org/'
+source=("https://search.cpan.org/CPAN/authors/id/C/CO/COSIMO/Locale-PO-$pkgver.tar.gz")
+sha256sums=('59d66ef5e3c166431c39cb8b7c1d02af419051352f27912f6a43981b3def16af')
+
+package() {
+  :
+}
+
+# vim: ts=2 sw=2 et:
