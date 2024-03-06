@@ -141,9 +141,9 @@ pkgctl_aur_drop_from_repo() {
 		if (( FORCE )); then
 			AUR_OVERWRITE=1 \
 				GIT_SSH_COMMAND="ssh -o SendEnv=AUR_OVERWRITE" \
-				git push --force origin master
+				git push --force --no-follow-tags origin master
 		else
-			git push origin master
+			git push --no-follow-tags origin master
 		fi
 
 		# update the local default branch in case this clone is used in the future
