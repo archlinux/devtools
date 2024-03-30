@@ -72,6 +72,7 @@ fi
 
 # shellcheck disable=2016
 host_mirrors=($(pacman-conf --repo extra Server 2> /dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#'))
+host_cachemirrors=($(pacman-conf --repo extra CacheServer 2> /dev/null | sed -r 's#(.*/)extra/os/.*#\1$repo/os/$arch#'))
 
 for host_mirror in "${host_mirrors[@]}"; do
 	if [[ $host_mirror == *file://* ]]; then
@@ -105,6 +106,8 @@ copy_hostconf () {
 	pacman-key --gpgdir "$working_dir"/etc/pacman.d/gnupg/ --import-trustdb "$(pacman-conf GpgDir)" >/dev/null 2>&1
 
 	printf 'Server = %s\n' "${host_mirrors[@]}" >"$working_dir/etc/pacman.d/mirrorlist"
+
+	[[ -n $host_cachemirrors ]] && printf 'CacheServer = %s\n' "${host_cachemirrors[@]}" >>"$working_dir/etc/pacman.d/mirrorlist"
 
 	[[ -n $pac_conf ]] && cp "$pac_conf" "$working_dir/etc/pacman.conf"
 	[[ -n $makepkg_conf ]] && cp "$makepkg_conf" "$working_dir/etc/makepkg.conf"
