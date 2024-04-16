@@ -149,7 +149,7 @@ install_packages() {
 
 	cp -- "${install_pkgs[@]}" "$copydir/root/"
 	arch-nspawn "$copydir" "${bindmounts_ro[@]}" "${bindmounts_rw[@]}" \
-		bash -c 'yes y | pacman -U -- "$@"' -bash "${pkgnames[@]/#//root/}"
+		pacman -U --noconfirm --ask=4 -- "${pkgnames[@]/#//root/}"
 	ret=$?
 	rm -- "${pkgnames[@]/#/$copydir/root/}"
 
