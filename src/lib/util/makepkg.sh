@@ -22,15 +22,35 @@ makepkg_source_package() {
 		return
 	fi
 	(
+		# shellcheck disable=SC2030 disable=SC2031
 		export LIBMAKEPKG_LINT_PKGBUILD_SH=1
 		lint_pkgbuild() { :; }
 
+		# shellcheck disable=SC2030 disable=SC2031
 		export LIBMAKEPKG_SRCINFO_SH=1
 		write_srcinfo() { print_srcinfo; }
 
 		# explicitly instruct makepkg to not sign the source package, even when
 		# the BUILDENV array in makepkg.conf contains 'sign'
 		set +e -- -F --source --nosign
+		# shellcheck source=/usr/bin/makepkg
+		source "$(command -v makepkg)"
+	)
+}
+
+makepkg_generate_integrity() {
+	if [[ -z ${DEVTOOLS_GENERATE_INTEGRITY} ]]; then
+		[[ -z ${WORKDIR:-} ]] && setup_workdir
+		export WORKDIR DEVTOOLS_INCLUDE_COMMON_SH
+		bash -$- -c "DEVTOOLS_GENERATE_INTEGRITY=1; source '${BASH_SOURCE[0]}' && ${FUNCNAME[0]}"
+		return
+	fi
+	(
+		# shellcheck disable=SC2030 disable=SC2031
+		export LIBMAKEPKG_LINT_PKGBUILD_SH=1
+		lint_pkgbuild() { :; }
+
+		set +e -- --geninteg
 		# shellcheck source=/usr/bin/makepkg
 		source "$(command -v makepkg)"
 	)

@@ -437,10 +437,11 @@ pkgctl_build() {
 			stat_done
 		fi
 
-
 		# update checksums if any sources are declared
 		if (( UPDATE_CHECKSUMS )) && (( ${#source[@]} >= 1 )); then
-			updpkgsums
+			if ! result=$(pkgbuild_update_checksums /dev/stderr); then
+				die "${result}"
+			fi
 		fi
 
 		# re-source the PKGBUILD if it changed

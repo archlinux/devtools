@@ -49,6 +49,5 @@ See Also
 
 pkgctl-version(1)
 nvchecker(1)
-updpkgsums(8)
 
 include::include/footer.asciidoc[]

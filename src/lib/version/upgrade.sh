@@ -115,6 +115,12 @@ pkgctl_version_upgrade() {
 			die "No PKGBUILD found for ${path}"
 		fi
 
+		# reset common PKGBUILD variables
+		unset pkgbase pkgname arch source pkgver pkgrel validpgpkeys
+		# shellcheck source=contrib/makepkg/PKGBUILD.proto
+		. ./PKGBUILD
+		pkgbase=${pkgbase:-$pkgname}
+
 		# update the current terminal spinner status
 		(( ++current_item ))
 		pkgctl_version_upgrade_spinner \
@@ -123,13 +129,9 @@ pkgctl_version_upgrade() {
 			"${#out_of_date[@]}" \
 			"${#failure[@]}" \
 			"${current_item}" \
-			"${#pkgbases[@]}"
-
-		# reset common PKGBUILD variables
-		unset pkgbase pkgname arch source pkgver pkgrel validpgpkeys
-		# shellcheck source=contrib/makepkg/PKGBUILD.proto
-		. ./PKGBUILD
-		pkgbase=${pkgbase:-$pkgname}
+			"${#pkgbases[@]}" \
+			"${pkgbase}" \
+			"query latest version"
 
 		if ! result=$(get_upstream_version); then
 			result="${BOLD}${pkgbase}${ALL_OFF}: ${result}"
@@ -162,7 +164,20 @@ pkgctl_version_upgrade() {
 
 			# download sources and update the checksums
 			if (( update_checksums )); then
-				updpkgsums
+				pkgctl_version_upgrade_spinner \
+					"${status_dir}" \
+					"${#up_to_date[@]}" \
+					"${#out_of_date[@]}" \
+					"${#failure[@]}" \
+					"${current_item}" \
+					"${#pkgbases[@]}" \
+					"${pkgbase}" \
+					"updating checksums"
+
+				if ! result=$(pkgbuild_update_checksums /dev/null); then
+					result="${BOLD}${pkgbase}${ALL_OFF}: failed to update checksums for version ${DARK_GREEN}${upstream_version}${ALL_OFF}"
+					failure+=("${result}")
+				fi
 			fi
 		fi
 
@@ -242,6 +257,8 @@ pkgctl_version_upgrade_spinner() {
 	local failure_count=$4
 	local current=$5
 	local total=$6
+	local pkgbase=$7
+	local message=$8
 
 	local percentage=$(( 100 * current / total ))
 	local tmp_file="${status_dir}/tmp"
@@ -254,8 +271,10 @@ pkgctl_version_upgrade_spinner() {
 		"${failure_count}" > "${tmp_file}"
 
 	# print the progress status
-	printf "📡 Upgrading: %s/%s [%s] %%spinner%%" \
-		"${BOLD}${current}" "${total}" "${percentage}%${ALL_OFF}"  \
+	printf "📡 %s: %s\n" \
+		"${pkgbase}" "${BOLD}${message}${ALL_OFF}" >> "${tmp_file}"
+	printf "⌛ Upgrading: %s/%s [%s] %%spinner%%" \
+		"${BOLD}${current}" "${total}" "${percentage}%${ALL_OFF}" \
 		>> "${tmp_file}"
 
 	# swap the status file
