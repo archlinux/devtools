@@ -85,7 +85,8 @@ fi
 
 archbuild_cmd=("${repo}${archbuild_arch:+-$archbuild_arch}-build" "$@")
 
-trap 'rm -rf $TEMPDIR' EXIT INT TERM QUIT
+[[ -z ${WORKDIR:-} ]] && setup_workdir
+export TEMPDIR=$(mktemp --tmpdir="${WORKDIR}" --directory offload-build.XXXXXXXXXX)
 
 # Load makepkg.conf variables to be available
 load_makepkg_config
@@ -93,8 +94,7 @@ load_makepkg_config
 # Use a source-only tarball as an intermediate to transfer files. This
 # guarantees the checksums are okay, and guarantees that all needed files are
 # transferred, including local sources, install scripts, and changelogs.
-export TEMPDIR=$(mktemp -d --tmpdir offload-build.XXXXXXXXXX)
-export SRCPKGDEST=${TEMPDIR}
+export SRCPKGDEST="${TEMPDIR}"
 makepkg_source_package || die "unable to make source package"
 
 # Temporary cosmetic workaround makepkg if SRCDEST is set somewhere else
@@ -109,7 +109,9 @@ sshopts_master=(-o ControlMaster=yes -o ControlPersist=yes -o ControlPath="$ssh_
 sshopts=(-o ControlMaster=no -o ControlPath="$ssh_socket_path")
 # Quoting for rsync --rsh: replace all single quotes in the arguments with two single quotes each, then surround all arguments with single quotes
 rsyncopts+=(--rsh="ssh$(printf " '%s'" "${sshopts[@]//\'/\'\'}")")
-trap 'ssh "${sshopts[@]}" -O exit -q "$server"' EXIT INT TERM QUIT
+# lib/common.sh sets up traps for cleanup, the following will override them
+trap 'ssh "${sshopts[@]}" -O exit -q "$server"; trap_abort' INT QUIT TERM HUP
+trap 'ssh "${sshopts[@]}" -O exit -q "$server"; trap_exit' EXIT
 ssh "${sshopts_master[@]}" "$server" &
 
 # Create a temporary directory on the server
