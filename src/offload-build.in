@@ -103,9 +103,12 @@ rmdir --ignore-fail-on-non-empty src 2>/dev/null || true
 
 # Create an SSH master connection and use its control socket with
 # ControlMaster=no in all following SSH commands, including rsync.
-sshopts_master=(-o ControlMaster=yes -o ControlPersist=yes -o ControlPath="$TEMPDIR"/ssh.socket -N)
-sshopts=(-o ControlMaster=no -o ControlPath="$TEMPDIR"/ssh.socket)
-rsyncopts+=(--rsh="ssh ${sshopts[*]}")
+# Quoting for OpenSSH options: simple backslash escaping https://anongit.mindrot.org/openssh.git/tree/misc.c?h=V_9_7#n2011
+ssh_socket_path="${TEMPDIR//[\"\'\\]/\\&}/ssh.socket"
+sshopts_master=(-o ControlMaster=yes -o ControlPersist=yes -o ControlPath="$ssh_socket_path" -N)
+sshopts=(-o ControlMaster=no -o ControlPath="$ssh_socket_path")
+# Quoting for rsync --rsh: replace all single quotes in the arguments with two single quotes each, then surround all arguments with single quotes
+rsyncopts+=(--rsh="ssh$(printf " '%s'" "${sshopts[@]//\'/\'\'}")")
 trap 'ssh "${sshopts[@]}" -O exit -q "$server"' EXIT INT TERM QUIT
 ssh "${sshopts_master[@]}" "$server" &
 
