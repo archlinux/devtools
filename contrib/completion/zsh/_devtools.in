@@ -14,7 +14,6 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
 # shellcheck source=src/lib/valid-search.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-search.sh
 
-_binary_arch=${DEVTOOLS_VALID_ARCHES[*]:0:-1}
 _colors=(never always auto)
 
 _archbuild_args=(
@@ -41,8 +40,8 @@ _pkgctl_auth_status_args=(
 )
 
 _pkgctl_build_args=(
-	"--arch=[Specify architectures to build for (disables auto-detection)]:arch:($_arch[*])"
-	"--repo=[Specify a target repository (disables auto-detection)]:repo:($DEVTOOLS_VALID_REPOS[*])"
+	"--arch[Specify architectures to build for (disables auto-detection)]:arch:($DEVTOOLS_VALID_BINARY_ARCHES[*])"
+	"--repo[Specify a target repository (disables auto-detection)]:repo:($DEVTOOLS_VALID_REPOS[*])"
 	'(-s --staging)'{-s,--staging}'[Build against the staging counterpart of the auto-detected repo]'
 	'(-t --testing)'{-t,--testing}'[Build against the testing counterpart of the auto-detected repo]'
 	'(-o --offload)'{-o,--offload}'[Build on a remote server and transfer artifacts afterwards]'
@@ -79,7 +78,7 @@ _pkgctl_db_move_args=(
 )
 
 _pkgctl_db_remove_args=(
-	'(-a --arch=)'{-a,--arch=}"[Override the architecture (disables auto-detection)]:arch:($_arch[*])"
+	'(-a --arch)'{-a,--arch}"[Override the architecture (disables auto-detection)]:arch:($DEVTOOLS_VALID_BINARY_ARCHES[*])"
 	'(-h --help)'{-h,--help}'[Display usage]'
 	"1:repo:($DEVTOOLS_VALID_REPOS[*])"
 	'*:pkgbase:_devtools_completions_all_packages'
@@ -250,7 +249,7 @@ _sogrep_args=(
 
 _offload_build_args=(
 	'(-r --repo)'{-r,--repo}'[Build against a specific repository]:repo:($DEVTOOLS_VALID_BUILDREPOS[*])'
-	'(-a --arch)'{-a,--arch}'[Build against a specific architecture]:arch:(${_binary_arch[*]})'
+	'(-a --arch)'{-a,--arch}'[Build against a specific architecture]:arch:(${DEVTOOLS_VALID_BINARY_ARCHES[*]})'
 	'(-s --server)'{-s,--server}'[Offload to a specific Build server]:server:'
 	'(-h --help)'{-h,--help}'[Display usage]'
 )

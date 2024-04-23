@@ -14,7 +14,6 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
 # shellcheck source=src/lib/valid-search.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-search.sh
 
-_binary_arch=${DEVTOOLS_VALID_ARCHES[*]:0:-1}
 _colors=(never always auto)
 
 
@@ -128,7 +127,7 @@ _offload_build_args=(
 )
 _offload_build_args__repo_opts() { _devtools_completions_build_repo; }
 _offload_build_args_r_opts() { _offload_build_args__repo_opts; }
-_offload_build_args__arch_opts() { _devtools_completions_arch; }
+_offload_build_args__arch_opts() { _devtools_completions_binary_arch; }
 _offload_build_args_a_opts() { _offload_build_args__arch_opts; }
 _offload_build_args__server_opts() { :; }
 _offload_build_args_s_opts() { _offload_build_args__server_opts; }
@@ -196,7 +195,7 @@ _pkgctl_build_args=(
 
 	-h --help
 )
-_pkgctl_build_args__arch_opts() { _devtools_completions_arch; }
+_pkgctl_build_args__arch_opts() { _devtools_completions_binary_arch; }
 _pkgctl_build_args__repo_opts() { _devtools_completions_repo; }
 _pkgctl_build_args__worker_opts() { :; }
 _pkgctl_build_args_w_opts() { _pkgctl_build_args__worker_opts; }
@@ -244,6 +243,8 @@ _pkgctl_db_remove_args=(
 	-a --arch
 	-h --help
 )
+_pkgctl_db_remove_args__arch_opts() { _devtools_completions_binary_arch; }
+_pkgctl_db_remove_args_a_opts() { _pkgctl_db_remove_args__arch_opts; }
 _pkgctl_db_remove_opts() {
 	local subcommand args
 	subcommand=(db remove)
@@ -433,6 +434,9 @@ _devtools_completions_color() {
 }
 _devtools_completions_arch() {
 	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_ARCHES[*]}" -- "$cur")
+}
+_devtools_completions_binary_arch() {
+	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_BINARY_ARCHES[*]}" -- "$cur")
 }
 _devtools_completions_repo() {
 	local optional=${1:-}
