@@ -241,6 +241,7 @@ _pkgctl_db_move_opts() {
 
 _pkgctl_db_remove_args=(
 	--partial
+	--noconfirm
 	-a --arch
 	-h --help
 )

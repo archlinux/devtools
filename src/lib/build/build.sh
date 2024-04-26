@@ -312,7 +312,7 @@ pkgctl_build() {
 
 	# Update pacman cache for auto-detection
 	if [[ -z ${REPO} ]]; then
-		update_pacman_repo_cache
+		update_pacman_repo_cache multilib
 	# Check valid repos if not resolved dynamically
 	elif ! in_array "${REPO}" "${DEVTOOLS_VALID_REPOS[@]}"; then
 		die "Invalid repository target: %s" "${REPO}"

@@ -31,6 +31,9 @@ Options
 	Remove only one specific architecture (disables auto-detection).
 	By default all architectures are removed when this option is not used.
 
+*--noconfirm*::
+	Bypass any confirmation messages, should only be used with caution.
+
 *-h, --help*::
 	Show a help text
 

@@ -71,6 +71,7 @@ Component: pkgctl db remove
 - coreutils
 - curl
 - diffutils
+- expac
 - fakeroot
 - findutils
 - grep

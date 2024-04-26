@@ -180,3 +180,19 @@ term_spinner_stop() {
 	# show the cursor after stopping the spinner
 	term_cursor_show
 }
+
+prompt() {
+	local message=$1
+	local answer
+
+	read -r -p "${message} (y/N) " answer
+
+	case "${answer}" in
+		y|Y|yes|Yes|YES)
+			true
+			;;
+		*)
+			false
+			;;
+	esac
+}
