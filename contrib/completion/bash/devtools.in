@@ -240,6 +240,7 @@ _pkgctl_db_move_opts() {
 
 
 _pkgctl_db_remove_args=(
+	--partial
 	-a --arch
 	-h --help
 )

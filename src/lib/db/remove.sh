@@ -17,10 +17,18 @@ pkgctl_db_remove_usage() {
 	cat <<- _EOF_
 		Usage: ${COMMAND} [OPTIONS] [REPO] [PKGBASE]...
 
-		Remove packages from binary repositories.
+		Remove packages from pacman repositories. By default passing a pkgbase removes
+		all split packages, debug packages as well as entries from the state repo for
+		all existing architectures.
+
+		Beware when using the --partial option, as it may most likely lead to
+		undesired effects by leaving debug packages behind as well as dangling entries
+		in the state repository.
 
 		OPTIONS
-		    -a, --arch    Override the architecture (disables auto-detection)
+		    -a, --arch    Remove only one specific architecture (disables auto-detection)
+		    --partial     Remove only partial pkgnames from a split package. This leaves
+		                  debug packages behind and pkgbase entries in the state repo.
 		    -h, --help    Show this help text
 
 		EXAMPLES
@@ -31,8 +39,9 @@ _EOF_
 
 pkgctl_db_remove() {
 	local REPO=""
-	local ARCH=any
 	local PKGBASES=()
+	local partial=0
+	local dbscripts_options=()
 
 	# option checking
 	while (( $# )); do
@@ -41,9 +50,14 @@ pkgctl_db_remove() {
 				pkgctl_db_remove_usage
 				exit 0
 				;;
+			--partial)
+				partial=1
+				dbscripts_options+=(--partial)
+				shift
+				;;
 			-a|--arch)
 				(( $# <= 1 )) && die "missing argument for %s" "$1"
-				ARCH=$2
+				dbscripts_options+=(--arch "$2")
 				shift 2
 				;;
 			-*)
@@ -64,6 +78,14 @@ pkgctl_db_remove() {
 	shift
 	PKGBASES+=("$@")
 
+	# print explenation about partial removal
+	if (( partial )); then
+		echo
+		msg_warn "${YELLOW}Removing only partial pkgnames from a split package.${ALL_OFF}"
+		msg_warn "${YELLOW}This leaves debug packages and pkgbase entries in the state repo!${ALL_OFF}"
+	fi
+
 	# shellcheck disable=SC2029
-	ssh "${PACKAGING_REPO_RELEASE_HOST}" db-remove "${REPO}" "${ARCH}" "${PKGBASES[@]}"
+	echo
+	ssh "${PACKAGING_REPO_RELEASE_HOST}" db-remove "${dbscripts_options[@]}" "${REPO}" "${PKGBASES[@]}"
 }

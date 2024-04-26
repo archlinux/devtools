@@ -78,6 +78,7 @@ _pkgctl_db_move_args=(
 )
 
 _pkgctl_db_remove_args=(
+	'--partial[Remove only partial pkgnames from a split package]'
 	'(-a --arch)'{-a,--arch}"[Override the architecture (disables auto-detection)]:arch:($DEVTOOLS_VALID_BINARY_ARCHES[*])"
 	'(-h --help)'{-h,--help}'[Display usage]'
 	"1:repo:($DEVTOOLS_VALID_REPOS[*])"

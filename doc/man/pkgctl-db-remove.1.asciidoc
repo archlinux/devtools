@@ -12,13 +12,24 @@ pkgctl db remove [OPTIONS] [REPO] [PKGBASE]...
 Description
 -----------
 
-Remove packages from pacman repositories.
+Remove packages from pacman repositories. By default passing a pkgbase removes
+all split packages, debug packages as well as entries from the state repo for
+all existing architectures.
+
+Beware when using the `--partial` option, as it may most likely lead to
+undesired effects by leaving debug packages behind as well as dangling entries
+in the state repository.
 
 Options
 -------
 
+*--partial*::
+	Remove only partial pkgnames from a split package. This leaves debug
+	packages behind and pkgbase entries in the state repo.
+
 *-a, --arch* 'ARCH'::
-	Override the architecture (disables auto-detection)
+	Remove only one specific architecture (disables auto-detection).
+	By default all architectures are removed when this option is not used.
 
 *-h, --help*::
 	Show a help text
