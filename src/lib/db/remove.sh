@@ -12,6 +12,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/pacman.sh
 # shellcheck source=src/lib/util/term.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/term.sh
+# shellcheck source=src/lib/valid-repos.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 
 set -e
 
@@ -91,6 +93,11 @@ pkgctl_db_remove() {
 	shift
 	PKGBASES+=("$@")
 	pkgnames=("${PKGBASES[@]}")
+
+	# check if the target repo is valid
+	if ! in_array "${REPO}" "${DEVTOOLS_VALID_REPOS[@]}"; then
+		die "Invalid repository target: %s" "${REPO}"
+	fi
 
 	# update pacman cache to query all pkgnames
 	if (( ! partial )); then
