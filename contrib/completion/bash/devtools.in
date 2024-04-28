@@ -292,6 +292,7 @@ _pkgctl_aur_drop_from_repo_opts() { _filedir -d; }
 
 
 _pkgctl_repo_cmds=(
+	clean
 	clone
 	configure
 	create
@@ -317,6 +318,12 @@ _pkgctl_repo_clone_args__jobs_opts() { :; }
 _pkgctl_repo_clone_args_j_opts() { _pkgctl_repo_clone_args__jobs_opts; }
 _pkgctl_repo_clone_opts() { _devtools_completions_all_packages; }
 
+_pkgctl_repo_clean_args=(
+	-i --interactive
+	-n --dry-run
+	-h --help
+)
+_pkgctl_repo_clean_opts() { _filedir -d; }
 
 _pkgctl_repo_configure_args=(
 	--protocol

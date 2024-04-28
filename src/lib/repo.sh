@@ -27,6 +27,7 @@ pkgctl_repo_usage() {
 		without SSH access using read-only HTTPS.
 
 		COMMANDS
+		    clean          Remove untracked files from the working tree
 		    clone          Clone a package repository
 		    configure      Configure a clone according to distro specs
 		    create         Create a new GitLab package repository
@@ -37,6 +38,7 @@ pkgctl_repo_usage() {
 		    -h, --help     Show this help text
 
 		EXAMPLES
+		    $ ${COMMAND} clean --interactive *
 		    $ ${COMMAND} clone libfoo linux libbar
 		    $ ${COMMAND} clone --maintainer mynickname
 		    $ ${COMMAND} configure *
@@ -57,6 +59,14 @@ pkgctl_repo() {
 		case $1 in
 			-h|--help)
 				pkgctl_repo_usage
+				exit 0
+				;;
+			clean)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/repo/clean.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/repo/clean.sh
+				pkgctl_repo_clean "$@"
 				exit 0
 				;;
 			clone)

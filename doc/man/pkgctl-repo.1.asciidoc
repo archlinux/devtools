@@ -32,6 +32,9 @@ Options
 Subcommands
 -----------
 
+pkgctl repo clean::
+	Remove untracked files from the working tree
+
 pkgctl repo clone::
 	Clone a package repository
 
@@ -50,6 +53,7 @@ pkgctl repo web::
 See Also
 --------
 
+pkgctl-repo-clean(1)
 pkgctl-repo-clone(1)
 pkgctl-repo-configure(1)
 pkgctl-repo-create(1)

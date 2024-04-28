@@ -114,6 +114,7 @@ _pkgctl_aur_drop_from_repo_args=(
 
 _pkgctl_repo_cmds=(
 	"pkgctl repo command"
+	"clean[Remove untracked files from the working tree]"
 	"clone[Clone a package repository]"
 	"configure[Configure a clone according to distro specs]"
 	"create[Create a new GitLab package repository]"
@@ -125,6 +126,13 @@ _pkgctl_repo_switch_args=(
 	'(-f --force --discard-changes)'{-f,--force,--discard-changes}'[Discard changes if index or working tree is dirty]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'1:version'
+	'*:git_dir:_files -/'
+)
+
+_pkgctl_repo_clean_args=(
+	'(-i --interactive)'{-i,--interactive}'[Show what would be done and clean files interactively]'
+	'(-n --dry-run)'{-n,--dry-run}"[Don't remove anything, just show what would be done]"
+	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:git_dir:_files -/'
 )
 

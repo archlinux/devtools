@@ -1,0 +1,40 @@
+pkgctl-repo-clean(1)
+====================
+
+Name
+----
+
+pkgctl-repo-clean - Remove untracked files from the working tree
+
+Synopsis
+--------
+
+pkgctl repo clean [OPTION] [PATH]...
+
+Description
+-----------
+
+Cleans the working tree by recursively removing files that are not under
+version control, starting from the current directory.
+
+Files unknown to Git as well as ignored files are removed. This can, for
+example, be useful to remove all build products.
+
+Options
+-------
+
+*-i, --interactive*::
+	Show what would be done and clean files interactively
+
+*-n, --dry-run*::
+	Don't actually remove anything, just show what would be done
+
+*-h, --help*::
+	Show a help text
+
+See Also
+--------
+
+git-clean(1)
+
+include::include/footer.asciidoc[]
