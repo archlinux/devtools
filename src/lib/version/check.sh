@@ -114,10 +114,6 @@ pkgctl_version_check() {
 		fi
 		pushd "${path}" >/dev/null
 
-		if [[ ! -f "PKGBUILD" ]]; then
-			die "No PKGBUILD found for ${path}"
-		fi
-
 		# update the current terminal spinner status
 		(( ++current_item ))
 		pkgctl_version_check_spinner \
@@ -127,6 +123,13 @@ pkgctl_version_check() {
 			"${#failure[@]}" \
 			"${current_item}" \
 			"${#pkgbases[@]}"
+
+		if [[ ! -f "PKGBUILD" ]]; then
+			result="${BOLD}${path}${ALL_OFF}: no PKGBUILD found"
+			failure+=("${result}")
+			popd >/dev/null
+			continue
+		fi
 
 		# reset common PKGBUILD variables
 		unset pkgbase pkgname arch source pkgver pkgrel validpgpkeys

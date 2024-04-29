@@ -111,8 +111,13 @@ pkgctl_version_upgrade() {
 		fi
 		pushd "${path}" >/dev/null
 
+		(( ++current_item ))
+
 		if [[ ! -f "PKGBUILD" ]]; then
-			die "No PKGBUILD found for ${path}"
+			result="${BOLD}${path}${ALL_OFF}: no PKGBUILD found"
+			failure+=("${result}")
+			popd >/dev/null
+			continue
 		fi
 
 		# reset common PKGBUILD variables
@@ -122,7 +127,6 @@ pkgctl_version_upgrade() {
 		pkgbase=${pkgbase:-$pkgname}
 
 		# update the current terminal spinner status
-		(( ++current_item ))
 		pkgctl_version_upgrade_spinner \
 			"${status_dir}" \
 			"${#up_to_date[@]}" \
