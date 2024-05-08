@@ -1,0 +1,43 @@
+pkgctl-db(1)
+============
+
+NAME
+----
+pkgctl-db - Pacman database modification utility for package updates, moves, and more.
+
+SYNOPSIS
+--------
+pkgctl db [OPTIONS] [SUBCOMMAND]
+
+DESCRIPTION
+-----------
+
+Managing the Pacman database and facilitate the modification of packages and their metadata
+within the database
+
+OPTIONS
+-------
+
+*-h, --help*::
+    Display usage information and available options.
+
+Subcommands
+-----------
+
+pkgctl db update::
+    Update the binary repository as final release step
+
+pkgctl db move::
+    Move packages between binary repositories
+
+pkgctl db remove::
+    Remove packages from binary repositories
+
+SEE ALSO
+--------
+
+pkgctl-db-update(1)
+pkgctl-db-move(1)
+pkgctl-db-remove(1)
+
+include::include/footer.asciidoc[]

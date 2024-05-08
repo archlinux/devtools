@@ -12,7 +12,12 @@ pkgctl [SUBCOMMAND] [OPTIONS]
 Description
 -----------
 
-TODO
+Command-line utility serving as a unified interface for multiple development tools. 
+This tool aims to simplify and optimize interactions with devtools by offering 
+various subcommands for executing tasks related to package management, repository management, 
+version control, among others.
+
+Utilizing pkgctl enables users to efficiently administer their development workflows.
 
 Options
 -------
