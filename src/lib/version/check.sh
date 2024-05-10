@@ -267,13 +267,13 @@ nvchecker_check_config() {
 	done
 
 	# check if the config contains a pkgbase section
-	if [[ -n ${pkgbase} ]] && ! grep --max-count=1 --extended-regexp --quiet "^\\[\"?${pkgbase}\"?\\]" < "${config}"; then
+	if [[ -n ${pkgbase} ]] && ! grep --max-count=1 --extended-regexp --quiet "^\\[\"?${pkgbase//+/\\+}\"?\\]" < "${config}"; then
 		printf "missing pkgbase section in %s: %s" "${config}" "${pkgbase}"
 		return 1
 	fi
 
 	# check if the config contains any section other than pkgbase
-	if [[ -n ${pkgbase} ]] && property=$(grep --max-count=1 --perl-regexp "^\\[(?!\"?${pkgbase}\"?\\]).+\\]" < "${config}"); then
+	if [[ -n ${pkgbase} ]] && property=$(grep --max-count=1 --perl-regexp "^\\[(?!\"?${pkgbase//+/\\+}\"?\\]).+\\]" < "${config}"); then
 		printf "non-pkgbase section not supported in %s: %s" "${config}" "${property}"
 		return 1
 	fi

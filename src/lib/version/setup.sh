@@ -252,7 +252,7 @@ nvchecker_setup() {
 
 	# escape the section if it contains toml subsection chars
 	section="${pkgbase}"
-	if [[ ${section} == *.* ]]; then
+	if [[ ${section} == *.* ]] || [[ ${section} == *+* ]]; then
 		section="\"${section}\""
 	fi
 
