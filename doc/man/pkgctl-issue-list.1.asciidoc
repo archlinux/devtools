@@ -1,0 +1,100 @@
+pkgctl-issue-list(1)
+====================
+
+Name
+----
+pkgctl-issue-list - List project or group issues
+
+Synopsis
+--------
+pkgctl issue list [OPTIONS] [PKGBASE]
+
+Description
+-----------
+
+The pkgctl issue list command is used to list issues associated with a specific
+packaging project or the entire packaging subgroup in Arch Linux. This command
+facilitates efficient issue management by allowing users to list and filter
+issues based on various criteria.
+
+Results can also be displayed directly in a web browser for easier navigation
+and review.
+
+The command offers filtering options to refine the results. Users can include
+closed issues, filter exclusively for unconfirmed issues, or focus on issues
+with specific labels such as priority, confidentiality, resolution, scope,
+severity, and status.
+
+Additionally, users can search within issue titles or descriptions and filter
+issues by the assignee or author. There are also convenient shortcuts to filter
+issues assigned to or created by the current user.
+
+This command is particularly useful for package maintainers and contributors in
+the Arch Linux community who need to track and manage issues efficiently. It
+provides a comprehensive view of the project's or group's issue landscape,
+enabling maintainers to address and prioritize issues effectively.
+
+Options
+-------
+
+*-g, --group*::
+	Get issues from the whole packaging subgroup
+
+*-w, --web*::
+	View results in a browser
+
+*-h, --help*::
+	Show a help text
+
+Filter Options
+--------------
+
+*-A, --all*::
+	Get all issues including closed
+
+*-c, --closed*::
+	Get only closed issues
+
+*-U, --unconfirmed*::
+	Shorthand to filter by unconfirmed status label
+
+*--search* 'SEARCH'::
+	Search <string> in the fields defined by --in
+
+*--in* 'LOCATION'::
+	Search in title or description (default: all)
+
+*-l, --label* 'NAME'::
+	Filter issue by label <name>
+
+*--confidentiality* 'TYPE'::
+	Filter by confidentiality
+
+*--priority* 'PRIORITY'::
+	Shorthand to filter by priority label
+
+*--resolution* 'REASON'::
+	Shorthand to filter by resolution label
+
+*--scope* 'SCOPE'::
+	Shorthand to filter by scope label
+
+*--severity* 'SEVERITY'::
+	Shorthand to filter by severity label
+
+*--status* 'STATUS'::
+	Shorthand to filter by status label
+
+*--assignee* 'USERNAME'::
+	Filter issues assigned to the given username
+
+*--assigned-to-me*::
+	Shorthand to filter issues assigned to you
+
+*--author* 'USERNAME'::
+	Filter issues authored by the given username
+
+*--created-by-me*::
+	Shorthand to filter issues created by you
+
+include::include/footer.asciidoc[]

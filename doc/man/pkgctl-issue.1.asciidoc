@@ -1,0 +1,34 @@
+pkgctl-issue(1)
+===============
+
+Name
+----
+pkgctl-issue - Work with GitLab packaging issues
+
+Synopsis
+--------
+pkgctl issue [SUBCOMMAND] [OPTIONS]
+
+Description
+-----------
+
+Work with GitLab packaging issues.
+
+Options
+-------
+
+*-h, --help*::
+	Show a help text
+
+Subcommands
+-----------
+
+pkgctl issue list::
+	List project or group issues
+
+See Also
+--------
+
+pkgctl-issue-list(1)
+
+include::include/footer.asciidoc[]

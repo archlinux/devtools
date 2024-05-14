@@ -15,6 +15,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-search.sh
 # shellcheck source=src/lib/valid-version.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-version.sh
+# shellcheck source=src/lib/valid-issue.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-issue.sh
 
 _colors=(never always auto)
 
@@ -147,6 +149,7 @@ _pkgctl_cmds=(
 	build
 	db
 	diff
+	issue
 	release
 	repo
 	search
@@ -443,6 +446,50 @@ _pkgctl_diff_args__pool_opts() { _filedir -d; }
 _pkgctl_diff_args_P_opts() { _pkgctl_diff_args__pool_opts; }
 _pkgctl_diff_opts() { _devtools_completions_all_packages; }
 
+_pkgctl_issue_cmds=(
+	list
+)
+
+_pkgctl_issue_args=(
+	-h --help
+)
+
+_pkgctl_issue_list_args=(
+	-g --group
+	-w --web
+	-A --all
+	-c --closed
+	-U --unconfirmed
+	--search
+	--in
+	-l --label
+	--confidentiality
+	--priority
+	--resolution
+	--scope
+	--severity
+	--status
+	--assignee
+	--assigned-to-me
+	--author
+	--created-by-me
+	-h --help
+)
+
+_pkgctl_issue_list_opts() { _devtools_completions_all_packages; }
+_pkgctl_issue_list_args__search_opts() { :; }
+_pkgctl_issue_list_args__in_opts() { _devtools_completions_issue_search_location; }
+_pkgctl_issue_list_args__label_opts() { :; }
+_pkgctl_issue_list_args_l_opts() { _pkgctl_issue_list_args__label_opts; }
+_pkgctl_issue_list_args__confidentiality_opts() { _devtools_completions_issue_confidentiality; }
+_pkgctl_issue_list_args__priority_opts() { _devtools_completions_issue_priority; }
+_pkgctl_issue_list_args__resolution_opts() { _devtools_completions_issue_resolution; }
+_pkgctl_issue_list_args__scope_opts() { _devtools_completions_issue_scope; }
+_pkgctl_issue_list_args__severity_opts() { _devtools_completions_issue_severity; }
+_pkgctl_issue_list_args__status_opts() { _devtools_completions_issue_status; }
+_pkgctl_issue_list_args__assignee_opts() { :; }
+_pkgctl_issue_list_args__author_opts() { :; }
+
 
 _pkgctl_version_args=(
 	-h --help
@@ -479,6 +526,27 @@ _devtools_completions_search_format() {
 }
 _devtools_completions_version_output_format() {
 	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_VERSION_OUTPUT_FORMAT[*]}" -- "$cur")
+}
+_devtools_completions_issue_severity() {
+	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_ISSUE_SEVERITY[*]}" -- "$cur")
+}
+_devtools_completions_issue_status() {
+	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_ISSUE_STATUS[*]}" -- "$cur")
+}
+_devtools_completions_issue_scope() {
+	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_ISSUE_SCOPE[*]}" -- "$cur")
+}
+_devtools_completions_issue_search_location() {
+	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_ISSUE_SEARCH_LOCATION[*]}" -- "$cur")
+}
+_devtools_completions_issue_resolution() {
+	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_ISSUE_RESOLUTION[*]}" -- "$cur")
+}
+_devtools_completions_issue_priority() {
+	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_ISSUE_PRIORITY[*]}" -- "$cur")
+}
+_devtools_completions_issue_confidentiality() {
+	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_ISSUE_CONFIDENTIALITY[*]}" -- "$cur")
 }
 
 __devtools_complete() {

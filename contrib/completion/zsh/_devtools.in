@@ -15,6 +15,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-search.sh
 # shellcheck source=src/lib/valid-version.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-version.sh
+# shellcheck source=src/lib/valid-issue.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-issue.sh
 
 _colors=(never always auto)
 
@@ -90,6 +92,33 @@ _pkgctl_db_remove_args=(
 
 _pkgctl_db_update_args=(
 	'(-h --help)'{-h,--help}'[Display usage]'
+)
+
+_pkgctl_issue_cmds=(
+	"pkgctl issue command"
+	"list[List project or group issues]"
+)
+
+_pkgctl_issue_list_args=(
+	'(-g --group)'{-g,--group}'[Get issues from the whole packaging subgroup]'
+	'(-w --web)'{-w,--web}'[View results in a browser]'
+	'(-A --all)'{-A,--all}'[Get all issues including closed]'
+	'(-c --closed)'{-c,--closed}'[Get only closed issues]'
+	'(-U --unconfirmed)'{-U,--unconfirmed}'[Shorthand to filter by unconfirmed status label]'
+	'--search[Search in the fields defined by --in]:search:'
+	"--in[Search in title or description]:location:($DEVTOOLS_VALID_ISSUE_SEARCH_LOCATION[*])"
+	"--confidentiality[Filter by confidentiality]:confidential:($DEVTOOLS_VALID_ISSUE_CONFIDENTIALITY[*])"
+	"--priority[Shorthand to filter by priority label]:priority:($DEVTOOLS_VALID_ISSUE_PRIORITY[*])"
+	"--resolution[Shorthand to filter by resolution label]:resolution:($DEVTOOLS_VALID_ISSUE_RESOLUTION[*])"
+	"--scope[Shorthand to filter by scope label]:scope:($DEVTOOLS_VALID_ISSUE_SCOPE[*])"
+	"--severity[Shorthand to filter by severity label]:severity:($DEVTOOLS_VALID_ISSUE_SEVERITY[*])"
+	"--status[Shorthand to filter by status label]:status:($DEVTOOLS_VALID_ISSUE_STATUS[*])"
+	'--assignee[Filter issues assigned to the given username]:username:'
+	'--assigned-to-me[Shorthand to filter issues assigned to you]'
+	'--author[Filter issues authored by the given username]:username:'
+	'--created-by-me[Shorthand to filter issues created by you]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	'*:pkgbase:_devtools_completions_all_packages'
 )
 
 _pkgctl_release_args=(
@@ -290,6 +319,7 @@ _pkgctl_cmds=(
 	"build[Build packages inside a clean chroot]"
 	"db[Pacman database modification for package update, move etc]"
 	"diff[Compare package files using different modes]"
+	"issue[Work with GitLab packaging issues]"
 	"release[Release step to commit, tag and upload build artifacts]"
 	"repo[Manage Git packaging repositories and their configuration]"
 	"search[Search for an expression across the GitLab packaging group]"

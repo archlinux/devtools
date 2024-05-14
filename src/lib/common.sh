@@ -64,15 +64,23 @@ if [[ -t 2 && "$TERM" != dumb ]] || [[ ${DEVTOOLS_COLOR} == always ]]; then
 	if tput setaf 0 &>/dev/null; then
 		PURPLE="$(tput setaf 5)"
 		DARK_GREEN="$(tput setaf 2)"
+		DARK_RED="$(tput setaf 1)"
+		DARK_BLUE="$(tput setaf 4)"
+		DARK_YELLOW="$(tput setaf 3)"
 		UNDERLINE="$(tput smul)"
+		GRAY=$(tput setaf 242)
 	else
 		PURPLE="\e[35m"
 		DARK_GREEN="\e[32m"
+		DARK_RED="\e[31m"
+		DARK_BLUE="\e[34m"
+		DARK_YELLOW="\e[33m"
 		UNDERLINE="\e[4m"
+		GRAY=""
 	fi
 else
 	# shellcheck disable=2034
-	declare -gr ALL_OFF='' BOLD='' BLUE='' GREEN='' RED='' YELLOW='' PURPLE='' DARK_GREEN='' UNDERLINE=''
+	declare -gr ALL_OFF='' BOLD='' BLUE='' GREEN='' RED='' YELLOW='' PURPLE='' DARK_RED='' DARK_GREEN='' DARK_BLUE='' DARK_YELLOW='' UNDERLINE='' GRAY=''
 fi
 
 stat_busy() {
@@ -378,7 +386,55 @@ is_globfile() {
 }
 
 join_by() {
-	local IFS="$1"
+	local IFS="	"
+	local sep=$1
+	local split
 	shift
-	echo "$*"
+	split=$(printf "%s" "$*")
+	echo "${split//${IFS}/"${sep}"}"
+}
+
+trim_string() {
+	local max_length=$1
+	local string=$2
+
+	if (( ${#string} > max_length )); then
+		# Subtract 3 from max_length to accommodate "..."
+		max_length=$((max_length - 3))
+		string="${string:0:max_length}..."
+	fi
+
+	printf "%s" "${string}"
+}
+
+relative_date_unit() {
+	local target_date=$1
+	local now diff value units unit names
+
+	target_date=$(date -d "$1" +%s)
+	now=$(date +%s)
+	diff=$((now - target_date))
+
+	local names=(year month week day hour minute second)
+	declare -A units=(
+		[year]=$((60 * 60 * 24 * 365))
+		[month]=$((60 * 60 * 24 * 30))
+		[week]=$((60 * 60 * 24 * 7))
+		[day]=$((60 * 60 * 24))
+		[hour]=$((60 * 60))
+		[minute]=60
+		[second]=1
+	)
+
+	for unit in "${names[@]}"; do
+		local value=$((diff / ${units[${unit}]}))
+		if (( value > 1 )); then
+			printf "%s %ss" "${value}" "${unit}"
+			return
+		elif (( value == 1 )); then
+			printf "%s %s" "${value}" "${unit}"
+			return
+		fi
+	done
+	printf "1 second"
 }
