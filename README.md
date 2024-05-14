@@ -74,7 +74,9 @@ Component: pkgctl db remove
 - expac
 - fakeroot
 - findutils
+- glow
 - grep
+- gum
 - jq
 - ncurses
 - openssh
