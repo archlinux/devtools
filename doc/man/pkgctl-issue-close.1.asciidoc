@@ -1,0 +1,47 @@
+pkgctl-issue-close(1)
+=====================
+
+Name
+----
+pkgctl-issue-close - Close an issue
+
+Synopsis
+--------
+pkgctl issue close [OPTIONS] [IID]
+
+Description
+-----------
+
+This command is used to close an issue in Arch Linux packaging projects. It
+finalizes the issue by marking it as resolved and optionally providing a reason
+for its closure.
+
+To edit an issue, users must specify the issue ID (IID). By default, the
+command operates within the current directory, but users have the option to
+specify a different package base.
+
+Users can provide a message directly through the command line to explain the
+reason for closing the issue. For more detailed or precise reasons, users can
+opt to edit the closure message using a text editor before submitting it.
+Additionally, a specific resolution label can be set to categorize the closure
+reason, with the default label being "completed."
+
+Options
+-------
+
+*-p, --package* 'PKGBASE'::
+	Interact with `PKGBASE` instead of the current directory
+
+*-m, --message* 'MSG'::
+	Use the provided message as the reason for closing
+
+*-e, --edit*::
+	Edit the reason for closing using an editor
+
+*-r, --resolution* 'REASON'::
+	Set a specific resolution label (default: completed)
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]

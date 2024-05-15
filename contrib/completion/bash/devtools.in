@@ -447,6 +447,7 @@ _pkgctl_diff_args_P_opts() { _pkgctl_diff_args__pool_opts; }
 _pkgctl_diff_opts() { _devtools_completions_all_packages; }
 
 _pkgctl_issue_cmds=(
+	close
 	comment
 	list
 	view
@@ -455,6 +456,22 @@ _pkgctl_issue_cmds=(
 _pkgctl_issue_args=(
 	-h --help
 )
+
+_pkgctl_issue_close_args=(
+	-p --package
+	-m --message
+	-e --edit
+	-r --resolution
+	-h --help
+)
+
+_pkgctl_issue_close_opts() { :; }
+_pkgctl_issue_close_args__package_opts() { _devtools_completions_all_packages; }
+_pkgctl_issue_close_args_p_opts() { _pkgctl_issue_close_args__package_opts; }
+_pkgctl_issue_close_args__message_opts() { :; }
+_pkgctl_issue_close_args_m_opts() { _pkgctl_issue_close_args__message_opts; }
+_pkgctl_issue_close_args__resolution_opts() { _devtools_completions_issue_resolution; }
+_pkgctl_issue_close_args_r_opts() { _pkgctl_issue_close_args__resolution_opts; }
 
 _pkgctl_issue_comment_args=(
 	-p --package
