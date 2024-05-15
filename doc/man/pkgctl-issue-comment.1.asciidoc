@@ -1,0 +1,43 @@
+pkgctl-issue-comment(1)
+=======================
+
+Name
+----
+pkgctl-issue-comment - Comment on an issue
+
+Synopsis
+--------
+pkgctl issue comment [OPTIONS] [IID]
+
+Description
+-----------
+
+This command allows users to add comments to an issue in Arch Linux packaging
+projects. This command is useful for providing feedback, updates, or any
+additional information related to an issue directly within the project's issue
+tracking system.
+
+By default, the command interacts with the current directory, but users can
+specify a different package base if needed.
+
+Users can provide a comment message directly through the command line, ensuring
+quick and efficient communication. Additionally, for more detailed or formatted
+comments, users have the option to edit their comment using a text editor
+before submitting it.
+
+Options
+-------
+
+*-p, --package PKGBASE*::
+	Interact with `PKGBASE` instead of the current directory
+
+*-m, --message MSG*::
+	Use the provided message as the comment
+
+*-e, --edit*::
+	Edit the comment using an editor
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]

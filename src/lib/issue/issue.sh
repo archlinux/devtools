@@ -7,7 +7,7 @@ DEVTOOLS_INCLUDE_ISSUE_SH=1
 
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 
-set -e
+set -eo pipefail
 
 
 pkgctl_issue_usage() {
@@ -18,6 +18,7 @@ pkgctl_issue_usage() {
 		Work with GitLab packaging issues.
 
 		COMMANDS
+		    comment   Comment on an issue
 		    list      List project or group issues
 		    view      Display information about an issue
 
@@ -49,6 +50,14 @@ pkgctl_issue() {
 				# shellcheck source=src/lib/issue/list.sh
 				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/issue/list.sh
 				pkgctl_issue_list "$@"
+				exit 0
+				;;
+			comment|note)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/issue/comment.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/issue/comment.sh
+				pkgctl_issue_comment "$@"
 				exit 0
 				;;
 			view)
