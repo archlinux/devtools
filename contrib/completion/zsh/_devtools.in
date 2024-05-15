@@ -97,6 +97,7 @@ _pkgctl_db_update_args=(
 _pkgctl_issue_cmds=(
 	"pkgctl issue command"
 	"list[List project or group issues]"
+	"view[Display information about an issue]"
 )
 
 _pkgctl_issue_list_args=(
@@ -119,6 +120,14 @@ _pkgctl_issue_list_args=(
 	'--created-by-me[Shorthand to filter issues created by you]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:pkgbase:_devtools_completions_all_packages'
+)
+
+_pkgctl_issue_view_args=(
+	'(-p --package)'{-p,--package}'[Interact with <pkgbase> instead of the current directory]:pkgbase:_devtools_completions_all_packages'
+	'(-c --comments)'{-c,--comments}'[Show issue comments and activities]'
+	'(-w --web)'{-w,--web}'[View results in a browser]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	"1:issue_iid:"
 )
 
 _pkgctl_release_args=(

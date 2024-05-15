@@ -444,7 +444,49 @@ gitlab_group_issue_list() {
 	fi
 
 	cat "${outfile}"
+}
 
+# https://docs.gitlab.com/ee/api/issues.html#single-project-issue
+gitlab_project_issue() {
+	local pkgbase=$1
+	local iid=$2
+	local outfile data path project_path
+
+	[[ -z ${WORKDIR:-} ]] && setup_workdir
+	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
+
+	project_path=$(gitlab_project_name_to_path "${pkgbase}")
+
+	if ! gitlab_api_call "${outfile}" GET "projects/archlinux%2fpackaging%2fpackages%2f${project_path}/issues/${iid}"; then
+		return 1
+	fi
+
+	if ! path=$(jq --raw-output --exit-status '.title' < "${outfile}"); then
+		msg_error "  failed to query path: $(cat "${outfile}")"
+		return 1
+	fi
+
+	cat "${outfile}"
+	return 0
+}
+
+# TODO: parallelize
+# https://docs.gitlab.com/ee/api/notes.html#list-project-issue-notes
+gitlab_project_issue_notes() {
+	local project=$1
+	local iid=$2
+	local status_file=$3
+	local params=${4:-}
+	local outfile
+
+	[[ -z ${WORKDIR:-} ]] && setup_workdir
+	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
+
+	if ! gitlab_api_call_paged "${outfile}" "${status_file}" GET "/projects/archlinux%2fpackaging%2fpackages%2f${project}/issues/${iid}/notes?${params}"; then
+		return 1
+	fi
+
+	cat "${outfile}"
 	return 0
 }
 

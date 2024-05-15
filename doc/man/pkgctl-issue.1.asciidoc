@@ -26,9 +26,13 @@ Subcommands
 pkgctl issue list::
 	List project or group issues
 
+pkgctl issue view::
+	Display information about an issue
+
 See Also
 --------
 
 pkgctl-issue-list(1)
+pkgctl-issue-view(1)
 
 include::include/footer.asciidoc[]
