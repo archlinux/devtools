@@ -490,6 +490,32 @@ gitlab_project_issue_notes() {
 	return 0
 }
 
+# https://docs.gitlab.com/ee/api/issues.html#edit-an-issue
+gitlab_project_issue_edit() {
+	local pkgbase=$1
+	local iid=$2
+	local params=$3
+	local data=${4:-}
+	local outfile data path project_path
+
+	[[ -z ${WORKDIR:-} ]] && setup_workdir
+	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
+
+	project_path=$(gitlab_project_name_to_path "${pkgbase}")
+
+	if ! gitlab_api_call "${outfile}" PUT "/projects/archlinux%2fpackaging%2fpackages%2f${project_path}/issues/${iid}?${params}" "${data}"; then
+		return 1
+	fi
+
+	if ! path=$(jq --raw-output --exit-status '.title' < "${outfile}"); then
+		msg_error "  failed to query path: $(cat "${outfile}")"
+		return 1
+	fi
+
+	cat "${outfile}"
+	return 0
+}
+
 gitlab_create_project_issue_note() {
 	local pkgbase=$1
 	local iid=$2

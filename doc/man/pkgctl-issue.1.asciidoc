@@ -23,6 +23,9 @@ Options
 Subcommands
 -----------
 
+pkgctl issue close::
+	Close an issue
+
 pkgctl issue comment::
 	Comment on an issue
 
@@ -35,6 +38,7 @@ pkgctl issue view::
 See Also
 --------
 
+pkgctl-issue-close(1)
 pkgctl-issue-comment(1)
 pkgctl-issue-list(1)
 pkgctl-issue-view(1)

@@ -18,6 +18,7 @@ pkgctl_issue_usage() {
 		Work with GitLab packaging issues.
 
 		COMMANDS
+		    close     Close an issue
 		    comment   Comment on an issue
 		    list      List project or group issues
 		    view      Display information about an issue
@@ -42,6 +43,14 @@ pkgctl_issue() {
 		case $1 in
 			-h|--help)
 				pkgctl_issue_usage
+				exit 0
+				;;
+			close)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/issue/close.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/issue/close.sh
+				pkgctl_issue_close "$@"
 				exit 0
 				;;
 			list)
