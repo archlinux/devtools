@@ -1,0 +1,43 @@
+pkgctl-issue-view(1)
+====================
+
+Name
+----
+pkgctl-issue-view - Display information about an issue
+
+Synopsis
+--------
+pkgctl issue view [OPTIONS]
+
+Description
+-----------
+
+This command is designed to display detailed information about a specific issue
+in Arch Linux packaging projects. It gathers and pretty prints all relevant
+data about the issue, providing a comprehensive view that includes the issue's
+description, status as well as labels and creation date.
+
+By default, the command operates within the current directory, but users have
+the option to specify a different package base. Additionally, users can choose
+to view the issue in a web browser for a more interactive experience.
+
+For those requiring deeper insights, the command can also display all comments
+and activities related to the issue, providing a full historical context and
+ongoing discussions.
+
+Options
+-------
+
+*-p, --package* 'PKGBASE'::
+	Interact with `PKGBASE` instead of the current directory
+
+*-c, --comments*::
+	Show issue comments and activities
+
+*-w, --web*::
+	Open issue in a browser
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]

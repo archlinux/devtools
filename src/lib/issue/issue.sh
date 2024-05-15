@@ -19,12 +19,14 @@ pkgctl_issue_usage() {
 
 		COMMANDS
 		    list      List project or group issues
+		    view      Display information about an issue
 
 		OPTIONS
 		    -h, --help    Show this help text
 
 		EXAMPLES
 		    $ ${COMMAND} list libfoo libbar
+		    $ ${COMMAND} view 4
 _EOF_
 }
 
@@ -47,6 +49,14 @@ pkgctl_issue() {
 				# shellcheck source=src/lib/issue/list.sh
 				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/issue/list.sh
 				pkgctl_issue_list "$@"
+				exit 0
+				;;
+			view)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/issue/view.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/issue/view.sh
+				pkgctl_issue_view "$@"
 				exit 0
 				;;
 			-*)
