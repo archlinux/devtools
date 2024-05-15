@@ -32,6 +32,9 @@ pkgctl issue comment::
 pkgctl issue list::
 	List project or group issues
 
+pkgctl issue reopen::
+	Reopen a closed issue
+
 pkgctl issue view::
 	Display information about an issue
 
@@ -41,6 +44,7 @@ See Also
 pkgctl-issue-close(1)
 pkgctl-issue-comment(1)
 pkgctl-issue-list(1)
+pkgctl-issue-reopen(1)
 pkgctl-issue-view(1)
 
 include::include/footer.asciidoc[]

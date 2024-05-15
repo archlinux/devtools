@@ -21,6 +21,7 @@ pkgctl_issue_usage() {
 		    close     Close an issue
 		    comment   Comment on an issue
 		    list      List project or group issues
+		    reopen    Reopen a closed issue
 		    view      Display information about an issue
 
 		OPTIONS
@@ -67,6 +68,14 @@ pkgctl_issue() {
 				# shellcheck source=src/lib/issue/comment.sh
 				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/issue/comment.sh
 				pkgctl_issue_comment "$@"
+				exit 0
+				;;
+			reopen)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/issue/reopen.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/issue/reopen.sh
+				pkgctl_issue_reopen "$@"
 				exit 0
 				;;
 			view)

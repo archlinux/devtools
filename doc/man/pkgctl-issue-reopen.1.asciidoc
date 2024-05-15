@@ -1,0 +1,43 @@
+pkgctl-issue-reopen(1)
+======================
+
+Name
+----
+pkgctl-issue-reopen - Reopen a closed issue
+
+Synopsis
+--------
+pkgctl issue reopen [OPTIONS] [IID]
+
+Description
+-----------
+
+The reopen command is used to reopen a previously closed issue in Arch Linux
+packaging projects. This command is useful when an issue needs to be revisited
+or additional work is required after it was initially closed.
+
+To edit an issue, users must specify the issue ID (IID). By default, the
+command operates within the current directory, but users can specify a
+different package base if needed.
+
+Users can provide a message directly through the command line to explain the
+reason for reopening the issue. For more detailed explanations or to provide
+additional context, users have the option to edit the reopening comment using a
+text editor before submitting it.
+
+Options
+-------
+
+*-p, --package* 'PKGBASE'::
+	Interact with `PKGBASE` instead of the current directory
+
+*-m, --message* 'MSG'::
+	Use the provided message as the comment
+
+*-e, --edit*::
+	Edit the comment using an editor
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]
