@@ -99,6 +99,7 @@ _pkgctl_issue_cmds=(
 	"close[Close an issue]"
 	"comment[Comment on an issue]"
 	"list[List project or group issues]"
+	"move[Move an issue to another project]"
 	"reopen[Reopen a closed issue]"
 	"view[Display information about an issue]"
 )
@@ -140,6 +141,15 @@ _pkgctl_issue_list_args=(
 	'--created-by-me[Shorthand to filter issues created by you]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:pkgbase:_devtools_completions_all_packages'
+)
+
+_pkgctl_issue_move_args=(
+	'(-p --package)'{-p,--package}'[Interact with <pkgbase> instead of the current directory]:pkgbase:_devtools_completions_all_packages'
+	'(-m --message)'{-m,--message}'[Use the provided message as the comment]:message:'
+	'(-e --edit)'{-e,--edit}'[Edit the comment using an editor]'
+	'(-h --help)'{-h,--help}'[Display usage]'
+	"1:issue_iid:"
+	'1:pkgbase:_devtools_completions_all_packages'
 )
 
 _pkgctl_issue_reopen_args=(

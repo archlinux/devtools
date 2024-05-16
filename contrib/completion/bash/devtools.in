@@ -450,6 +450,7 @@ _pkgctl_issue_cmds=(
 	close
 	comment
 	list
+	move
 	reopen
 	view
 )
@@ -522,6 +523,29 @@ _pkgctl_issue_list_args__severity_opts() { _devtools_completions_issue_severity;
 _pkgctl_issue_list_args__status_opts() { _devtools_completions_issue_status; }
 _pkgctl_issue_list_args__assignee_opts() { :; }
 _pkgctl_issue_list_args__author_opts() { :; }
+
+_pkgctl_issue_move_args=(
+	-p --package
+	-m --message
+	-e --edit
+	-h --help
+)
+
+_pkgctl_issue_move_opts() {
+	local subcommand args
+	subcommand=(repo switch)
+	args=$(__pkgctl_word_count_after_subcommand "${subcommand[@]}")
+
+	if (( args == 0 )); then
+		:
+	elif (( args >= 1 )); then
+		_devtools_completions_all_packages
+	fi
+}
+_pkgctl_issue_move_args__package_opts() { _devtools_completions_all_packages; }
+_pkgctl_issue_move_args_p_opts() { _pkgctl_issue_move_args__package_opts; }
+_pkgctl_issue_move_args__message_opts() { :; }
+_pkgctl_issue_move_args_m_opts() { _pkgctl_issue_move_args__message_opts; }
 
 _pkgctl_issue_reopen_args=(
 	-p --package

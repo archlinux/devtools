@@ -402,6 +402,25 @@ gitlab_api_search() {
 	return 0
 }
 
+# https://docs.gitlab.com/ee/api/projects.html#get-single-project
+gitlab_project() {
+	local project=$1
+	local outfile project_path
+
+	[[ -z ${WORKDIR:-} ]] && setup_workdir
+	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
+
+	project_path=$(gitlab_project_name_to_path "${project}")
+
+	if ! gitlab_api_call "${outfile}" GET "projects/archlinux%2fpackaging%2fpackages%2f${project_path}/"; then
+		return 1
+	fi
+
+	cat "${outfile}"
+
+	return 0
+}
+
 # TODO: parallelize
 # https://docs.gitlab.com/ee/api/issues.html#list-project-issues
 gitlab_projects_issues_list() {
@@ -534,6 +553,30 @@ gitlab_create_project_issue_note() {
 
 	if ! path=$(jq --raw-output --exit-status '.body' < "${outfile}"); then
 		msg_error "  failed to query note: $(cat "${outfile}")"
+		return 1
+	fi
+
+	cat "${outfile}"
+	return 0
+}
+
+gitlab_project_issue_move() {
+	local pkgbase=$1
+	local iid=$2
+	local to_project_id=$3
+	local outfile path project_path
+
+	[[ -z ${WORKDIR:-} ]] && setup_workdir
+	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
+
+	project_path=$(gitlab_project_name_to_path "${pkgbase}")
+
+	if ! gitlab_api_call "${outfile}" POST "/projects/archlinux%2fpackaging%2fpackages%2f${project_path}/issues/${iid}/move?to_project_id=${to_project_id}"; then
+		return 1
+	fi
+
+	if ! path=$(jq --raw-output --exit-status '.title' < "${outfile}"); then
+		msg_error "  failed to move issue: $(cat "${outfile}")"
 		return 1
 	fi
 
