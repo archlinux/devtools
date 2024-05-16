@@ -1,0 +1,43 @@
+pkgctl-issue-move(1)
+====================
+
+Name
+----
+pkgctl-issue-move - Move an issue to another project
+
+Synopsis
+--------
+pkgctl issue move [OPTIONS] [IID] [DESTINATION_PACKAGE]
+
+Description
+-----------
+
+The move command allows users to transfer an issue from one project to another
+within the Arch Linux packaging group. This is useful when an issue is
+identified to be more relevant or better handled in a different project.
+
+By default, the command operates within the current directory, but users can
+specify a different package base from which to move the issue.
+
+Users must specify the issue ID (IID) and the destination package to which the
+issue should be moved. A comment message explaining the reason for the move can
+be provided directly through the command line. For more detailed explanations
+or additional context, users have the option to edit the move comment using a
+text editor before submitting it.
+
+Options
+-------
+
+*-p, --package* 'PKGBASE'::
+	Move from `PKGBASE` instead of the current directory
+
+*-m, --message* 'MSG'::
+	Use the provided message as the comment
+
+*-e, --edit*::
+	Edit the comment using an editor
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]
