@@ -8,6 +8,8 @@ DEVTOOLS_INCLUDE_API_GITLAB_SH=1
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 # shellcheck source=src/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+# shellcheck source=src/lib/cache.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/cache.sh
 # shellcheck source=src/lib/config.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/config.sh
 
@@ -232,6 +234,80 @@ gitlab_api_get_project_name_mapping() {
 
 	cat "${outfile}"
 	return 0
+}
+
+gitlab_lookup_project_names() {
+	local status_file=$1; shift
+	local project_ids=("$@")
+	local graphql_lookup_batch=200
+
+	local project_name_cache_file tmp_file from length percentage
+	local project_slice query projects mapping_output
+
+	# collect project ids whose name needs to be looked up
+	project_name_cache_file=$(get_cache_file gitlab/project_id_to_name)
+	lock 11 "${project_name_cache_file}" "Locking project name cache"
+
+	# early exit if there is nothing new to look up
+	if (( ! ${#project_ids[@]} )); then
+		cat "${project_name_cache_file}"
+		# close project name cache lock
+		lock_close 11
+		return
+	fi
+
+	# reduce project_ids to uncached entries
+	mapfile -t project_ids < <(
+		printf "%s\n" "${project_ids[@]}" | \
+			grep --invert-match --file <(awk '{ print $1 }' < "${project_name_cache_file}" ))
+
+	# look up project names
+	tmp_file=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api-spinner.tmp.XXXXXXXXXX)
+	local entries="${#project_ids[@]}"
+	local until=0
+	while (( until < entries )); do
+		from=${until}
+		until=$(( until + graphql_lookup_batch ))
+		if (( until > entries )); then
+			until=${entries}
+		fi
+		length=$(( until - from ))
+
+		percentage=$(( 100 * until / entries ))
+		printf "📡 Querying GitLab project names: %s/%s [%s] %%spinner%%" \
+			"${BOLD}${until}" "${entries}" "${percentage}%${ALL_OFF}"  \
+			> "${tmp_file}"
+		mv "${tmp_file}" "${status_file}"
+
+		project_slice=("${project_ids[@]:${from}:${length}}")
+		printf -v projects '"gid://gitlab/Project/%s",' "${project_slice[@]}"
+		query='{
+			projects(after: "" ids: ['"${projects}"']) {
+				pageInfo {
+					startCursor
+					endCursor
+					hasNextPage
+				}
+				nodes {
+					id
+					name
+				}
+			}
+		}'
+		mapping_output=$(gitlab_api_get_project_name_mapping "${query}")
+
+		# update cache
+		while read -r project_id project_name; do
+			printf "%s %s\n" "${project_id}" "${project_name}" >> "${project_name_cache_file}"
+		done < <(jq --raw-output \
+			'.[] | "\(.id | rindex("/") as $lastSlash | .[$lastSlash+1:]) \(.name)"' \
+			<<< "${mapping_output}")
+	done
+
+	cat "${project_name_cache_file}"
+
+	# close project name cache lock
+	lock_close 11
 }
 
 # Convert arbitrary project names to GitLab valid path names.

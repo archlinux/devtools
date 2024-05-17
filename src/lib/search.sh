@@ -8,8 +8,6 @@ DEVTOOLS_INCLUDE_SEARCH_SH=1
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 # shellcheck source=src/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
-# shellcheck source=src/lib/cache.sh
-source "${_DEVTOOLS_LIBRARY_DIR}"/lib/cache.sh
 # shellcheck source=src/lib/api/gitlab.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/api/gitlab.sh
 # shellcheck source=src/lib/valid-search.sh
@@ -95,10 +93,8 @@ pkgctl_search() {
 	# variables
 	local bat_style="header,grid"
 	local default_filter="-path:keys/pgp/*.asc"
-	local graphql_lookup_batch=200
-	local output result query entries from until length
-	local project_name_cache_file project_name_lookup project_ids project_id project_name project_slice
-	local mapping_output path startline currentline data line
+	local output result project_name_lookup project_ids project_id project_name
+	local path startline currentline data line
 
 	while (( $# )); do
 		case $1 in
@@ -176,68 +172,20 @@ pkgctl_search() {
 	term_spinner_stop "${status_dir}"
 	msg_success "Querying GitLab search API"
 
-	# collect project ids whose name needs to be looked up
-	project_name_cache_file=$(get_cache_file gitlab/project_id_to_name)
-	lock 11 "${project_name_cache_file}" "Locking project name cache"
 	mapfile -t project_ids < <(
-		jq --raw-output '[.[].project_id] | unique[]' <<< "${output}" | \
-			grep --invert-match --file <(awk '{ print $1 }' < "${project_name_cache_file}" ))
+		jq --raw-output '[.[].project_id] | unique[]' <<< "${output}")
 
-	# look up project names
-	tmp_file=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api-spinner.tmp.XXXXXXXXXX)
 	printf "📡 Querying GitLab project names..." > "${status_dir}/status"
 	term_spinner_start "${status_dir}"
-	local entries="${#project_ids[@]}"
-	local until=0
-	while (( until < entries )); do
-		from=${until}
-		until=$(( until + graphql_lookup_batch ))
-		if (( until > entries )); then
-			until=${entries}
-		fi
-		length=$(( until - from ))
-
-		percentage=$(( 100 * until / entries ))
-		printf "📡 Querying GitLab project names: %s/%s [%s] %%spinner%%" \
-			"${BOLD}${until}" "${entries}" "${percentage}%${ALL_OFF}"  \
-			> "${tmp_file}"
-		mv "${tmp_file}" "${status_dir}/status"
-
-		project_slice=("${project_ids[@]:${from}:${length}}")
-		printf -v projects '"gid://gitlab/Project/%s",' "${project_slice[@]}"
-		query='{
-			projects(after: "" ids: ['"${projects}"']) {
-				pageInfo {
-					startCursor
-					endCursor
-					hasNextPage
-				}
-				nodes {
-					id
-					name
-				}
-			}
-		}'
-		mapping_output=$(gitlab_api_get_project_name_mapping "${query}")
-
-		# update cache
-		while read -r project_id project_name; do
-			printf "%s %s\n" "${project_id}" "${project_name}" >> "${project_name_cache_file}"
-		done < <(jq --raw-output \
-			'.[] | "\(.id | rindex("/") as $lastSlash | .[$lastSlash+1:]) \(.name)"' \
-			<<< "${mapping_output}")
-	done
-	term_spinner_stop "${status_dir}"
-	msg_success "Querying GitLab project names"
 
 	# read project_id to name mapping from cache
 	declare -A project_name_lookup=()
 	while read -r project_id project_name; do
 		project_name_lookup[${project_id}]=${project_name}
-	done < "${project_name_cache_file}"
+	done < <(gitlab_lookup_project_names "${status_dir}/status" "${project_ids[@]}")
 
-	# close project name cache lock
-	lock_close 11
+	term_spinner_stop "${status_dir}"
+	msg_success "Querying GitLab project names"
 
 	# output mode JSON
 	if [[ ${output_format} == json ]]; then
