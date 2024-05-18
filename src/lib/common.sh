@@ -15,6 +15,9 @@ $DEVTOOLS_INCLUDE_COMMON_SH
 # Avoid any encoding problems
 export LANG=C.UTF-8
 
+# Avoid systemd trying to color the terminal on systemd-nspawn
+export SYSTEMD_TINT_BACKGROUND=no
+
 # Set buildtool properties
 export BUILDTOOL=devtools
 export BUILDTOOLVER=@buildtoolver@
