@@ -12,6 +12,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/db/update.sh
 # shellcheck source=src/lib/release.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/release.sh
+# shellcheck source=src/lib/state.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/state.sh
 # shellcheck source=src/lib/util/git.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
 # shellcheck source=src/lib/util/srcinfo.sh
@@ -129,6 +131,7 @@ pkgctl_build() {
 	local PKGVER=
 	local PKGREL=
 	local MESSAGE=
+	local BUILD_STATE_DIR=
 
 	local paths=()
 	local BUILD_ARCH=()
@@ -303,6 +306,8 @@ pkgctl_build() {
 			exit 1
 		fi
 	fi
+
+	BUILD_STATE_DIR=$(get_state_folder "build-state")
 
 	# assign default worker slot
 	if [[ -z ${WORKER_SLOT} ]] && ! WORKER_SLOT="$(tty | sed 's|/dev/pts/||')"; then
@@ -481,25 +486,26 @@ pkgctl_build() {
 		# shellcheck disable=SC2119
 		write_srcinfo_file
 
-		# test-install (some of) the produced packages
-		if [[ ${INSTALL_TO_HOST} == auto ]] || [[ ${INSTALL_TO_HOST} == all ]]; then
-			# shellcheck disable=2119
-			load_makepkg_config
+		# shellcheck disable=2119
+		load_makepkg_config
 
-			# this is inspired by print_all_package_names from libmakepkg
-			local version pkg_architecture pkg pkgfile
-			version=$(get_full_version)
+		# this is inspired by print_all_package_names from libmakepkg
+		local version pkg_architecture pkg pkgfile
+		version=$(get_full_version)
 
-			for pkg in "${pkgname[@]}"; do
-				pkg_architecture=$(get_pkg_arch "$pkg")
-				pkgfile=$(realpath "$(printf "%s/%s-%s-%s%s\n" "${PKGDEST:-.}" "$pkg" "$version" "$pkg_architecture" "$PKGEXT")")
+		for pkg in "${pkgname[@]}"; do
+			pkg_architecture=$(get_pkg_arch "$pkg")
+			pkgpath=$(realpath "$(printf "%s\n" "${PKGDEST:-.}")")
+			pkgfile=$(printf "%s-%s-%s%s\n" "$pkg" "$version" "$pkg_architecture" "$PKGEXT")
 
-				# check if we install all packages or if the (split-)package is already installed
-				if [[ ${INSTALL_TO_HOST} == all ]] || ( [[ ${INSTALL_TO_HOST} == auto ]] && pacman -Qq -- "$pkg" &>/dev/null ); then
-					INSTALL_HOST_PACKAGES+=("$pkgfile")
-				fi
-			done
-		fi
+			# check if we install all packages or if the (split-)package is already installed
+			if [[ ${INSTALL_TO_HOST} == all ]] || ( [[ ${INSTALL_TO_HOST} == auto ]] && pacman -Qq -- "$pkg" &>/dev/null ); then
+				INSTALL_HOST_PACKAGES+=("${pkgpath}/${pkgfile}")
+			fi
+
+			# save against which repo we have built the package
+			printf "%s" "${pkgrepo}" > "${BUILD_STATE_DIR}/${pkgfile}.txt"
+		done
 
 		# release the build
 		if (( RELEASE )); then

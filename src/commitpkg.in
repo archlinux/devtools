@@ -7,6 +7,8 @@ _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 # shellcheck source=src/lib/util/srcinfo.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/srcinfo.sh
+# shellcheck source=src/lib/state.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/state.sh
 
 source /usr/share/makepkg/util/util.sh
 
@@ -234,6 +236,9 @@ declare -a uploads
 declare -a commit_arches
 declare -a skip_arches
 
+BUILD_STATE_DIR=$(get_state_folder "build-state")
+state_file=
+
 for _arch in "${arch[@]}"; do
 	if [[ -n $commit_arch && ${_arch} != "$commit_arch" ]]; then
 		skip_arches+=("$_arch")
@@ -246,6 +251,12 @@ for _arch in "${arch[@]}"; do
 			warning "Skipping %s: failed to locate package file" "$_pkgname-$fullver-$_arch"
 			skip_arches+=("$_arch")
 			continue 2
+		fi
+
+		state_file="${BUILD_STATE_DIR}/$(basename "${pkgfile}").txt"
+		if [[ -f "${state_file}" ]] && [[ $(cat "${state_file}") != "${repo}" ]]; then
+			error "%s was not built against '%s', aborting" "${pkgfile}" "${repo}"
+			exit 1
 		fi
 		uploads+=("$pkgfile")
 	done
