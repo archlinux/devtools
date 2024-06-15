@@ -120,6 +120,8 @@ print_workdir_error() {
 }
 
 _setup_workdir=false
+# Ensure that there is no outside value for WORKDIR leaking in
+unset WORKDIR
 setup_workdir() {
 	[[ -z ${WORKDIR:-} ]] && WORKDIR=$(mktemp -d --tmpdir "${0##*/}.XXXXXXXXXX")
 	_setup_workdir=true
