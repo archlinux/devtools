@@ -271,6 +271,7 @@ pkgctl_repo_configure() {
 		if [[ -n $GPGKEY ]]; then
 			git config commit.gpgsign true
 			git config user.signingKey "${GPGKEY}"
+			git config gpg.format openpgp
 		fi
 
 		# set default git exclude
