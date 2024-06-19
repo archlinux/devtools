@@ -110,13 +110,13 @@ sshopts=(-o ControlMaster=no -o ControlPath="$ssh_socket_path")
 # Quoting for rsync --rsh: replace all single quotes in the arguments with two single quotes each, then surround all arguments with single quotes
 rsyncopts+=(--rsh="ssh$(printf " '%s'" "${sshopts[@]//\'/\'\'}")")
 # lib/common.sh sets up traps for cleanup, the following will override them
-trap 'ssh "${sshopts[@]}" -O exit -q "$server"; trap_abort' INT QUIT TERM HUP
-trap 'ssh "${sshopts[@]}" -O exit -q "$server"; trap_exit' EXIT
-ssh "${sshopts_master[@]}" "$server" &
+trap 'ssh "${sshopts[@]}" -O exit -q -- "$server"; trap_abort' INT QUIT TERM HUP
+trap 'ssh "${sshopts[@]}" -O exit -q -- "$server"; trap_exit' EXIT
+ssh "${sshopts_master[@]}" -- "$server" &
 
 # Create a temporary directory on the server
 remote_temp=$(
-    ssh "${sshopts[@]}" "$server" '
+    ssh "${sshopts[@]}" -- "$server" '
         temp="${XDG_CACHE_HOME:-$HOME/.cache}/offload-build" &&
         mkdir -p "$temp" &&
         mktemp --directory --tmpdir="$temp"
@@ -126,21 +126,21 @@ remote_temp=$(
 msg "Transferring source package to the server..."
 _srcpkg=("$SRCPKGDEST"/*"$SRCEXT")
 srcpkg="${_srcpkg[0]}"
-rsync "${rsyncopts[@]}" "$srcpkg" "$server":"$remote_temp" || die
+rsync "${rsyncopts[@]}" -- "$srcpkg" "$server":"$remote_temp" || die
 
 # Prepare the srcpkg on the server
 msg "Extracting srcpkg"
-ssh "${sshopts[@]}" "$server" "cd ${remote_temp@Q} && bsdtar --strip-components 1 -xvf $(basename "$srcpkg")" || die
+ssh "${sshopts[@]}" -- "$server" "cd ${remote_temp@Q} && bsdtar --strip-components 1 -xvf $(basename "$srcpkg")" || die
 
 # Run the build command on the server
 msg "Running archbuild"
 # shellcheck disable=SC2145
-ssh "${sshopts[@]}" -t "$server" "cd ${remote_temp@Q} && export LOGDEST="" && ${archbuild_cmd[@]@Q}" || die
+ssh "${sshopts[@]}" -t -- "$server" "cd ${remote_temp@Q} && export LOGDEST="" && ${archbuild_cmd[@]@Q}" || die
 msg "Build complete"
 
 # Get an array of files that should be downloaded from the server
 mapfile -t files < <(
-    ssh "${sshopts[@]}" "$server" "
+    ssh "${sshopts[@]}" -- "$server" "
         cd ${remote_temp@Q}"' &&
         makepkg_user_config="${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf" &&
         makepkg_config="/usr/share/devtools/makepkg.conf.d/'"${arch}"'.conf" &&
@@ -158,7 +158,7 @@ mapfile -t files < <(
 
 if (( ${#files[@]} )); then
     msg 'Downloading files...'
-    rsync "${rsyncopts[@]}" "${files[@]/#/$server:}" "${TEMPDIR}/" || die
+    rsync "${rsyncopts[@]}" -- "${files[@]/#/$server:}" "${TEMPDIR}/" || die
 
     if is_globfile "${TEMPDIR}"/*.log; then
         mv "${TEMPDIR}"/*.log "${LOGDEST:-${PWD}}/"
