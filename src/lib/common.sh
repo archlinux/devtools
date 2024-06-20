@@ -34,8 +34,18 @@ export PACKAGING_REPO_RELEASE_HOST=repos.archlinux.org
 export PKGBASE_MAINTAINER_URL=https://archlinux.org/packages/pkgbase-maintainer
 export AUR_URL_SSH=aur@aur.archlinux.org
 
+# Create or reuse a shared SSH control socket with ControlMaster=auto. The
+# connection is initialized on the first use and persisted for some time, so
+# multiple invokations of devtools can share it.
+# shellcheck disable=SC2016
+export SSH_OPTS=(
+  -o ControlMaster=auto
+  -o ControlPersist=60s
+  -o ControlPath='${XDG_RUNTIME_DIR}/devtools-%r@%h:%p'
+)
+
 export RSYNC_OPTS=(
-  --rsh=ssh
+  --rsh="ssh ${SSH_OPTS[*]}"
   --checksum
   --copy-links
   --human-readable
