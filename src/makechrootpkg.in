@@ -105,7 +105,7 @@ sync_chroot() {
 		"Locking clean chroot [%s]" "$chrootdir/root"
 
 	stat_busy "Synchronizing chroot copy [%s] -> [%s]" "$chrootdir/root" "$copy"
-	if is_btrfs "$chrootdir" && ! mountpoint -q "$copydir"; then
+	if is_btrfs "$chrootdir" && is_subvolume "$chrootdir/root" && ! mountpoint -q "$copydir"; then
 		subvolume_delete_recursive "$copydir" ||
 			die "Unable to delete subvolume %s" "$copydir"
 		btrfs subvolume snapshot "$chrootdir/root" "$copydir" >/dev/null ||
