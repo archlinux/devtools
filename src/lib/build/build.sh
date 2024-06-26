@@ -80,7 +80,7 @@ pkgctl_build_usage() {
 		EXAMPLES
 		    $ ${COMMAND}
 		    $ ${COMMAND} --rebuild --staging --message 'libyay 0.42 rebuild' libfoo libbar
-		    $ ${COMMAND} --pkgver 1.42 --release --db-update
+		    $ ${COMMAND} --pkgver=1.42 --release --db-update
 _EOF_
 }
 
