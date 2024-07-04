@@ -489,6 +489,39 @@ gitlab_project_issue() {
 	return 0
 }
 
+gitlab_project_issue_create() {
+	local pkgbase=$1
+	local title=$2
+	local description=$3
+	local confidential=$4
+	shift 4
+	local labels=("${@}")
+	local outfile data iid project_path
+
+	[[ -z ${WORKDIR:-} ]] && setup_workdir
+	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
+
+	project_path=$(gitlab_project_name_to_path "${pkgbase}")
+
+	data=$(jq --null-input \
+		--arg title "${title}" \
+		--arg description "${description}" \
+		--arg confidential "${confidential}" \
+		--arg labels "$(join_by , "${labels[@]}")" \
+		'$ARGS.named')
+	if ! gitlab_api_call "${outfile}" POST "/projects/archlinux%2fpackaging%2fpackages%2f${project_path}/issues" "${data}"; then
+		return 1
+	fi
+
+	if ! iid=$(jq --raw-output --exit-status '.iid' < "${outfile}"); then
+		msg_error "  failed to query note: $(cat "${outfile}")"
+		return 1
+	fi
+
+	cat "${outfile}"
+	return 0
+}
+
 # TODO: parallelize
 # https://docs.gitlab.com/ee/api/notes.html#list-project-issue-notes
 gitlab_project_issue_notes() {

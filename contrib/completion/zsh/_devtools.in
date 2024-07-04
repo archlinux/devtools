@@ -98,6 +98,7 @@ _pkgctl_issue_cmds=(
 	"pkgctl issue command"
 	"close[Close an issue]"
 	"comment[Comment on an issue]"
+	"create[Create a new issue]"
 	"list[List project or group issues]"
 	"move[Move an issue to another project]"
 	"reopen[Reopen a closed issue]"
@@ -119,6 +120,21 @@ _pkgctl_issue_comment_args=(
 	'(-e --edit)'{-e,--edit}'[Edit the comment using an editor]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	"1:issue_iid:"
+)
+
+_pkgctl_issue_create_args=(
+	'(-p --package)'{-p,--package}'[Interact with <pkgbase> instead of the current directory]:pkgbase:_devtools_completions_all_packages'
+	'(-t --title)'{-t,--title}'[Use the provided title for the issue]:title:'
+	'(-F --file)'{-F,--file}'[Take issue description from <file>]:file:_files'
+	'(-e --edit)'{-e,--edit}'[Edit the issue title and description using an editor]'
+	'(-w --web)'{-w,--web}'[Continue issue creation with the web interface]'
+	"--recover[Automatically recover from a failed run]"
+	"--confidentiality[Set the issue confidentiality]:confidential:($DEVTOOLS_VALID_ISSUE_CONFIDENTIALITY[*])"
+	"--priority[Set the priority label]:priority:($DEVTOOLS_VALID_ISSUE_PRIORITY[*])"
+	"--scope[Set the scope label]:scope:($DEVTOOLS_VALID_ISSUE_SCOPE[*])"
+	"--severity[Set the severity label]:severity:($DEVTOOLS_VALID_ISSUE_SEVERITY[*])"
+	"--status[Set the status label]:status:($DEVTOOLS_VALID_ISSUE_STATUS[*])"
+	'(-h --help)'{-h,--help}'[Display usage]'
 )
 
 _pkgctl_issue_list_args=(

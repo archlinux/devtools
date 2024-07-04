@@ -1,0 +1,77 @@
+pkgctl-issue-create(1)
+======================
+
+Name
+----
+pkgctl-issue-create - Create a new issue
+
+Synopsis
+--------
+pkgctl issue create [OPTIONS]
+
+Description
+-----------
+
+The create command is used to create a new issue for an Arch Linux package.
+This command is suitable for reporting bugs, regressions, feature requests, or
+any other issues related to a package. It provides a flexible way to document
+and track new issues within the project's issue tracking system.
+
+By default, the command operates within the current directory, but users can
+specify a different package base if needed.
+
+Users can provide a title for the issue directly through the command line. The
+issue description can be supplied from a file or edited using a text editor.
+Alternatively, users can opt to continue the issue creation process using the
+web interface for a more interactive experience.
+
+The command allows setting various labels and attributes for the issue, such as
+confidentiality, priority, scope, severity, and status. These options help
+categorize and prioritize the issue appropriately within the tracking system.
+
+In case of a failed run, the command can automatically recover to ensure that
+the issue creation process is completed without losing any data.
+
+This command is essential for maintainers, contributors, and users who need to
+report new issues related to Arch Linux packages.
+
+Options
+-------
+
+*-p, --package* 'PKGBASE'::
+	Interact with `PKGBASE` instead of the current directory
+
+*-t, --title* 'TITLE'::
+	Use the provided title for the issue
+
+*-F, --file* 'FILE'::
+	Take issue description from <file>
+
+*-e, --edit*::
+	Edit the issue description using an editor
+
+*-w, --web*::
+	Continue issue creation with the web interface
+
+*--recover*::
+	Automatically recover from a failed run
+
+*--confidentiality* 'TYPE'::
+	Set the issue confidentiality
+
+*--priority* 'PRIORITY'::
+	Set the priority label
+
+*--scope* 'SCOPE'::
+	Set the scope label
+
+*--severity* 'SEVERITY'::
+	Set the severity label
+
+*--status* 'STATUS'::
+	Set the status label
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]
