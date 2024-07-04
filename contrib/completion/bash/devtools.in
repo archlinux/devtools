@@ -450,6 +450,7 @@ _pkgctl_issue_cmds=(
 	close
 	comment
 	create
+	edit
 	list
 	move
 	reopen
@@ -514,6 +515,32 @@ _pkgctl_issue_create_args__priority_opts() { _devtools_completions_issue_priorit
 _pkgctl_issue_create_args__scope_opts() { _devtools_completions_issue_scope; }
 _pkgctl_issue_create_args__severity_opts() { _devtools_completions_issue_severity; }
 _pkgctl_issue_create_args__status_opts() { _devtools_completions_issue_status; }
+
+_pkgctl_issue_edit_args=(
+	-p --package
+	-t --title
+	-e --edit
+	--recover
+	--confidentiality
+	--priority
+	--resolution
+	--scope
+	--severity
+	--status
+	-h --help
+)
+
+_pkgctl_issue_edit_opts() { :; }
+_pkgctl_issue_edit_args__package_opts() { _devtools_completions_all_packages; }
+_pkgctl_issue_edit_args_p_opts() { _pkgctl_issue_edit_args__package_opts; }
+_pkgctl_issue_edit_args__title_opts() { :; }
+_pkgctl_issue_edit_args_t_opts() { _pkgctl_issue_edit_args__title_opts; }
+_pkgctl_issue_edit_args__confidentiality_opts() { _devtools_completions_issue_confidentiality; }
+_pkgctl_issue_edit_args__priority_opts() { _devtools_completions_issue_priority; }
+_pkgctl_issue_edit_args__resolution_opts() { _devtools_completions_issue_resolution; }
+_pkgctl_issue_edit_args__scope_opts() { _devtools_completions_issue_scope; }
+_pkgctl_issue_edit_args__severity_opts() { _devtools_completions_issue_severity; }
+_pkgctl_issue_edit_args__status_opts() { _devtools_completions_issue_status; }
 
 _pkgctl_issue_list_args=(
 	-g --group
