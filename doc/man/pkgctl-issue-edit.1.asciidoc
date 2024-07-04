@@ -1,0 +1,75 @@
+pkgctl-issue-edit(1)
+====================
+
+Name
+----
+pkgctl-issue-edit - Edit and modify an issue
+
+Synopsis
+--------
+pkgctl issue edit [OPTIONS] [IID]
+
+Description
+-----------
+
+The pkgctl issue edit command is used to modify an existing issue in Arch Linux
+packaging projects. This command allows users to update the issue's title,
+description, and various attributes, ensuring that the issue information
+remains accurate and up-to-date. It also provides a streamlined facility
+for bug wranglers to categorize and prioritize issues efficiently.
+
+To edit an issue, users must specify the issue ID (IID). By default, the
+command operates within the current directory, but users can specify a
+different package base if needed.
+
+The command allows for direct updates to the issue title and description. For
+more extensive changes, users can edit these details using a text editor. The
+command provides various options to set or update labels and attributes such as
+confidentiality, priority, resolution, scope, severity, and status. These
+options help maintain clear and organized issue management.
+
+In case of a failed run, the command can automatically recover to ensure that
+the editing process is completed without losing any data.
+
+This command is particularly useful for maintainers and contributors who need
+to update the details of an issue to reflect new information or changes in
+status. It ensures that all issue details are accurately maintained,
+facilitating efficient tracking and resolution.
+
+Options
+-------
+
+*-p, --package* 'PKGBASE'::
+	Interact with `PKGBASE` instead of the current directory
+
+*-t, --title* 'TITLE'::
+	Use the provided title for the issue
+
+*-e, --edit*::
+	Edit the issue title and description using an editor
+
+*--recover*::
+	Automatically recover from a failed run
+
+*--confidentiality* 'TYPE'::
+	Set the issue confidentiality
+
+*--priority* 'PRIORITY'::
+	Set the priority label
+
+*--resolution* 'REASON'::
+	Set the resolution label
+
+*--scope* 'SCOPE'::
+	Set the scope label
+
+*--severity* 'SEVERITY'::
+	Set the severity label
+
+*--status* 'STATUS'::
+	Set the status label
+
+*-h, --help*::
+	Show a help text
+
+include::include/footer.asciidoc[]

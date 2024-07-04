@@ -21,6 +21,7 @@ pkgctl_issue_usage() {
 		    close     Close an issue
 		    comment   Comment on an issue
 		    create    Create a new issue
+		    edit      Edit and modify an issue
 		    list      List project or group issues
 		    move      Move an issue to another project
 		    reopen    Reopen a closed issue
@@ -62,6 +63,14 @@ pkgctl_issue() {
 				# shellcheck source=src/lib/issue/create.sh
 				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/issue/create.sh
 				pkgctl_issue_create "$@"
+				exit 0
+				;;
+			edit|update)
+				_DEVTOOLS_COMMAND+=" $1"
+				shift
+				# shellcheck source=src/lib/issue/edit.sh
+				source "${_DEVTOOLS_LIBRARY_DIR}"/lib/issue/edit.sh
+				pkgctl_issue_edit "$@"
 				exit 0
 				;;
 			list)

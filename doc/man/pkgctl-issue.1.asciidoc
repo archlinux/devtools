@@ -32,6 +32,9 @@ pkgctl issue comment::
 pkgctl issue create::
 	Create a new issue
 
+pkgctl issue edit::
+	Edit and modify an issue
+
 pkgctl issue list::
 	List project or group issues
 
@@ -50,6 +53,7 @@ See Also
 pkgctl-issue-close(1)
 pkgctl-issue-comment(1)
 pkgctl-issue-create(1)
+pkgctl-issue-edit(1)
 pkgctl-issue-list(1)
 pkgctl-issue-move(1)
 pkgctl-issue-reopen(1)
