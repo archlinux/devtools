@@ -42,9 +42,14 @@ Options
 *--url* 'URL'::
 	Derive check target from the given URL instead of the source array entries
 
-
 *--no-check*::
 	Do not run pkgctl-version-check(1) after setup
+
+*--no-upstream*::
+	Setup a blank config for packages without upstream sources, like meta
+	packages. This must only be used for cases without an upstream, please
+	reach out to the developer team for guidance regarding upstream sources
+	that are hard to configure.
 
 *-h, --help*::
 	Show a help text

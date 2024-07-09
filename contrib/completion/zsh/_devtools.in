@@ -321,6 +321,7 @@ _pkgctl_version_setup_args=(
 	'--prefer-platform-api[Prefer platform specific GitHub/GitLab API for complex cases]'
 	'--url[Derive check target from URL instead of source array]:url:'
 	'--no-check[Do not run version check after setup]'
+	'--no-upstream[Setup a blank config for packages without upstream sources]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:git_dir:_files -/'
 )

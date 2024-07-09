@@ -33,6 +33,7 @@ pkgctl_version_setup_usage() {
 		    --prefer-platform-api  Prefer platform specific GitHub/GitLab API for complex cases
 		    --url URL              Derive check target from URL instead of source array
 		    --no-check             Do not run version check after setup
+		    --no-upstream          Setup a blank config for packages without upstream sources
 		    -h, --help             Show this help text
 
 		EXAMPLES
@@ -46,6 +47,7 @@ pkgctl_version_setup() {
 	local run_check=1
 	local force=0
 	local prefer_platform_api=0
+	local no_upstream=0
 
 	local path ret
 	local checks=()
@@ -71,6 +73,10 @@ pkgctl_version_setup() {
 				;;
 			--no-check)
 				run_check=0
+				shift
+				;;
+			--no-upstream)
+				no_upstream=1
 				shift
 				;;
 			--)
@@ -105,7 +111,7 @@ pkgctl_version_setup() {
 		fi
 
 		pushd "${path}" >/dev/null
-		if nvchecker_setup "${path}" "${force}" "${prefer_platform_api}" "${override_url}"; then
+		if nvchecker_setup "${path}" "${force}" "${prefer_platform_api}" "${override_url}" "${no_upstream}"; then
 			checks+=("${path}")
 		else
 			ret=1
@@ -127,6 +133,7 @@ nvchecker_setup() {
 	local force=$2
 	local prefer_platform_api=$3
 	local override_url=$4
+	local no_upstream=$5
 	local pkgbase pkgname source source_url proto domain url_parts section body
 
 	if [[ ! -f PKGBUILD ]]; then
@@ -159,7 +166,7 @@ nvchecker_setup() {
 	fi
 
 	# skip empty source array
-	if (( ${#source[@]} == 0 )); then
+	if (( ${#source[@]} == 0 )) && (( ! no_upstream )); then
 		msg_error "${BOLD}${pkgbase}:${ALL_OFF} PKGBUILD has no source array"
 		return 1
 	fi
@@ -244,6 +251,10 @@ nvchecker_setup() {
 				;;
 		esac
 	done
+
+	if (( no_upstream )); then
+		body='source = "manual"'
+	fi
 
 	if [[ -z "${body}" ]]; then
 		msg_error "${BOLD}${pkgbase}:${ALL_OFF} unable to automatically setup nvchecker"

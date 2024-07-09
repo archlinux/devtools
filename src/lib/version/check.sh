@@ -308,6 +308,12 @@ get_upstream_version() {
 		return 1
 	fi
 
+	# implement none source for packages like meta and virtual packages that are always up to date
+	if [[ ${upstream_version} == None ]] && grep --quiet --extended-regexp '^source *= *"manual"' "${config}" &>/dev/null; then
+		printf '%s' "${pkgver:-${upstream_version}}"
+		return 0
+	fi
+
 	printf "%s" "${upstream_version}"
 	return 0
 }

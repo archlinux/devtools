@@ -385,6 +385,7 @@ _pkgctl_version_setup_args=(
 	--prefer-platform-api
 	--url
 	--no-check
+	--no-upstream
 	-f --force
 	-h --help
 )
