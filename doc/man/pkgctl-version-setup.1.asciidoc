@@ -42,9 +42,11 @@ Options
 *--url* 'URL'::
 	Derive check target from the given URL instead of the source array entries
 
-
 *--no-check*::
 	Do not run pkgctl-version-check(1) after setup
+
+*--none*::
+	Setup a blank config for packages without remote sources
 
 *-h, --help*::
 	Show a help text
