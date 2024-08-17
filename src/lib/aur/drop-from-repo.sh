@@ -165,7 +165,7 @@ pkgctl_aur_drop_from_repo() {
 			warning 'Did not find %s in any repository, please delete manually' "${pkgbase}"
 		else
 			msg2 "  repo: ${pkgrepo}"
-			pkgctl_db_remove "${pkgrepo}" "${pkgbase}"
+			pkgctl_db_remove --noconfirm "${pkgrepo}" "${pkgbase}"
 		fi
 
 		popd >/dev/null
