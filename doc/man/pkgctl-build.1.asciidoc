@@ -15,6 +15,8 @@ Description
 Build packages in clean chroot environment, offering various options
 and functionalities to customize the package building process.
 
+By default, chroot environments are located in '/var/lib/archbuild/'.
+
 Build Options
 -------------
 
