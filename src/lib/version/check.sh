@@ -284,7 +284,7 @@ nvchecker_check_error() {
 	local errors
 
 	if ! errors=$(jq --raw-output --exit-status \
-			'select(.level == "error") | "\(.event)" + if .error then ": \(.error)" else "" end' \
+			'select((.level == "error") and (.error != null)) | "\(.event)" + if .error then ": \(.error)" else "" end' \
 			<<< "${result}"); then
 		return 0
 	fi
