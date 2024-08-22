@@ -33,6 +33,7 @@ update_pacman_repo_cache() {
 get_pacman_repo_from_pkgbuild() {
 	local path=${1:-PKGBUILD}
 	local repo=${2:-multilib}
+	local -a pkgnames
 
 	# shellcheck source=contrib/makepkg/PKGBUILD.proto
 	mapfile -t pkgnames < <(source "${path}"; printf "%s\n" "${pkgname[@]}")
@@ -67,6 +68,7 @@ get_pkgnames_from_repo_pkgbase() {
 	local repo=$1
 	shift
 	local pkgbases=("$@")
+	local -a pkgnames
 
 	# update the pacman repo cache if it doesn't exist yet
 	if [[ ! -d "${_DEVTOOLS_PACMAN_CACHE_DIR}" ]]; then

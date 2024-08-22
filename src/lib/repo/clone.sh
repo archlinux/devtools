@@ -65,6 +65,7 @@ pkgctl_repo_clone() {
 	local CONFIGURE_OPTIONS=()
 	local jobs=
 	jobs=$(nproc)
+	local -a pkgbases
 
 	# variables
 	local command=${_DEVTOOLS_COMMAND:-${BASH_SOURCE[0]##*/}}

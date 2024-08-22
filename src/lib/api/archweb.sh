@@ -14,6 +14,8 @@ set -o pipefail
 
 
 archweb_query_all_packages() {
+	local -a pkgbases
+
 	[[ -z ${WORKDIR:-} ]] && setup_workdir
 
 	stat_busy "Query all released packages"
@@ -36,6 +38,7 @@ archweb_query_all_packages() {
 
 archweb_query_maintainer_packages() {
 	local maintainer=$1
+	local -a pkgbases
 
 	[[ -z ${WORKDIR:-} ]] && setup_workdir
 
