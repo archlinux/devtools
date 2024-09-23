@@ -63,7 +63,7 @@ pkgctl_auth_login() {
 		esac
 	done
 
-	personal_access_token_url="https://${GITLAB_HOST}/-/profile/personal_access_tokens?name=pkgctl+token&scopes=api,write_repository"
+	personal_access_token_url="https://${GITLAB_HOST}/-/user_settings/personal_access_tokens?name=pkgctl+token&scopes=api,write_repository"
 
     cat <<- _EOF_
 	Logging into ${BOLD}${GITLAB_HOST}${ALL_OFF}
