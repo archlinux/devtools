@@ -10,6 +10,8 @@ _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 # shellcheck source=src/lib/util/term.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/term.sh
+# shellcheck source=src/lib/valid-version.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-version.sh
 
 source /usr/share/makepkg/util/message.sh
 
@@ -39,8 +41,15 @@ pkgctl_version_check_usage() {
 		check failures.
 
 		OPTIONS
-		    -v, --verbose    Display results including up-to-date versions
-		    -h, --help       Show this help text
+		    -h, --help           Show this help text
+
+		FILTER OPTIONS
+		    -v, --verbose        Display all results including up-to-date versions
+
+		OUTPUT OPTIONS
+		    --json               Enable printing in JSON; Shorthand for '--format json'
+		    -F, --format FORMAT  Controls the output format of the results;
+		                         FORMAT is 'pretty', or 'json' (default: pretty)
 
 		EXAMPLES
 		    $ ${COMMAND} neovim vim
@@ -50,9 +59,11 @@ _EOF_
 pkgctl_version_check() {
 	local pkgbases=()
 	local verbose=0
+	local output_format=pretty
 
 	local path status_file path pkgbase upstream_version result
 
+	local json_data=()
 	local up_to_date=()
 	local out_of_date=()
 	local failure=()
@@ -65,6 +76,18 @@ pkgctl_version_check() {
 			-h|--help)
 				pkgctl_version_check_usage
 				exit 0
+				;;
+			--json)
+				output_format=json
+				shift
+				;;
+			-F|--format)
+				(( $# <= 1 )) && die "missing argument for %s" "$1"
+				output_format="${2}"
+				if ! in_array "${output_format}" "${DEVTOOLS_VALID_VERSION_OUTPUT_FORMAT[@]}"; then
+					die "Unknown output format: %s" "${output_format}"
+				fi
+				shift 2
 				;;
 			-v|--verbose)
 				verbose=1
@@ -103,9 +126,11 @@ pkgctl_version_check() {
 		verbose=1
 	fi
 
-	# start a terminal spinner as checking versions takes time
-	status_dir=$(mktemp --tmpdir="${WORKDIR}" --directory pkgctl-version-check-spinner.XXXXXXXXXX)
-	term_spinner_start "${status_dir}"
+	if [[ ${output_format} == pretty ]]; then
+		# start a terminal spinner as checking versions takes time
+		status_dir=$(mktemp --tmpdir="${WORKDIR}" --directory pkgctl-version-check-spinner.XXXXXXXXXX)
+		term_spinner_start "${status_dir}"
+	fi
 
 	for path in "${pkgbases[@]}"; do
 		# skip paths that are not directories
@@ -114,19 +139,23 @@ pkgctl_version_check() {
 		fi
 		pushd "${path}" >/dev/null
 
-		# update the current terminal spinner status
-		(( ++current_item ))
-		pkgctl_version_check_spinner \
-			"${status_dir}" \
-			"${#up_to_date[@]}" \
-			"${#out_of_date[@]}" \
-			"${#failure[@]}" \
-			"${current_item}" \
-			"${#pkgbases[@]}"
+		if [[ ${output_format} == pretty ]]; then
+			# update the current terminal spinner status
+			(( ++current_item ))
+			pkgctl_version_check_spinner \
+				"${status_dir}" \
+				"${#up_to_date[@]}" \
+				"${#out_of_date[@]}" \
+				"${#failure[@]}" \
+				"${current_item}" \
+				"${#pkgbases[@]}"
+		fi
 
 		if [[ ! -f "PKGBUILD" ]]; then
-			result="${BOLD}${path}${ALL_OFF}: no PKGBUILD found"
-			failure+=("${result}")
+			result="no PKGBUILD found"
+			pkgbase=$(basename "${path}")
+			json_data+=("$(build_json_package_version_entry "${pkgbase}" failure "${result}" false null null)")
+			failure+=("${BOLD}${pkgbase}${ALL_OFF}: ${result}")
 			popd >/dev/null
 			continue
 		fi
@@ -138,27 +167,36 @@ pkgctl_version_check() {
 		pkgbase=${pkgbase:-$pkgname}
 
 		if ! result=$(get_upstream_version); then
-			result="${BOLD}${pkgbase}${ALL_OFF}: ${result}"
-			failure+=("${result}")
+			json_data+=("$(build_json_package_version_entry "${pkgbase}" failure "${result}" false "${pkgver}" null)")
+			failure+=("${BOLD}${pkgbase}${ALL_OFF}: ${result}")
 			popd >/dev/null
 			continue
 		fi
 		upstream_version=${result}
 
 		if ! result=$(vercmp "${upstream_version}" "${pkgver}"); then
-			result="${BOLD}${pkgbase}${ALL_OFF}: failed to compare version ${upstream_version} against ${pkgver}"
+			result="failed to compare version ${upstream_version} against ${pkgver}"
+			json_data+=("$(build_json_package_version_entry "${pkgbase}" failure "${result}" false "${pkgver}" "${upstream_version}")")
+			result="${BOLD}${pkgbase}${ALL_OFF}: ${result}"
 			failure+=("${result}")
 			popd >/dev/null
 			continue
 		fi
 
 		if (( result == 0 )); then
+			if (( verbose )); then
+				json_data+=("$(build_json_package_version_entry "${pkgbase}" success null false "${pkgver}" "${upstream_version}")")
+			fi
 			result="${BOLD}${pkgbase}${ALL_OFF}: current version ${PURPLE}${pkgver}${ALL_OFF} is latest"
 			up_to_date+=("${result}")
 		elif (( result < 0 )); then
+			if (( verbose )); then
+				json_data+=("$(build_json_package_version_entry "${pkgbase}" warning "local version is newer than upstream" false "${pkgver}" "${upstream_version}")")
+			fi
 			result="${BOLD}${pkgbase}${ALL_OFF}: current version ${PURPLE}${pkgver}${ALL_OFF} is newer than ${DARK_GREEN}${upstream_version}${ALL_OFF}"
 			up_to_date+=("${result}")
 		elif (( result > 0 )); then
+			json_data+=("$(build_json_package_version_entry "${pkgbase}" success null true "${pkgver}" "${upstream_version}")")
 			result="${BOLD}${pkgbase}${ALL_OFF}: upgrade from version ${PURPLE}${pkgver}${ALL_OFF} to ${DARK_GREEN}${upstream_version}${ALL_OFF}"
 			out_of_date+=("${result}")
 		fi
@@ -166,8 +204,18 @@ pkgctl_version_check() {
 		popd >/dev/null
 	done
 
-	# stop the terminal spinner after all checks
-	term_spinner_stop "${status_dir}"
+	if [[ ${output_format} == pretty ]]; then
+		# stop the terminal spinner after all checks
+		term_spinner_stop "${status_dir}"
+	fi
+
+	# early exit for json output
+	if [[ ${output_format} == json ]]; then
+		jq --null-input \
+			'$ARGS.positional' \
+			--jsonargs "${json_data[@]}"
+		return 0
+	fi
 
 	if (( verbose )) && (( ${#up_to_date[@]} > 0 )); then
 		printf "%sUp-to-date%s\n" "${section_separator}${BOLD}${UNDERLINE}" "${ALL_OFF}"
@@ -206,6 +254,24 @@ pkgctl_version_check() {
 
 	# return status based on results
 	return "${exit_code}"
+}
+
+build_json_package_version_entry() {
+	local pkgbase=$1
+	local status=$2
+	local message=$3
+	local is_out_of_date=$4
+	local local_version=$5
+	local upstream_version=$6
+
+	jq --null-input \
+		--arg pkgbase "${pkgbase}" \
+		--arg status "${status}" \
+		--arg message "${message}" \
+		--arg local_version "${local_version}" \
+		--arg upstream_version "${upstream_version}" \
+		--argjson out_of_date "${is_out_of_date}" \
+		'$ARGS.named | walk(if type == "string" and (. == "null" or . == "") then null else . end)'
 }
 
 get_upstream_version() {

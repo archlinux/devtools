@@ -13,6 +13,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
 # shellcheck source=src/lib/valid-search.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-search.sh
+# shellcheck source=src/lib/valid-version.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-version.sh
 
 _colors=(never always auto)
 
@@ -371,9 +373,13 @@ _pkgctl_version_cmds=(
 _pkgctl_version_check_args=(
 	-v --verbose
 	-h --help
+	--json
+	-F --format
 )
 
 _pkgctl_version_check_opts() { _filedir -d; }
+_pkgctl_version_check_args__format_opts() { _devtools_completions_version_output_format; }
+_pkgctl_version_check_args_F_opts() { _devtools_completions_version_output_format; }
 
 _pkgctl_version_setup_args=(
 	--prefer-platform-api
@@ -469,6 +475,9 @@ _devtools_completions_inspect() {
 }
 _devtools_completions_search_format() {
 	mapfile -t COMPREPLY < <(compgen -W "${valid_search_output_format[*]}" -- "$cur")
+}
+_devtools_completions_version_output_format() {
+	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_VERSION_OUTPUT_FORMAT[*]}" -- "$cur")
 }
 
 __devtools_complete() {
