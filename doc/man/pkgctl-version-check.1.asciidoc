@@ -34,11 +34,24 @@ PKGBUILD. Refer to the configuration section in pkgctl-version(1).
 Options
 -------
 
-*-v, --verbose*::
-	Display results including up-to-date versions
-
 *-h, --help*::
 	Show a help text
+
+Filter Options
+--------------
+
+*-v, --verbose*::
+	Display all results including up-to-date versions
+
+Output Options
+--------------
+
+*--json*::
+	Enable printing in JSON; Shorthand for `'--format json'`
+
+*-F, --format* 'FORMAT'::
+	Controls the output format of the results; `FORMAT` is `'pretty'`,
+	or `'json'` (default `pretty`)
 
 Exit Codes
 ----------
