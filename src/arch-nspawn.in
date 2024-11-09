@@ -65,6 +65,7 @@ nspawn_args=(
 	--machine="arch-nspawn-$$"
 	--as-pid2
 	--console=autopipe
+	--timezone=off
 )
 
 if (( ${#cache_dirs[@]} == 0 )); then
