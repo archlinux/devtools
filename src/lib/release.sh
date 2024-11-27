@@ -157,6 +157,11 @@ pkgctl_release() {
 			repo=${REPO}
 		fi
 
+		# output a warning if .nvchecker.toml does not exists
+		if [[ ! -f ".nvchecker.toml" ]]; then
+			warning "Nvchecker integration is not set, run 'pkgctl version setup --help' to see how to automate the creation of the '.nvchecker.toml' configuration file"
+		fi
+
 		if (( TESTING )); then
 			repo="${repo}-testing"
 		elif (( STAGING )); then
