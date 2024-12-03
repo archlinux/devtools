@@ -25,6 +25,7 @@ update_pacman_repo_cache() {
 	lock 10 "${_DEVTOOLS_PACMAN_CACHE_DIR}.lock" "Locking pacman database cache"
 	fakeroot -- pacman --config "${_DEVTOOLS_PACMAN_CONF_DIR}/${repo}.conf" \
 		--dbpath "${_DEVTOOLS_PACMAN_CACHE_DIR}" \
+		--disable-sandbox \
 		-Sy
 	lock_close 10
 }
