@@ -140,7 +140,7 @@ for _pkgname in "${pkgname[@]}"; do
 	bsdtar tf "$TEMPDIR/$oldpkg" | sort > "$TEMPDIR/filelist-$_pkgname-old"
 	bsdtar tf "$pkgfile" | sort > "$TEMPDIR/filelist-$_pkgname"
 
-	diff --side-by-side --suppress-common-lines --width="$COLUMNS" --color=auto "$TEMPDIR/filelist-$_pkgname-old" "$TEMPDIR/filelist-$_pkgname"
+	diff --side-by-side --suppress-common-lines --width="${COLUMNS:-130}" --color=auto "$TEMPDIR/filelist-$_pkgname-old" "$TEMPDIR/filelist-$_pkgname"
 
 	find-libprovides "$TEMPDIR/$oldpkg" 2>/dev/null | sort > "$TEMPDIR/libraries-$_pkgname-old"
 	find-libprovides "$pkgfile" 2>/dev/null | sort > "$TEMPDIR/libraries-$_pkgname"
