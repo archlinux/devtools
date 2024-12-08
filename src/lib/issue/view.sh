@@ -181,7 +181,7 @@ pkgctl_issue_view() {
 		status_dir=$(mktemp --tmpdir="${WORKDIR}" --directory pkgctl-gitlab-api.XXXXXXXXXX)
 		printf "📡 Querying GitLab issue notes API..." > "${status_dir}/status"
 		term_spinner_start "${status_dir}"
-		if ! output=$(gitlab_project_issue_notes "${project_path}" "${iid}" "${status_dir}/status"); then
+		if ! output=$(gitlab_project_issue_notes "${project_path}" "${iid}" "${status_dir}/status" "sort=asc&order_by=created_at"); then
 			term_spinner_stop "${status_dir}"
 			msg_error "Failed to fetch comments"
 			exit 1
