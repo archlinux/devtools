@@ -39,6 +39,17 @@ placed in the `$XDG_CONFIG_HOME`/nvchecker` directory. This keyfile is
 used for providing the necessary authentication tokens required for
 accessing the GitHub or GitLab API.
 
+Combiner Source
+---------------
+
+To utilize the combiner source, the `pkgbase` section must be declared as the
+combiner source. Additionally, individual sections should be added using a
+quoted table key consisting of the `pkgbase` followed by the stage name,
+separated by double colons. For example: `["sudo:stage1"]`.
+
+This allows to chain different sources together into one result, or allow
+multi stage transformation of our source via multiple regex.
+
 Options
 -------
 
