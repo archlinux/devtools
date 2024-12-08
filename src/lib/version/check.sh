@@ -304,6 +304,11 @@ get_upstream_version() {
 		return 1
 	fi
 
+	if ! output=$(jq --raw-output --exit-status 'select(.name == "'"${pkgbase}"'")' <<< "${output}"); then
+		printf "failed to select pkgbase result from output"
+		return 1
+	fi
+
 	if ! upstream_version=$(jq --raw-output --exit-status '.version' <<< "${output}"); then
 		printf "failed to select version from result"
 		return 1
@@ -346,7 +351,7 @@ nvchecker_check_config() {
 	fi
 
 	# check if the config contains any section other than pkgbase
-	if [[ -n ${pkgbase} ]] && property=$(grep --max-count=1 --perl-regexp "^\\[(?!\"?${pkgbase//+/\\+}\"?\\]).+\\]" < "${config}"); then
+	if [[ -n ${pkgbase} ]] && property=$(grep --max-count=1 --perl-regexp "^\\[(?!\"?${pkgbase//+/\\+}(:.+)?\"?\\]).+\\]" < "${config}"); then
 		printf "non-pkgbase section not supported in %s: %s" "${config}" "${property}"
 		return 1
 	fi
