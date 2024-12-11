@@ -114,25 +114,32 @@ ssh "${SSH_OPTS[@]}" -- "$server" "cd ${remote_temp@Q} && bsdtar --strip-compone
 # Run the build command on the server
 msg "Running archbuild"
 # shellcheck disable=SC2145
-ssh "${SSH_OPTS[@]}" -t -- "$server" "cd ${remote_temp@Q} && export LOGDEST="" && ${archbuild_cmd[@]@Q}" || die
-msg "Build complete"
+if ssh "${SSH_OPTS[@]}" -t -- "$server" "cd ${remote_temp@Q} && export LOGDEST="" && ${archbuild_cmd[@]@Q}"; then
+    msg "Build complete"
 
-# Get an array of files that should be downloaded from the server
-mapfile -t files < <(
-    ssh "${SSH_OPTS[@]}" -- "$server" "
-        cd ${remote_temp@Q}"' &&
-        makepkg_user_config="${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf" &&
-        makepkg_config="/usr/share/devtools/makepkg.conf.d/'"${arch}"'.conf" &&
-        if [[ -f /usr/share/devtools/makepkg.conf.d/'"${repo}"'-'"${arch}"'.conf ]]; then
-            makepkg_config="/usr/share/devtools/makepkg.conf.d/'"${repo}"'-'"${arch}"'.conf"
-        fi &&
-        while read -r file; do
-            [[ -f "${file}" ]] && printf "%s\n" "${file}" ||:
-        done < <(makepkg --config <(cat "${makepkg_user_config}" "${makepkg_config}" 2>/dev/null) --packagelist) &&
-        printf "%s\n" '"${remote_temp@Q}/PKGBUILD"'
+    # Get an array of files that should be downloaded from the server
+    mapfile -t files < <(
+        ssh "${SSH_OPTS[@]}" -- "$server" "
+            cd ${remote_temp@Q}"' &&
+            makepkg_user_config="${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf" &&
+            makepkg_config="/usr/share/devtools/makepkg.conf.d/'"${arch}"'.conf" &&
+            if [[ -f /usr/share/devtools/makepkg.conf.d/'"${repo}"'-'"${arch}"'.conf ]]; then
+                makepkg_config="/usr/share/devtools/makepkg.conf.d/'"${repo}"'-'"${arch}"'.conf"
+            fi &&
+            while read -r file; do
+                [[ -f "${file}" ]] && printf "%s\n" "${file}" ||:
+            done < <(makepkg --config <(cat "${makepkg_user_config}" "${makepkg_config}" 2>/dev/null) --packagelist) &&
+            printf "%s\n" '"${remote_temp@Q}/PKGBUILD"'
 
-        find '"${remote_temp@Q}"' -name "*.log"
-')
+            find '"${remote_temp@Q}"' -name "*.log"
+    ')
+else
+    # Build failed, only the logs should be downloaded from the server
+    mapfile -t files < <(
+        ssh "${SSH_OPTS[@]}" -- "$server" '
+            find '"${remote_temp@Q}"' -name "*.log"
+    ')
+fi
 
 
 if (( ${#files[@]} )); then
@@ -142,13 +149,14 @@ if (( ${#files[@]} )); then
     if is_globfile "${TEMPDIR}"/*.log; then
         mv "${TEMPDIR}"/*.log "${LOGDEST:-${PWD}}/"
     fi
-    # missing PKGBUILD download means the build failed
-    if [[ ! -f "${TEMPDIR}/PKGBUILD" ]]; then
+    if is_globfile "${TEMPDIR}"/*.pkg.tar*; then
+        # Building a package may change the PKGBUILD during update_pkgver
+        mv "${TEMPDIR}/PKGBUILD" "${PWD}/"
+        mv "${TEMPDIR}"/*.pkg.tar* "${PKGDEST:-${PWD}}/"
+    else
         error "Build failed, check logs in ${LOGDEST:-${PWD}}"
         exit 1
     fi
-    mv "${TEMPDIR}/PKGBUILD" "${PWD}/"
-    mv "${TEMPDIR}"/*.pkg.tar* "${PKGDEST:-${PWD}}/"
 else
     exit 1
 fi
