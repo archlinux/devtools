@@ -121,10 +121,19 @@ gitlab_api_call_paged() {
 	local total_pages=1
 
 	while [[ -n "${next_page}" ]]; do
-		percentage=$(( 100 * next_page / total_pages ))
-		printf "📡 Querying GitLab: %s/%s [%s] %%spinner%%" \
-			"${BOLD}${next_page}" "${total_pages}" "${percentage}%${ALL_OFF}"  \
-			> "${tmp_file}"
+		# The api is not guaranteed to return x-total-pages for larger query
+		# results, we therefore make sure not to divide by zero
+		if (( total_pages == 0 )); then
+			printf "📡 Querying GitLab: getting page %s %%spinner%%" \
+				"${BOLD}${next_page}${ALL_OFF}"  \
+				> "${tmp_file}"
+		else
+			percentage=$(( 100 * next_page / total_pages ))
+			printf "📡 Querying GitLab: %s/%s [%s] %%spinner%%" \
+				"${BOLD}${next_page}" "${total_pages}" \
+				"${percentage}%${ALL_OFF}"  \
+				> "${tmp_file}"
+		fi
 		mv "${tmp_file}" "${status_file}"
 
 		result="${api_workdir}/result.${next_page}"
