@@ -119,11 +119,13 @@ gitlab_api_call_paged() {
 
 	local next_page=1
 	local total_pages=1
+	local known_total_pages=1
+	local percentage=100
 
 	while [[ -n "${next_page}" ]]; do
 		percentage=$(( 100 * next_page / total_pages ))
 		printf "📡 Querying GitLab: %s/%s [%s] %%spinner%%" \
-			"${BOLD}${next_page}" "${total_pages}" "${percentage}%${ALL_OFF}"  \
+			"${BOLD}${next_page}" "${known_total_pages}" "${percentage}%${ALL_OFF}"  \
 			> "${tmp_file}"
 		mv "${tmp_file}" "${status_file}"
 
@@ -148,6 +150,15 @@ gitlab_api_call_paged() {
 
 		next_page=$(grep "x-next-page" "${header}" | tr -d '\r' | awk '{ print $2 }')
 		total_pages=$(grep "x-total-pages" "${header}" | tr -d '\r' | awk '{ print $2 }')
+		# The api is not guaranteed to return x-total-pages for larger query results
+		# https://gitlab.com/gitlab-org/gitlab-foss/-/merge_requests/23931
+		# https://gitlab.com/gitlab-org/gitlab/-/issues/436373
+		if (( total_pages == 0 )); then
+			total_pages=${next_page}
+			known_total_pages="?"
+		else
+			known_total_pages=${total_pages}
+		fi
 	done
 
 	jq --slurp add "${api_workdir}"/result.* > "${outfile}"
