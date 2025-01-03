@@ -292,7 +292,8 @@ get_upstream_version() {
 		opts+=(--keyfile "${keyfile}")
 	fi
 
-	if ! output=$(GIT_TERMINAL_PROMPT=0 nvchecker --file "${config}" --logger json "${opts[@]}" 2>&1 | \
+	if ! output=$(GIT_TERMINAL_PROMPT=0 GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null \
+			nvchecker --file "${config}" --logger json "${opts[@]}" 2>&1 | \
 			jq --raw-output 'select((.level != "debug") and (.event != "ignoring invalid version"))'); then
 		printf "failed to run nvchecker: %s" "${output}"
 		return 1
