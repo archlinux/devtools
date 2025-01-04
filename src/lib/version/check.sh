@@ -355,6 +355,12 @@ nvchecker_check_config() {
 		printf "non-pkgbase section not supported in %s: %s" "${config}" "${property}"
 		return 1
 	fi
+
+	# check if the config is using the 'cmd' source
+	if grep --extended-regexp --quiet '^\s*source\s*=\s*["'\'']cmd["'\''].*' "${config}"; then
+		printf "using the 'cmd' source in %s is disallowed" "${config}"
+		return 1
+	fi
 }
 
 nvchecker_check_error() {
