@@ -122,6 +122,14 @@ while (( $# )); do
 			pkgctl_license "$@"
 			exit 0
 			;;
+		offload)
+			_DEVTOOLS_COMMAND+=" $1"
+			shift
+			# shellcheck source=src/lib/build/offload.sh
+			source "${_DEVTOOLS_LIBRARY_DIR}"/lib/build/offload.sh
+			pkgctl_build_offload "$@"
+			exit 0
+			;;
 		release)
 			_DEVTOOLS_COMMAND+=" $1"
 			shift

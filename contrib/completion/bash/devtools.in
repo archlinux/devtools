@@ -127,22 +127,6 @@ _sogrep() { __devtools_complete _sogrep; }
 complete -F _sogrep sogrep
 
 
-_offload_build_args=(
-	-r --repo
-	-a --arch
-	-s --server
-	-h --help
-)
-_offload_build_args__repo_opts() { _devtools_completions_build_repo; }
-_offload_build_args_r_opts() { _offload_build_args__repo_opts; }
-_offload_build_args__arch_opts() { _devtools_completions_binary_arch; }
-_offload_build_args_a_opts() { _offload_build_args__arch_opts; }
-_offload_build_args__server_opts() { :; }
-_offload_build_args_s_opts() { _offload_build_args__server_opts; }
-_offload_build() { __devtools_complete _offload_build; }
-complete -F _offload_build offload-build
-
-
 _pkgctl_cmds=(
 	aur
 	auth
