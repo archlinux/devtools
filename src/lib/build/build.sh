@@ -8,6 +8,8 @@ DEVTOOLS_INCLUDE_BUILD_SH=1
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 # shellcheck source=src/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+# shellcheck source=src/lib/build/offload.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/build/offload.sh
 # shellcheck source=src/lib/db/update.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/db/update.sh
 # shellcheck source=src/lib/release.sh
@@ -463,7 +465,7 @@ pkgctl_build() {
 			fi
 
 			if (( OFFLOAD )); then
-				offload-build --repo "${pkgrepo}" -- "${BUILD_OPTIONS[@]}" -- "${MAKECHROOT_OPTIONS[@]}" -l "${WORKER}" -- "${MAKEPKG_OPTIONS[@]}"
+				pkgctl_build_offload_client "${pkgbase}" "${pkgrepo}" "${arch}" "${BUILD_OPTIONS[@]}" -- "${MAKECHROOT_OPTIONS[@]}" -l "${WORKER}" -- "${MAKEPKG_OPTIONS[@]}"
 			else
 				"${BUILDTOOL}" "${BUILD_OPTIONS[@]}" -- "${MAKECHROOT_OPTIONS[@]}" -l "${WORKER}" -- "${MAKEPKG_OPTIONS[@]}"
 			fi
@@ -480,6 +482,9 @@ pkgctl_build() {
 		# auto generate .SRCINFO
 		# shellcheck disable=SC2119
 		write_srcinfo_file
+
+		version=$(get_full_version)
+		msg "Finished building %s %s" "${pkgbase}" "${version}"
 
 		# test-install (some of) the produced packages
 		if [[ ${INSTALL_TO_HOST} == auto ]] || [[ ${INSTALL_TO_HOST} == all ]]; then

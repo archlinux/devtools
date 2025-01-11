@@ -58,9 +58,6 @@ makechrootpkg(1)
 makerepropkg(1)
 	Rebuild a package to see if it is reproducible
 
-offload-build(1)
-	Build a PKGBUILD on a remote server using makechrootpkg
-
 sogrep(1)
 	Find packages using a linked to a given shared library
 

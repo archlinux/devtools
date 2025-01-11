@@ -1,4 +1,4 @@
-#compdef archbuild arch-nspawn archrelease commitpkg pkgctl diffpkg finddeps makechrootpkg mkarchroot extrapkg=commitpkg corepkg=commitpkg testingpkg=commitpkg stagingpkg=commitpkg communitypkg=commitpkg community-testingpkg=commitpkg community-stagingpkg=commitpkg multilibpkg=commitpkg multilib-testingpkg=commitpkg extra-x86_64-build=archbuild testing-x86_64-build=archbuild staging-x86_64-build=archbuild multilib-build=archbuild multilib-testing-build=archbuild multilib-staging-build=archbuild kde-unstable-x86_64-build=archbuild gnome-unstable-x86_64-build=archbuild checkpkg sogrep offload-build makerepropkg
+#compdef archbuild arch-nspawn archrelease commitpkg pkgctl diffpkg finddeps makechrootpkg mkarchroot extrapkg=commitpkg corepkg=commitpkg testingpkg=commitpkg stagingpkg=commitpkg communitypkg=commitpkg community-testingpkg=commitpkg community-stagingpkg=commitpkg multilibpkg=commitpkg multilib-testingpkg=commitpkg extra-x86_64-build=archbuild testing-x86_64-build=archbuild staging-x86_64-build=archbuild multilib-build=archbuild multilib-testing-build=archbuild multilib-staging-build=archbuild kde-unstable-x86_64-build=archbuild gnome-unstable-x86_64-build=archbuild checkpkg sogrep makerepropkg
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -367,13 +367,6 @@ _sogrep_args=(
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'1:repo:(all $DEVTOOLS_VALID_REPOS[*])'
 	'2:libname'
-)
-
-_offload_build_args=(
-	'(-r --repo)'{-r,--repo}'[Build against a specific repository]:repo:($DEVTOOLS_VALID_BUILDREPOS[*])'
-	'(-a --arch)'{-a,--arch}'[Build against a specific architecture]:arch:(${DEVTOOLS_VALID_BINARY_ARCHES[*]})'
-	'(-s --server)'{-s,--server}'[Offload to a specific Build server]:server:'
-	'(-h --help)'{-h,--help}'[Display usage]'
 )
 
 _makerepropkg_args=(
