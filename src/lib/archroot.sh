@@ -4,7 +4,7 @@
 :
 
 # shellcheck disable=2034
-CHROOT_VERSION='v5'
+CHROOT_VERSION='v6'
 
 ##
 #  usage : check_root $keepenv
