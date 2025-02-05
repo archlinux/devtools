@@ -106,7 +106,7 @@ $(BUILDDIR)/doc/man/%: doc/man/%.asciidoc doc/man/include/footer.asciidoc
 
 conf:
 	@install -d $(BUILDDIR)/makepkg.conf.d
-	@cp -a $(MAKEPKG_CONFIGS) $(BUILDDIR)/makepkg.conf.d
+	@cp -ra $(MAKEPKG_CONFIGS) $(BUILDDIR)/makepkg.conf.d
 	@install -d $(BUILDDIR)/pacman.conf.d
 	@cp -a $(PACMAN_CONFIGS) $(BUILDDIR)/pacman.conf.d
 	@install -d $(BUILDDIR)/git.conf.d
@@ -124,7 +124,7 @@ install: all
 	install -dm0755 $(DESTDIR)$(DATADIR)/lib
 	cp -ra $(BUILDDIR)/lib/* $(DESTDIR)$(DATADIR)/lib
 	cp -a $(BUILDDIR)/git.conf.d -t $(DESTDIR)$(DATADIR)
-	for conf in $(notdir $(MAKEPKG_CONFIGS)); do install -Dm0644 $(BUILDDIR)/makepkg.conf.d/$$conf $(DESTDIR)$(DATADIR)/makepkg.conf.d/$${conf##*/}; done
+	cp -ra $(BUILDDIR)/makepkg.conf.d -t $(DESTDIR)$(DATADIR)
 	for conf in $(notdir $(PACMAN_CONFIGS)); do install -Dm0644 $(BUILDDIR)/pacman.conf.d/$$conf $(DESTDIR)$(DATADIR)/pacman.conf.d/$${conf##*/}; done
 	for a in ${SETARCH_ALIASES}; do install -m0644 $$a -t $(DESTDIR)$(DATADIR)/setarch-aliases.d; done
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)$(PREFIX)/bin/$$l; done
@@ -142,7 +142,7 @@ uninstall:
 	for f in $(notdir $(LIBRARY)); do rm -f $(DESTDIR)$(DATADIR)/lib/$$f; done
 	rm -rf $(DESTDIR)$(DATADIR)/lib
 	rm -rf $(DESTDIR)$(DATADIR)/git.conf.d
-	for conf in $(notdir $(MAKEPKG_CONFIGS)); do rm -f $(DESTDIR)$(DATADIR)/makepkg.conf.d/$${conf##*/}; done
+	rm -rf $(DESTDIR)$(DATADIR)/makepkg.conf.d
 	for conf in $(notdir $(PACMAN_CONFIGS)); do rm -f $(DESTDIR)$(DATADIR)/pacman.conf.d/$${conf##*/}; done
 	for f in $(notdir $(SETARCH_ALIASES)); do rm -f $(DESTDIR)$(DATADIR)/setarch-aliases.d/$$f; done
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
@@ -154,7 +154,6 @@ uninstall:
 	for manfile in $(notdir $(MANS)); do rm -f $(DESTDIR)$(MANDIR)/man$${manfile##*.}/$${manfile}; done;
 	rmdir --ignore-fail-on-non-empty \
 		$(DESTDIR)$(DATADIR)/setarch-aliases.d \
-		$(DESTDIR)$(DATADIR)/makepkg.conf.d \
 		$(DESTDIR)$(DATADIR)/pacman.conf.d \
 		$(DESTDIR)$(DATADIR)
 
