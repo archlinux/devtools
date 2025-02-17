@@ -54,7 +54,8 @@ export RSYNC_OPTS=(
   --human-readable
   --progress
   --partial
-  --partial-dir=.partial
+  # suffix the partial dir with the PID in order to avoid clashes
+  --partial-dir=.partial.$$
   --delay-updates
 )
 
