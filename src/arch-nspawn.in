@@ -112,7 +112,13 @@ copy_hostconf () {
 	[[ -n $host_cachemirrors ]] && printf 'CacheServer = %s\n' "${host_cachemirrors[@]}" >>"$working_dir/etc/pacman.d/mirrorlist"
 
 	[[ -n $pac_conf ]] && cp "$pac_conf" "$working_dir/etc/pacman.conf"
-	[[ -n $makepkg_conf ]] && cp "$makepkg_conf" "$working_dir/etc/makepkg.conf"
+	if [[ -n $makepkg_conf ]]; then
+		cp "$makepkg_conf" "$working_dir/etc/makepkg.conf"
+		if [[ -d "${makepkg_conf}.d" ]] && is_globfile "${makepkg_conf}.d"/*.conf; then
+			mkdir --parents "$working_dir/etc/makepkg.conf.d/"
+			cp "${makepkg_conf}.d/"*.conf "$working_dir/etc/makepkg.conf.d/"
+		fi
+	fi
 
 	local file
 	for file in "${files[@]}"; do

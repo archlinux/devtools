@@ -23,7 +23,8 @@ Options
 	Location of a pacman config file
 
 *-M* <file>::
-	Location of a makepkg config file
+	Location of a makepkg config file. Specific additions (e.g. build flags for
+	additional languages) can be placed in '<file>.d/*.conf'.
 
 *-c* <dir>::
 	Set pacman cache, if no directory is specified the passed pacman.conf's cachedir is used with a fallback to '/etc/pacman.conf'
