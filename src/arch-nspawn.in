@@ -116,6 +116,9 @@ copy_hostconf () {
 		cp "$makepkg_conf" "$working_dir/etc/makepkg.conf"
 		if [[ -d "${makepkg_conf}.d" ]] && is_globfile "${makepkg_conf}.d"/*.conf; then
 			mkdir --parents "$working_dir/etc/makepkg.conf.d/"
+			if is_globfile "$working_dir/etc/makepkg.conf.d"/*.conf; then
+				rm --force "$working_dir/etc/makepkg.conf.d"/*.conf
+			fi
 			cp "${makepkg_conf}.d/"*.conf "$working_dir/etc/makepkg.conf.d/"
 		fi
 	fi
