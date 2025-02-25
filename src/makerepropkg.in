@@ -208,7 +208,7 @@ for f in "${splitpkgs[@]}"; do
 done
 
 if (( ${#cache_dirs[@]} == 0 )); then
-	mapfile -t cache_dirs < <(pacman-conf CacheDir)
+    mapfile -t cache_dirs < <(pacman-conf CacheDir)
 fi
 
 ORIG_HOME=${HOME}
