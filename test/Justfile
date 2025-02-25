@@ -1,0 +1,4 @@
+install:
+  rm -rf src/devtools-local
+  makepkg -f
+  sudo pacman --noconfirm -U $(makepkg --packagelist | head -1)
