@@ -93,14 +93,36 @@ get_makepkg_conf() {
     local fname=${1}
     local arch="${2}"
     local makepkg_conf="${3}"
+
     if ! buildtool_file=$(get_pkgfile "${fname}"); then
-        error "failed to retrieve ${fname}"
+       error "failed to retrieve ${fname}"
+       return 1
+    fi
+    buildtool_file="${buildtool_file/file:\/\//}"
+    msg "using makepkg.conf from ${fname}"
+
+    # try to handle config of legacy devtools
+    if bsdtar --list --file "${buildtool_file}" "usr/share/devtools/makepkg-${arch}.conf" &>/dev/null; then
+        bsdtar --extract --to-stdout --fast-read --file "${buildtool_file}" "usr/share/devtools/makepkg-${arch}.conf" > "${makepkg_conf}"
+        return $?
+    fi
+
+    msg2 "extracting ${arch}.conf from devtools archive"
+    if ! bsdtar --extract --to-stdout --fast-read --file "${buildtool_file}" "usr/share/devtools/makepkg.conf.d/${arch}.conf" > "${makepkg_conf}"; then
+        error "failed to extract 'usr/share/devtools/makepkg.conf.d/${arch}.conf' from devtools archive"
         return 1
     fi
-    msg2 "using makepkg.conf from ${fname}"
-	if ! bsdtar xOqf "${buildtool_file/file:\/\//}" "usr/share/devtools/makepkg.conf.d/${arch}.conf" > "${makepkg_conf}"; then
-		bsdtar xOqf "${buildtool_file/file:\/\//}" "usr/share/devtools/makepkg-${arch}.conf" > "${makepkg_conf}"
-	fi
+
+    mkdir --parents "${makepkg_conf}.d"
+    if bsdtar --list --file "${buildtool_file}" "usr/share/devtools/makepkg.conf.d/conf.d" &>/dev/null; then
+        msg2 "extracting conf.d from devtools archive"
+        bsdtar --extract --file "${buildtool_file}" --cd "${makepkg_conf}.d" --strip-components 4 "usr/share/devtools/makepkg.conf.d/conf.d"
+    fi
+    if bsdtar --list --file "${buildtool_file}" "usr/share/devtools/makepkg.conf.d/${arch}.conf.d" &>/dev/null; then
+        msg2 "extracting ${arch}.conf.d from devtools archive"
+        bsdtar --extract --file "${buildtool_file}" --cd "${makepkg_conf}.d" --strip-components 4 "usr/share/devtools/makepkg.conf.d/${arch}.conf.d"
+    fi
+
     return 0
 }
 

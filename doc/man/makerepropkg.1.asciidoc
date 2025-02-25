@@ -49,7 +49,8 @@ Options
 	Set the pacman cache directory.
 
 *-M* <file>::
-	Location of a makepkg config file.
+	Location of a makepkg config file. Specific additions (e.g. build flags for
+	additional languages) can be placed in '<file>.d/*.conf'.
 
 *-l* <chroot>::
 	The directory name to use as the chroot namespace
