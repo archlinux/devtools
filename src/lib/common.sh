@@ -18,6 +18,9 @@ export LANG=C.UTF-8
 # Avoid systemd trying to color the terminal on systemd-nspawn
 export SYSTEMD_TINT_BACKGROUND=no
 
+# Avoid diffoscope looking at remote debug info through readelf
+unset DEBUGINFOD_URLS
+
 # Set buildtool properties
 export BUILDTOOL=devtools
 export BUILDTOOLVER=@buildtoolver@
