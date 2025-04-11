@@ -6,6 +6,8 @@
 DEVTOOLS_INCLUDE_UTIL_PKGBUILD_SH=1
 
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
+# shellcheck source=src/lib/common.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 # shellcheck source=src/lib/util/makepkg.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/makepkg.sh
 
@@ -20,6 +22,8 @@ set -eo pipefail
 pkgbuild_set_pkgver() {
 	local new_pkgver=$1
 	local pkgver=${pkgver}
+
+	pkgver="$(regex_escape "${pkgver}")"
 
 	if [[ $(type -t pkgver) == function ]]; then
 		# TODO: check if die or warn, if we provide _commit _gitcommit setter maybe?

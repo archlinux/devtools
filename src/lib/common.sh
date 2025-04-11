@@ -442,3 +442,10 @@ relative_date_unit() {
 	done
 	printf "1 second"
 }
+
+
+# escapes regex metacharacters in a given string
+regex_escape() {
+	# shellcheck disable=SC2001,SC2016
+	sed 's/[\^.\[$()|*+?{\\]/\\&/g' <<<"$1"
+}
