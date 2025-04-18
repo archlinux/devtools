@@ -42,10 +42,10 @@ pkgctl_build_usage() {
 
 		Build packages inside a clean chroot
 
-		When a new pkgver is set using the appropriate PKGBUILD options the
-		checksums are automatically updated.
+		Build packages in clean chroot environment, offering various options
+		and functionalities to customize the package building process.
 
-		TODO
+		By default, chroot environments are located in /var/lib/archbuild/.
 
 		BUILD OPTIONS
 		    --arch ARCH          Specify architectures to build for (disables auto-detection)
