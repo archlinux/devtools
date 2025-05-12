@@ -61,7 +61,7 @@ _pkgctl_build_args=(
 	'--update-checksums[Force computation and update of the checksums (disables auto-detection)]'
 	'(-e --edit)'{-e,--edit}'[Edit the PKGBUILD before building]'
 	'(-r --release)'{-r,--release}'[Automatically commit, tag and release after building]'
-	'(-m --message=)'{-m,--message=}"[Use the given <msg> as the commit message]:message:"
+	'(-m --message)'{-m,--message}"[Use the given <msg> as the commit message]:message:"
 	'(-u --db-update)'{-u,--db-update}'[Automatically update the pacman database as last action]'
 	'(-h --help)'{-h,--help}'[Display usage]'
 	'*:git_dir:_files -/'
@@ -201,7 +201,7 @@ _pkgctl_issue_view_args=(
 )
 
 _pkgctl_release_args=(
-	'(-m --message=)'{-m,--message=}"[Use the given <msg> as the commit message]:message:"
+	'(-m --message)'{-m,--message}"[Use the given <msg> as the commit message]:message:"
 	'(-r --repo)'{-r,--repo}"[Specify a target repository for new packages]:repo:($DEVTOOLS_VALID_REPOS[*])"
 	'(-s --staging)'{-s,--staging}'[Release to the staging counterpart of the auto-detected repo]'
 	'(-t --testing)'{-t,--testing}'[Release to the testing counterpart of the auto-detected repo]'
