@@ -120,6 +120,14 @@ if (( ${#validpgpkeys[@]} != 0 )); then
 	git add --force -- keys/pgp/*
 fi
 
+# Allow us to disable REUSE
+_RUN_REUSE=${_RUN_REUSE:-1}
+if ((_RUN_REUSE)); then
+	reuse download
+	reuse lint
+	git add --force -- LICENSES/*
+fi
+
 # find files which should be under source control
 needsversioning=(PKGBUILD)
 for s in "${source[@]}"; do
