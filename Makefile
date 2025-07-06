@@ -19,6 +19,7 @@ PACMAN_CONFIGS=$(wildcard config/pacman/*)
 GIT_CONFIGS = $(wildcard config/git/*)
 SETARCH_ALIASES = $(wildcard config/setarch-aliases.d/*)
 MANS = $(addprefix $(BUILDDIR)/,$(patsubst %.asciidoc,%,$(wildcard doc/man/*.asciidoc)))
+DATA_FILES = $(wildcard data/*)
 
 COMMITPKG_LINKS = \
 	core-testingpkg \
@@ -59,7 +60,7 @@ BATS_ARGS ?= --jobs $(JOBS) $(BATS_EXTRA_ARGS) --verbose-run
 COVERAGE_DIR ?= $(BUILDDIR)/coverage
 
 
-all: binprogs library conf completion man
+all: binprogs library conf completion man data
 binprogs: $(BINPROGS)
 library: $(LIBRARY)
 completion: $(COMPLETIONS)
@@ -112,6 +113,10 @@ conf:
 	@install -d $(BUILDDIR)/git.conf.d
 	@cp -a $(GIT_CONFIGS) $(BUILDDIR)/git.conf.d
 
+data:
+	@install -d $(BUILDDIR)/data
+	@cp -ra $(DATA_FILES) $(BUILDDIR)/data
+
 clean:
 	rm -rf $(BUILDDIR)
 
@@ -122,9 +127,11 @@ install: all
 	install -dm0755 $(DESTDIR)$(DATADIR)/pacman.conf.d
 	install -m0755 ${BINPROGS} $(DESTDIR)$(PREFIX)/bin
 	install -dm0755 $(DESTDIR)$(DATADIR)/lib
+	install -dm0755 $(DESTDIR)$(DATADIR)/data
 	cp -ra $(BUILDDIR)/lib/* $(DESTDIR)$(DATADIR)/lib
 	cp -a $(BUILDDIR)/git.conf.d -t $(DESTDIR)$(DATADIR)
 	cp -ra $(BUILDDIR)/makepkg.conf.d -t $(DESTDIR)$(DATADIR)
+	cp -ra $(BUILDDIR)/data -t $(DESTDIR)$(DATADIR)
 	for conf in $(notdir $(PACMAN_CONFIGS)); do install -Dm0644 $(BUILDDIR)/pacman.conf.d/$$conf $(DESTDIR)$(DATADIR)/pacman.conf.d/$${conf##*/}; done
 	for a in ${SETARCH_ALIASES}; do install -m0644 $$a -t $(DESTDIR)$(DATADIR)/setarch-aliases.d; done
 	for l in ${COMMITPKG_LINKS}; do ln -sf commitpkg $(DESTDIR)$(PREFIX)/bin/$$l; done
@@ -143,6 +150,7 @@ uninstall:
 	rm -rf $(DESTDIR)$(DATADIR)/lib
 	rm -rf $(DESTDIR)$(DATADIR)/git.conf.d
 	rm -rf $(DESTDIR)$(DATADIR)/makepkg.conf.d
+	rm -rf $(DESTDIR)$(DATADIR)/data
 	for conf in $(notdir $(PACMAN_CONFIGS)); do rm -f $(DESTDIR)$(DATADIR)/pacman.conf.d/$${conf##*/}; done
 	for f in $(notdir $(SETARCH_ALIASES)); do rm -f $(DESTDIR)$(DATADIR)/setarch-aliases.d/$$f; done
 	for l in ${COMMITPKG_LINKS}; do rm -f $(DESTDIR)$(PREFIX)/bin/$$l; done
@@ -186,5 +194,5 @@ coverage: binprogs library conf completion man
 check: $(BINPROGS_SRC) $(LIBRARY_SRC) contrib/completion/bash/devtools.in config/makepkg/x86_64.conf contrib/makepkg/PKGBUILD.proto
 	shellcheck $^
 
-.PHONY: all binprogs library completion conf man clean install uninstall tag dist upload test coverage check
+.PHONY: all binprogs library completion conf man data clean install uninstall tag dist upload test coverage check
 .DELETE_ON_ERROR:

@@ -1,0 +1,54 @@
+pkgctl-license-check(1)
+=======================
+
+Name
+----
+pkgctl-license-check - Checks package licensing compliance using REUSE
+
+Synopsis
+--------
+pkgctl license check [OPTIONS] [PKGBASE...]
+
+Description
+-----------
+
+Checks package licensing compliance using REUSE and also verifies whether
+a LICENSE file with the expected Arch Linux-specific 0BSD license text exists.
+
+Configuration
+-------------
+
+Uses reuse(1) and a `REUSE.toml` file located alongside the PKGBUILD(5). Refer
+to the configuration section in pkgctl-license(1).
+
+If no `PKGBASE` is specified, the command defaults to using the current working
+directory.
+
+Options
+-------
+
+*-h, --help*::
+	Show a help text
+
+Exit Codes
+----------
+
+On exit, return one of the following codes:
+
+*0*::
+	Normal exit condition, all checked packages are compliant
+
+*1*::
+	Unknown cause of failure
+
+*2*::
+	Normal exit condition, but some packages are not compliant
+
+See Also
+--------
+
+pkgctl-license(1)
+reuse(1)
+PKGBUILD(5)
+
+include::include/footer.asciidoc[]

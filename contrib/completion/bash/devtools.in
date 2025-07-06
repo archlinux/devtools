@@ -367,6 +367,25 @@ _pkgctl_repo_switch_opts() {
 	fi
 }
 
+_pkgctl_license_cmds=(
+	check
+	setup
+)
+
+_pkgctl_license_check_args=(
+	-h --help
+)
+
+_pkgctl_license_check_opts() { _filedir -d; }
+
+_pkgctl_license_setup_args=(
+	--no-check
+	-f --force
+	-h --help
+)
+
+_pkgctl_license_setup_opts() { _filedir -d; }
+
 _pkgctl_version_cmds=(
 	check
 	setup

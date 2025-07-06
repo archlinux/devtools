@@ -1,0 +1,54 @@
+pkgctl-license(1)
+=================
+
+Name
+----
+pkgctl-license - Check and manage package license compliance
+
+Synopsis
+--------
+pkgctl license [OPTIONS] [SUBCOMMAND]
+
+Description
+-----------
+
+Commands related to package licenses, including checks for compliance.
+
+Uses reuse(1) and a `REUSE.toml` file located alongside the PKGBUILD(5).
+
+Configuration
+-------------
+
+The `REUSE.toml` file must contain annotations for all regular files expected
+to be present in an Arch Linux package repository.
+
+Use pkgctl-license-setup(1) to automatically detect and setup a basic REUSE
+config file based on the files in the package repository.
+
+For detailed information on the various configuration options available for the
+`REUSE.toml` file, refer to the REUSE Specification (https://reuse.software/spec).
+
+Options
+-------
+
+*-h, --help*::
+	Show a help text
+
+Subcommands
+-----------
+
+pkgctl license check::
+	Checks package licensing compliance using REUSE
+
+pkgctl license setup::
+	Automatically detect and setup a basic REUSE config
+
+See Also
+--------
+
+pkgctl-license-check(1)
+pkgctl-license-setup(1)
+reuse(1)
+PKGBUILD(5)
+
+include::include/footer.asciidoc[]

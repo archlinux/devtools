@@ -1,0 +1,55 @@
+pkgctl-license-setup(1)
+=======================
+
+Name
+----
+pkgctl-license-setup - Automatically detect and setup a basic REUSE
+configuration
+
+Synopsis
+--------
+pkgctl license setup [OPTIONS] [PKGBASE...]
+
+Description
+-----------
+
+This subcommand automates the creation of the Arch Linux 0BSD package license
+file as well as a basic reuse(1) configuration by applying simple heuristics.
+It comes in especially handy when initially setting up licensing for a package
+without the need to manually write a `REUSE.toml` file.
+
+If any `.patch` files are detected and the PKGBUILD(5) has only a single entry
+in the `license=()` array, this subcommand assumes the patches are licensed
+under that license and generates annotations for them.
+
+In case there are no patches, no additional annotations are generated.
+
+Manual annotations are necessary in case the subcommand can't generate a
+configuration that accounts for all files. In this case, `reuse lint` will fail
+with a descriptive error of which files are missing an annotation.
+
+If no `PKGBASE` is specified, the command defaults to using the current working
+directory.
+
+Options
+-------
+
+*-f, --force*::
+	Overwrite existing reuse(1) configuration
+
+*--no-check*::
+	Do not run pkgctl-license-check(1) after setup
+
+*-h, --help*::
+	Show a help text
+
+
+See Also
+--------
+
+pkgctl-license(1)
+pkgctl-license-check(1)
+reuse(1)
+PKGBUILD(5)
+
+include::include/footer.asciidoc[]

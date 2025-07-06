@@ -94,6 +94,7 @@ Component: pkgctl db remove
 
 - bat (pretty printing)
 - nvchecker (version checking)
+- reuse (license compliance)
 
 ### Development Dependencies
 
