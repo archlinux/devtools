@@ -155,7 +155,7 @@ if (( ${#needsversioning[*]} )); then
 		if [[ ! -f "${file}" ]]; then
 			continue
 		fi
-		if ! git ls-files --error-unmatch "$file"; then
+		if ! git ls-files --error-unmatch "$file" >/dev/null; then
 			die "%s is not under version control" "$file"
 		fi
 	done
