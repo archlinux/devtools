@@ -80,7 +80,7 @@ check_root SOURCE_DATE_EPOCH,SRCDEST,SRCPKGDEST,PKGDEST,LOGDEST,MAKEFLAGS,PACKAG
 makechrootpkg_args+=("${@:$OPTIND}")
 
 # Automatically recreate the root chroot if a version mismatch is detected
-CURRENT_CHROOT_VERSION=$(cat "${chroots}/${repo}-${arch}/root/.arch-chroot")
+CURRENT_CHROOT_VERSION=$(cat "${chroots}/${repo}-${arch}/root/.arch-chroot" 2>/dev/null)
 if [[ -f "${chroots}/${repo}-${arch}/root/.arch-chroot" ]] && [[ "$CURRENT_CHROOT_VERSION" != "$CHROOT_VERSION" ]]; then
 	warning "Recreating chroot '%s' (%s) as it is not at version %s" "${chroots}/${repo}-${arch}/root" "$CURRENT_CHROOT_VERSION" "$CHROOT_VERSION"
 	clean_first=true
