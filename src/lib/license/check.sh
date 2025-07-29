@@ -94,19 +94,19 @@ pkgctl_license_check() {
 		pushd "${path}" >/dev/null
 
 		if [[ ! -f PKGBUILD ]]; then
-			msg_error "${BOLD}${pkgbase}:${ALL_OFF} no PKGBUILD found"
+			msg_error "${BOLD}${path}:${ALL_OFF} no PKGBUILD found"
 			return 1
 		fi
 
-		# reset common PKGBUILD variables
-		unset pkgbase
-
-		# shellcheck source=contrib/makepkg/PKGBUILD.proto
-		if ! . ./PKGBUILD; then
-			msg_error "${BOLD}${pkgbase}:${ALL_OFF} failed to source PKGBUILD"
+		if [[ ! -f .SRCINFO ]]; then
+			msg_error "${BOLD}${path}:${ALL_OFF} no .SRCINFO found"
 			return 1
 		fi
-		pkgbase=${pkgbase:-$pkgname}
+
+		if ! pkgbase=$(grep --max-count=1 --extended-regexp "pkgbase = (.+)" .SRCINFO | awk '{print $3}'); then
+			msg_error "${BOLD}${path}:${ALL_OFF} pkgbase not found in .SRCINFO"
+			return 1
+		fi
 
 		if [[ ! -e LICENSE ]]; then
 			msg_error "${BOLD}${pkgbase}:${ALL_OFF} is missing the LICENSE file"
