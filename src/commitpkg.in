@@ -123,10 +123,9 @@ fi
 needsversioning=()
 
 if [[ ! -e REUSE.toml || ! -e LICENSE || ! -d LICENSES ]]; then
-	# TODO: Make this a hard failure in the future after packagers have had
-	# some time to add licenses to all packages.
-	warning "package doesn't have proper licensing information, set it up using:"
+	error "package doesn't have proper licensing information, set it up using:"
 	msg2 'pkgctl license setup'
+	exit 1
 else
 	pkgctl license check
 	needsversioning+=(REUSE.toml LICENSE LICENSES/*)
