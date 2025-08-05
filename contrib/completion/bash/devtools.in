@@ -150,6 +150,7 @@ _pkgctl_cmds=(
 	db
 	diff
 	issue
+	license
 	release
 	repo
 	search
