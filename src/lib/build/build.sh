@@ -16,6 +16,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/db/update.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/release.sh
 # shellcheck source=src/lib/util/git.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
+# shellcheck source=src/lib/util/machine.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/machine.sh
 # shellcheck source=src/lib/util/makepkg.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/makepkg.sh
 # shellcheck source=src/lib/util/srcinfo.sh
@@ -315,7 +317,7 @@ pkgctl_build() {
 
 	# Update pacman cache for auto-detection
 	if [[ -z ${REPO} ]]; then
-		update_pacman_repo_cache multilib
+		update_pacman_repo_cache stable
 	# Check valid repos if not resolved dynamically
 	elif ! in_array "${REPO}" "${DEVTOOLS_VALID_REPOS[@]}"; then
 		die "Invalid repository target: %s" "${REPO}"
@@ -377,7 +379,11 @@ pkgctl_build() {
 			BUILD_ARCH=("")
 		elif (( ${#BUILD_ARCH[@]} == 0 )); then
 			if in_array any "${arch[@]}"; then
-				BUILD_ARCH=("${DEVTOOLS_VALID_ARCHES[0]}")
+				if in_array "$(machine_get_hardware_name)" "${DEVTOOLS_VALID_BINARY_ARCHES[@]}"; then
+					BUILD_ARCH=("$(machine_get_hardware_name)")
+				else
+					BUILD_ARCH=("${DEVTOOLS_VALID_BINARY_ARCHES[0]}")
+				fi
 			else
 				for _arch in "${arch[@]}"; do
 					if in_array "${_arch}" "${DEVTOOLS_VALID_ARCHES[@]}"; then
