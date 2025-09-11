@@ -51,7 +51,6 @@ pkgctl_db_remove() {
 	local partial=0
 	local confirm=1
 	local dbscripts_options=()
-	local lookup_repo=multilib
 	local pkgname
 
 	# option checking
@@ -106,13 +105,13 @@ pkgctl_db_remove() {
 				update_pacman_repo_cache unstable
 				;;
 			*-staging)
-				update_pacman_repo_cache multilib-staging
+				update_pacman_repo_cache staging
 				;;
 			*-testing)
-				update_pacman_repo_cache multilib-testing
+				update_pacman_repo_cache testing
 				;;
 			*)
-				update_pacman_repo_cache multilib
+				update_pacman_repo_cache stable
 				;;
 		esac
 

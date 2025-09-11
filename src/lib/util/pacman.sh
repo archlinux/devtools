@@ -8,6 +8,8 @@ DEVTOOLS_INCLUDE_UTIL_PACMAN_SH=1
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 # shellcheck source=src/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+# shellcheck source=src/lib/util/machine.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/machine.sh
 
 set -e
 
@@ -18,7 +20,8 @@ readonly _DEVTOOLS_MAKEPKG_CONF_DIR=${_DEVTOOLS_LIBRARY_DIR}/makepkg.conf.d
 
 
 update_pacman_repo_cache() {
-	local repo=${1:-multilib}
+	local repo=${1:-stable}
+	repo=$(pacman_resolve_virtual_repo_name "${repo}")
 
 	mkdir -p "${_DEVTOOLS_PACMAN_CACHE_DIR}"
 	msg "Updating pacman database cache"
@@ -32,7 +35,8 @@ update_pacman_repo_cache() {
 
 get_pacman_repo_from_pkgbuild() {
 	local path=${1:-PKGBUILD}
-	local repo=${2:-multilib}
+	local repo=${2:-stable}
+	repo=$(pacman_resolve_virtual_repo_name "${repo}")
 	local -a pkgnames
 
 	# shellcheck source=contrib/makepkg/PKGBUILD.proto
@@ -72,6 +76,7 @@ get_pkgnames_from_repo_pkgbase() {
 
 	# update the pacman repo cache if it doesn't exist yet
 	if [[ ! -d "${_DEVTOOLS_PACMAN_CACHE_DIR}" ]]; then
+		# TODO: universe includes multilib, switch for architecture
 		update_pacman_repo_cache universe
 	fi
 
@@ -90,4 +95,24 @@ get_pkgnames_from_repo_pkgbase() {
 
 	printf "%s\n" "${pkgnames[@]}"
 	return 0
+}
+
+pacman_resolve_virtual_repo_name() {
+	local repo=$1
+
+	local repo_class=extra
+	if machine_has_multilib; then
+		repo_class=multilib
+	fi
+
+	case "${repo}" in
+		stable)
+			repo=${repo_class}
+			;;
+		testing|staging)
+			repo="${repo_class}-${repo}"
+			;;
+	esac
+
+	printf "%s" "${repo}"
 }
