@@ -172,13 +172,13 @@ prepare_chroot() {
 	# an x86_64 host).
 	sed -e '/^builduser:/d' -i "$copydir"/etc/{passwd,shadow,group}
 	printf >>"$copydir/etc/group"  'builduser:x:%d:\n' "$builduser_gid"
-	printf >>"$copydir/etc/passwd" 'builduser:x:%d:%d:builduser:/build:/bin/bash\n' "$builduser_uid" "$builduser_gid"
+	printf >>"$copydir/etc/passwd" 'builduser:x:%d:%d:builduser:/buildhome:/bin/bash\n' "$builduser_uid" "$builduser_gid"
 	printf >>"$copydir/etc/shadow" 'builduser:!!:%d::::::\n' "$(( $(date -u +%s) / 86400 ))"
 
 	$install -d "$copydir"/{build,startdir,{pkg,srcpkg,src,log}dest}
 
 	sed -e '/^MAKEFLAGS=/d' -e '/^PACKAGER=/d' -i "$copydir/etc/makepkg.conf"
-	for x in BUILDDIR=/build PKGDEST=/pkgdest SRCPKGDEST=/srcpkgdest SRCDEST=/srcdest LOGDEST=/logdest \
+	for x in BUILDDIR=/buildhome PKGDEST=/pkgdest SRCPKGDEST=/srcpkgdest SRCDEST=/srcdest LOGDEST=/logdest \
 		"MAKEFLAGS='${MAKEFLAGS:-}'" "PACKAGER='${PACKAGER:-}'"
 	do
 		grep -q "^$x" "$copydir/etc/makepkg.conf" && continue
@@ -416,7 +416,7 @@ if [[ $inspect == always ]] || ( [[ $inspect == failure ]] && (( ret != 0 )) ); 
 	arch-nspawn "$copydir" \
 		"${nspawn_build_args[@]}" \
 		--user=builduser \
-		--chdir=/build
+		--chdir=/buildhome
 fi
 
 (( temp_chroot )) && delete_chroot "$copydir" "$copy"
@@ -425,7 +425,7 @@ if (( ret != 0 )); then
 	if (( temp_chroot )); then
 		die "Build failed"
 	else
-		die "Build failed, check %s/build" "$copydir"
+		die "Build failed, check %s/buildhome" "$copydir"
 	fi
 else
 	if (( run_checkpkg )); then
