@@ -49,6 +49,9 @@ pkgctl diff::
 pkgctl issue::
 	Work with GitLab packaging issues
 
+pkgctl license::
+	Check and manage package licenses
+
 pkgctl release::
 	Release step to commit, tag and upload build artifacts
 
