@@ -3,7 +3,7 @@ pkgctl-auth(1)
 
 Name
 ----
-pkgctl-auth - Authenticate with serivces like GitLab.
+pkgctl-auth - Authenticate with services like GitLab.
 
 Synopsis
 --------
