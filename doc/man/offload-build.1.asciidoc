@@ -14,7 +14,7 @@ Description
 
 Build a PKGBUILD on a remote server using makechrootpkg. Requires a remote user
 that can run archbuild in a non-interactive manner, e.g. must be able to
-elevate permissions using passwordless sudo.
+elevate permissions using passwordless run0.
 
 Options
 -------

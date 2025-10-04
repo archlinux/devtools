@@ -185,10 +185,18 @@ prepare_chroot() {
 		echo "$x" >>"$copydir/etc/makepkg.conf"
 	done
 
-	cat > "$copydir/etc/sudoers.d/builduser-pacman" <<EOF
-builduser ALL = NOPASSWD: /usr/bin/pacman
+	# TODO(gromit): check if this rule is sane
+	# TODO(gromit): this will require a full container
+	cat > "$copydir/etc/polkit-1/rules.d/10-systemd-nopasswd.rules" <<EOF
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.systemd1.manage-units") {
+        if (subject.isInGroup("wheel")) {
+            return polkit.Result.YES;
+        }
+    }
+});
 EOF
-	chmod 440 "$copydir/etc/sudoers.d/builduser-pacman"
+	chmod 440 "$copydir/etc/polkit-1/rules.d/10-systemd-nopasswd.rules"
 
 	cat > "$copydir/etc/gitconfig" <<EOF
 [safe]
@@ -222,17 +230,14 @@ _chrootbuild() {
 	# shellcheck source=/dev/null
 	. /etc/profile
 
-	# Beware, there are some stupid arbitrary rules on how you can
-	# use "$" in arguments to commands with "sudo -i".  ${foo} or
-	# ${1} is OK, but $foo or $1 isn't.
-	# https://bugzilla.sudo.ws/show_bug.cgi?id=765
-	sudo --preserve-env=SOURCE_DATE_EPOCH \
-		--preserve-env=BUILDTOOL \
-		--preserve-env=BUILDTOOLVER \
-		-iu builduser bash -c 'cd /startdir; makepkg "$@"' -bash "$@"
+	run0 --setenv=SOURCE_DATE_EPOCH \
+		 --setenv=BUILDTOOL \
+		 --setenv=BUILDTOOLVER \
+		 --via-shell --chdir='~' \
+		 --user=builduser -- bash -c 'cd /startdir; makepkg "$@"' -bash "$@"
 	ret=$?
 	case $ret in
-		0|14)
+		0)
 			return 0;;
 		*)
 			return $ret;;
@@ -243,7 +248,7 @@ _chrootnamcap() {
 	pacman -S --needed --noconfirm namcap
 	for pkgfile in /startdir/PKGBUILD /pkgdest/*; do
 		echo "Checking ${pkgfile##*/}"
-		sudo -u builduser namcap "$pkgfile" 2>&1 | tee "/logdest/${pkgfile##*/}-namcap.log"
+		run0 --user=builduser -- namcap "$pkgfile" 2>&1 | tee "/logdest/${pkgfile##*/}-namcap.log"
 	done
 }
 
@@ -252,8 +257,12 @@ download_sources() {
 	chown "$makepkg_user:" "$WORKDIR"
 
 	# Ensure sources are downloaded
-	sudo -u "$makepkg_user" --preserve-env=GNUPGHOME,SSH_AUTH_SOCK \
-		env SRCDEST="$SRCDEST" BUILDDIR="$WORKDIR" \
+	run0 --user="$makepkg_user" \
+		--setenv=GNUPGHOME \
+		--setenv=SSH_AUTH_SOCK \
+		--setenv=SRCDEST="$SRCDEST" \
+		--setenv=BUILDDIR="$WORKDIR" \
+		--chdir=. -- \
 		makepkg --config="$copydir/etc/makepkg.conf" --verifysource -o "${verifysource_args[@]}" ||
 		die "Could not download sources."
 }
@@ -400,7 +409,7 @@ if arch-nspawn "$copydir" \
 	"${nspawn_build_args[@]}" \
 	/chrootbuild "${makepkg_args[@]}"
 then
-	mapfile -t pkgnames < <(sudo -u "$makepkg_user" bash -c 'source PKGBUILD; printf "%s\n" "${pkgname[@]}"')
+	mapfile -t pkgnames < <(run0 --user="$makepkg_user" -- bash -c 'source PKGBUILD; printf "%s\n" "${pkgname[@]}"')
 	move_products
 else
 	(( ret += 1 ))
@@ -453,7 +462,7 @@ else
 		done
 
 		msg2 "Checking packages"
-		sudo -u "$makepkg_user" checkpkg --rmdir --warn --makepkg-config "$copydir/etc/makepkg.conf" "${remotepkgs[@]/#file:\/\//}"
+		run0 --user="$makepkg_user" -- checkpkg --rmdir --warn --makepkg-config "$copydir/etc/makepkg.conf" "${remotepkgs[@]/#file:\/\//}"
 	fi
 	true
 fi

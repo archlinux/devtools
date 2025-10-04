@@ -15,7 +15,11 @@ check_root() {
 	local orig_argv=("$@")
 
 	(( EUID == 0 )) && return
-	if type -P sudo >/dev/null; then
+	if type -P run0 >/dev/null; then
+		keepenv=",$keepenv"
+		command="run0 ${keepenv//,/ --setenv=}"
+		exec ${command} -- "${orig_argv[@]}"
+	elif type -P sudo >/dev/null; then
 		exec sudo --preserve-env="${keepenv}" -- "${orig_argv[@]}"
 	else
 		exec su root -c "$(printf ' %q' "${orig_argv[@]}")"

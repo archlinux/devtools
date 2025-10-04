@@ -192,7 +192,7 @@ for p in "$@"; do
         pkgfile=${pkgfile_remote#file://}
         if [[ ! -f ${pkgfile} ]]; then
             msg "Downloading package '%s' into pacman's cache" "${pkgfile}"
-            sudo pacman -Swdd --noconfirm --logfile /dev/null "${p}" || exit 1
+            run0 -- pacman -Swdd --noconfirm --logfile /dev/null "${p}" || exit 1
             pkgfile_remote=$(pacman -Sddp "${p}" 2>/dev/null)
             pkgfile="${pkgfile_remote#file://}"
         fi
