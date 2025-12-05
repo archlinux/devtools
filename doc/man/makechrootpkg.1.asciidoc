@@ -24,7 +24,7 @@ The chroot "root" directory must be created via the following
 command:
 	mkarchroot <chrootdir>/root base-devel
 
-This script reads {SRC,SRCPKG,PKG,LOG}DEST, MAKEFLAGS and PACKAGER
+This script reads {SRC,SRCPKG,PKG,LOG}DEST, NPROC, MAKEFLAGS and PACKAGER
 from makepkg.conf(5), if those variables are not part of the
 environment.
 

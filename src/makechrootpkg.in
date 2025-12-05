@@ -59,9 +59,9 @@ usage() {
 	echo 'command:'
 	echo '    mkarchroot <chrootdir>/root base-devel'
 	echo ''
-	echo 'This script reads {SRC,SRCPKG,PKG,LOG}DEST, MAKEFLAGS and PACKAGER'
-	echo 'from makepkg.conf(5), if those variables are not part of the'
-	echo 'environment.'
+	echo 'This script reads {SRC,SRCPKG,PKG,LOG}DEST, NPROC, MAKEFLAGS and'
+	echo 'PACKAGER from makepkg.conf(5), if those variables are not part of'
+	echo 'the environment.'
 	echo ''
 	echo "Default makepkg args: ${default_makepkg_args[*]}"
 	echo ''
@@ -177,9 +177,10 @@ prepare_chroot() {
 
 	$install -d "$copydir"/{build,startdir,{pkg,srcpkg,src,log}dest}
 
-	sed -e '/^MAKEFLAGS=/d' -e '/^PACKAGER=/d' -i "$copydir/etc/makepkg.conf"
+	sed -e '/^NPROC=/d' -e '/^MAKEFLAGS=/d' -e '/^PACKAGER=/d' -i "$copydir/etc/makepkg.conf"
+	local nproc="${NPROC:-}" makeflags="${MAKEFLAGS:-}" packager="${PACKAGER:-}"
 	for x in BUILDDIR=/build PKGDEST=/pkgdest SRCPKGDEST=/srcpkgdest SRCDEST=/srcdest LOGDEST=/logdest \
-		"MAKEFLAGS='${MAKEFLAGS:-}'" "PACKAGER='${PACKAGER:-}'"
+		"NPROC=${nproc@Q}" "MAKEFLAGS=${makeflags@Q}" "PACKAGER=${packager@Q}"
 	do
 		grep -q "^$x" "$copydir/etc/makepkg.conf" && continue
 		echo "$x" >>"$copydir/etc/makepkg.conf"
@@ -316,7 +317,7 @@ done
 [[ -n $makepkg_user && -z $(id -u "$makepkg_user") ]] && die 'Invalid makepkg user.'
 makepkg_user=${makepkg_user:-${SUDO_USER:-$USER}}
 
-check_root SOURCE_DATE_EPOCH,BUILDTOOL,BUILDTOOLVER,GNUPGHOME,SRCDEST,SRCPKGDEST,PKGDEST,LOGDEST,MAKEFLAGS,PACKAGER "${BASH_SOURCE[0]}" "$@"
+check_root SOURCE_DATE_EPOCH,BUILDTOOL,BUILDTOOLVER,GNUPGHOME,SRCDEST,SRCPKGDEST,PKGDEST,LOGDEST,NPROC,MAKEFLAGS,PACKAGER "${BASH_SOURCE[0]}" "$@"
 
 # Canonicalize chrootdir, getting rid of trailing /
 chrootdir=$(readlink -e "$passeddir")
