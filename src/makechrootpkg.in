@@ -191,7 +191,7 @@ builduser ALL = NOPASSWD: /usr/bin/pacman
 EOF
 	chmod 440 "$copydir/etc/sudoers.d/builduser-pacman"
 
-	cat > "$copydir/etc/gitconfig" <<EOF
+	tee >"$copydir/etc/gitconfig" "$copydir/etc/makepkg.d/gitconfig" <<EOF
 [safe]
 	directory = *
 EOF
