@@ -145,6 +145,7 @@ pkgctl_build_offload_client() {
 
 	# Move all log files to LOGDEST
 	if is_globfile "${TEMPDIR}"/*.log; then
+		mkdir --parents "${LOGDEST:-${working_dir}}/"
 		mv "${TEMPDIR}"/*.log "${LOGDEST:-${working_dir}}/"
 	fi
 
@@ -156,7 +157,11 @@ pkgctl_build_offload_client() {
 
 	# Building a package may change the PKGBUILD during update_pkgver
 	mv "${TEMPDIR}/PKGBUILD" "${working_dir}/"
+
+	# Download package files
+	mkdir --parents "${PKGDEST:-${working_dir}}/"
 	mv "${TEMPDIR}"/*.pkg.tar* "${PKGDEST:-${working_dir}}/"
+
 	return 0
 }
 
