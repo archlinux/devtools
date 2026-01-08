@@ -168,7 +168,7 @@ pkgctl_build() {
 					BUILD_ARCH=("${DEVTOOLS_VALID_ARCHES[0]}")
 				elif ! in_array "${2}" "${BUILD_ARCH[@]}"; then
 					if ! in_array "${2}" "${DEVTOOLS_VALID_ARCHES[@]}"; then
-						die 'invalid architecture: %s' "${2}"
+						warning 'invalid architecture: %s' "${2}"
 					fi
 					BUILD_ARCH+=("${2}")
 				fi
