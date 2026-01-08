@@ -12,6 +12,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/db/update.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/pacman.sh
 # shellcheck source=src/lib/valid-repos.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
+# shellcheck source=src/lib/api/gitlab.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/api/gitlab.sh
 
 source /usr/share/makepkg/util/util.sh
 
@@ -28,6 +30,10 @@ pkgctl_release_usage() {
 		Modified version controlled files will first be staged for commit,
 		afterwards a Git tag matching the pkgver will be created and finally
 		all build artifacts will be uploaded.
+
+		If the pkgver matches (or supersedes) an opened 'out of date' issue
+		created by bumpbuddy, this issue will automatically be closed from
+		the commit message.
 
 		By default the target pacman repository will be auto-detected by querying
 		the repo it is currently released in. When initially adding a new package
@@ -67,13 +73,14 @@ pkgctl_release() {
 	fi
 
 	local MESSAGE=""
+	local MESSAGE_SUFFIX=""
 	local PKGBASES=()
 	local REPO=""
 	local TESTING=0
 	local STAGING=0
 	local DB_UPDATE=0
 
-	local path pkgbase pkgnames repo repos
+	local path pkgbase pkgnames repo repos ood_issue_id upstream_version
 
 	# option checking
 	while (( $# )); do
@@ -162,6 +169,18 @@ pkgctl_release() {
 			warning "Nvchecker integration is not set, run 'pkgctl version setup --help' to see how to automate the creation of the '.nvchecker.toml' configuration file"
 		fi
 
+		# close out-of-date issue from commit msg if it exists and matches $pkgver
+		local pkgbase=$(grep --max-count=1 --extended-regexp "pkgbase = (.+)" .SRCINFO | awk '{print $3}')
+		local pkgver=$(grep --max-count=1 --extended-regexp "pkgver = (.+)" .SRCINFO | awk '{print $3}')
+		project_path=$(gitlab_project_name_to_path "${pkgbase}")
+		IFS='|' read -r ood_issue_id upstream_version < <(curl --silent --fail --retry 3 --retry-delay 3 --compressed https://bumpbuddy.archlinux.org/data.json | jq --raw-output --arg pkgbase "${pkgbase}" '.[$pkgbase] | "\(.issue // "")|\(.upstream_version // "")"') || warning 'Failed to query bumpbuddy data'
+
+		if [[ -n "${ood_issue_id}" ]] && [[ -n "${upstream_version}" ]]; then
+			if (( $(vercmp "${pkgver}" "${upstream_version}") >= 0 )); then
+				MESSAGE_SUFFIX="Closes archlinux/packaging/packages/${project_path}#${ood_issue_id}"
+			fi
+		fi
+
 		if (( TESTING )); then
 			repo="${repo}-testing"
 		elif (( STAGING )); then
@@ -171,9 +190,9 @@ pkgctl_release() {
 		fi
 
 		msg "Releasing ${pkgbase} to ${repo}"
-		commitpkg "${repo}" "${MESSAGE}"
+		commitpkg "${repo}" "${MESSAGE}" "${MESSAGE_SUFFIX}"
 
-		unset repo
+		unset repo MESSAGE_SUFFIX
 		popd >/dev/null
 	done
 

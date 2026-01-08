@@ -16,6 +16,10 @@ Modified version controlled files will first be staged for commit,
 afterwards a Git tag matching the pkgver will be created and finally
 all build artifacts will be uploaded.
 
+If the pkgver matches (or supersedes) an opened 'out of date' issue
+created by bumpbuddy, this issue will automatically be closed from
+the commit message.
+
 By default the target pacman repository will be auto-detected by querying
 the repo it is currently released in. When initially adding a new package
 to the repositories, the target repo must be specified manually.

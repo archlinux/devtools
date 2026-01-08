@@ -216,12 +216,15 @@ if [[ -n $(git status --porcelain --untracked-files=no) ]]; then
 	msgtemplate="upgpkg: $(get_full_version)"
 	if [[ -n $1 ]]; then
 		stat_busy 'Committing changes'
-		git commit -q -m "${msgtemplate}: ${1}" || die
+		git commit -q -m "${msgtemplate}: ${1}" -m "${2}" || die
 		stat_done
 	else
 		[[ -z ${WORKDIR:-} ]] && setup_workdir
 		msgfile=$(mktemp --tmpdir="${WORKDIR}" commitpkg.XXXXXXXXXX)
 		echo "$msgtemplate" > "$msgfile"
+		if [[ -n $2 ]]; then
+			echo -e "\n$2" >> "$msgfile"
+		fi
 		if [[ -n $GIT_EDITOR ]]; then
 			$GIT_EDITOR "$msgfile" || die
 		elif giteditor=$(git config --get core.editor); then
