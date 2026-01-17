@@ -17,8 +17,10 @@ set -e
 makepkg_source_package() {
 	if (( EUID != 0 )); then
 		[[ -z ${WORKDIR:-} ]] && setup_workdir
-		export WORKDIR DEVTOOLS_INCLUDE_COMMON_SH
-		fakeroot -- bash -$- -c "source '${BASH_SOURCE[0]}' && ${FUNCNAME[0]}"
+		(
+			export WORKDIR DEVTOOLS_INCLUDE_COMMON_SH
+			fakeroot -- bash -$- -c "source '${BASH_SOURCE[0]}' && ${FUNCNAME[0]}"
+		)
 		return
 	fi
 	(
