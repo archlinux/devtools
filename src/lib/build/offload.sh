@@ -11,7 +11,6 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 # shellcheck source=src/lib/util/makepkg.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/makepkg.sh
 
-source /usr/share/makepkg/util/config.sh
 source /usr/share/makepkg/util/message.sh
 
 set -eo pipefail
@@ -88,8 +87,7 @@ pkgctl_build_offload_client() {
 	TEMPDIR=$(mktemp --tmpdir="${WORKDIR}" --directory "offload.${pkgbase}.${pkgrepo}-${pkgarch}XXXXXXXXXX")
 
 	# Load makepkg.conf variables to be available
-	# shellcheck disable=SC2119
-	load_makepkg_config
+	makepkg_load_config
 
 	# Use a source-only tarball as an intermediate to transfer files. This
 	# guarantees the checksums are okay, and guarantees that all needed files are

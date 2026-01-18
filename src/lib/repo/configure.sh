@@ -12,8 +12,9 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/api/gitlab.sh
 # shellcheck source=src/lib/util/git.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
+# shellcheck source=src/lib/util/makepkg.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/makepkg.sh
 
-source /usr/share/makepkg/util/config.sh
 source /usr/share/makepkg/util/message.sh
 
 set -e
@@ -160,8 +161,7 @@ pkgctl_repo_configure() {
 
 	# Load makepkg.conf variables to be available for packager identity
 	msg "Collecting packager identity from makepkg.conf"
-	# shellcheck disable=2119
-	load_makepkg_config
+	makepkg_load_config
 	if [[ -n ${PACKAGER} ]]; then
 		if ! packager_name=$(get_packager_name "${PACKAGER}") || \
 		   ! packager_email=$(get_packager_email "${PACKAGER}"); then

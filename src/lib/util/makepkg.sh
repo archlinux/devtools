@@ -57,3 +57,15 @@ makepkg_generate_integrity() {
 		source "$(command -v makepkg)"
 	)
 }
+
+# Load makepkg.conf once to make variables available
+_makepkg_config_loaded=false
+makepkg_load_config() {
+	if $_makepkg_config_loaded; then
+		return
+	fi
+	_makepkg_config_loaded=true
+	source /usr/share/makepkg/util/config.sh
+	# shellcheck disable=2119
+	load_makepkg_config
+}

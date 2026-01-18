@@ -16,6 +16,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/db/update.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/release.sh
 # shellcheck source=src/lib/util/git.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/git.sh
+# shellcheck source=src/lib/util/makepkg.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/makepkg.sh
 # shellcheck source=src/lib/util/srcinfo.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/srcinfo.sh
 # shellcheck source=src/lib/util/pacman.sh
@@ -31,7 +33,6 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-tags.sh
 # shellcheck source=src/lib/valid-inspect.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
 
-source /usr/share/makepkg/util/config.sh
 source /usr/share/makepkg/util/message.sh
 
 set -eo pipefail
@@ -488,8 +489,7 @@ pkgctl_build() {
 
 		# test-install (some of) the produced packages
 		if [[ ${INSTALL_TO_HOST} == auto ]] || [[ ${INSTALL_TO_HOST} == all ]]; then
-			# shellcheck disable=2119
-			load_makepkg_config
+			makepkg_load_config
 
 			# this is inspired by print_all_package_names from libmakepkg
 			local version pkg_architecture pkg pkgfile
