@@ -6,6 +6,7 @@
 # shellcheck disable=2034
 DEVTOOLS_VALID_BINARY_ARCHES=(
 	x86_64
+	aarch64
 )
 
 # shellcheck disable=2034
