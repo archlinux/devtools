@@ -7,6 +7,8 @@ _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 # shellcheck source=src/lib/util/srcinfo.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/srcinfo.sh
+# shellcheck source=src/lib/util/makepkg.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/makepkg.sh
 
 source /usr/share/makepkg/util/util.sh
 
@@ -40,22 +42,8 @@ check_pkgbuild_validity() {
 	fi
 }
 
-# Source makepkg.conf; fail if it is not found
-if [[ -r '/etc/makepkg.conf' ]]; then
-	# shellcheck source=config/makepkg/x86_64.conf
-	source '/etc/makepkg.conf'
-else
-	die '/etc/makepkg.conf not found!'
-fi
-
 # Source user-specific makepkg.conf overrides
-if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf" ]]; then
-	# shellcheck source=/dev/null
-	source "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/makepkg.conf"
-elif [[ -r "$HOME/.makepkg.conf" ]]; then
-	# shellcheck source=/dev/null
-	source "$HOME/.makepkg.conf"
-fi
+makepkg_load_config
 
 cmd=${0##*/}
 

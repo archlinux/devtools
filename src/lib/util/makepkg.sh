@@ -8,6 +8,8 @@ DEVTOOLS_INCLUDE_UTIL_MAKEPKG_SH=1
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 # shellcheck source=src/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+# shellcheck source=src/lib/cache.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/cache.sh
 # shellcheck source=src/lib/util/srcinfo.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/srcinfo.sh
 
@@ -68,4 +70,20 @@ makepkg_load_config() {
 	source /usr/share/makepkg/util/config.sh
 	# shellcheck disable=2119
 	load_makepkg_config
+
+	# Declare sane XDG default locations.
+	# This is important to avoid polluting package repositories
+	# that lead to flaky behavior like reuse failures.
+	if [[ -z $PKGDEST ]]; then
+		PKGDEST=$(get_cache_directory pkg)
+	fi
+	if [[ -z $SRCDEST ]]; then
+		SRCDEST=$(get_cache_directory src)
+	fi
+	if [[ -z $SRCPKGDEST ]]; then
+		SRCPKGDEST=$(get_cache_directory srcpkg)
+	fi
+	if [[ -z $LOGDEST ]]; then
+		LOGDEST=$(get_cache_directory log)
+	fi
 }

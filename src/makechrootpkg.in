@@ -10,6 +10,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/archroot.sh
 # shellcheck source=src/lib/valid-inspect.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-inspect.sh
+# shellcheck source=src/lib/util/makepkg.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/makepkg.sh
 
 
 source /usr/share/makepkg/util/config.sh
@@ -352,7 +354,7 @@ umask 0022
 
 ORIG_HOME=$HOME
 IFS=: read -r _ _ _ _ _ HOME _ < <(getent passwd "${SUDO_USER:-$USER}")
-load_makepkg_config
+makepkg_load_config
 HOME=$ORIG_HOME
 
 # Use PKGBUILD directory if these don't exist

@@ -20,3 +20,11 @@ get_cache_file() {
 
 	printf '%s' "${path}"
 }
+
+get_cache_directory() {
+	local dirname=$1
+	local path="${XDG_DEVTOOLS_CACHE_DIR}/${dirname}"
+
+	mkdir --parents -- "${path}"
+	printf '%s' "${path}"
+}
