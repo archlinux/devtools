@@ -354,6 +354,7 @@ umask 0022
 
 ORIG_HOME=$HOME
 IFS=: read -r _ _ _ _ _ HOME _ < <(getent passwd "${SUDO_USER:-$USER}")
+echo HOME IS $HOME orig is $ORIG_HOME
 makepkg_load_config
 HOME=$ORIG_HOME
 

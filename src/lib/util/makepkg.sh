@@ -75,15 +75,18 @@ makepkg_load_config() {
 	# This is important to avoid polluting package repositories
 	# that lead to flaky behavior like reuse failures.
 	if [[ -z $PKGDEST ]]; then
-		PKGDEST=$(get_cache_directory pkg)
+		export PKGDEST=$(get_cache_directory pkg)
 	fi
 	if [[ -z $SRCDEST ]]; then
-		SRCDEST=$(get_cache_directory src)
+		export SRCDEST=$(get_cache_directory src)
 	fi
 	if [[ -z $SRCPKGDEST ]]; then
-		SRCPKGDEST=$(get_cache_directory srcpkg)
+		export SRCPKGDEST=$(get_cache_directory srcpkg)
 	fi
 	if [[ -z $LOGDEST ]]; then
-		LOGDEST=$(get_cache_directory log)
+		export LOGDEST=$(get_cache_directory log)
 	fi
+	echo $PKGDEST
+	echo $SRCDEST
+	echo LOGDEST
 }

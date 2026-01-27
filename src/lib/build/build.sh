@@ -307,6 +307,9 @@ pkgctl_build() {
 		fi
 	fi
 
+	# load user configuration
+	makepkg_load_config
+
 	# assign default worker slot
 	if [[ -z ${WORKER_SLOT} ]] && ! WORKER_SLOT="$(tty | sed 's|/dev/pts/||')"; then
 		WORKER_SLOT=$(( RANDOM % $(nproc) + 1 ))
@@ -489,8 +492,6 @@ pkgctl_build() {
 
 		# test-install (some of) the produced packages
 		if [[ ${INSTALL_TO_HOST} == auto ]] || [[ ${INSTALL_TO_HOST} == all ]]; then
-			makepkg_load_config
-
 			# this is inspired by print_all_package_names from libmakepkg
 			local version pkg_architecture pkg pkgfile
 			version=$(get_full_version)
