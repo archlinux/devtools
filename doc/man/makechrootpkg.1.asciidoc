@@ -26,7 +26,8 @@ command:
 
 This script reads {SRC,SRCPKG,PKG,LOG}DEST, NPROC, MAKEFLAGS and PACKAGER
 from makepkg.conf(5), if those variables are not part of the
-environment.
+environment. GIT_{AUTHOR,COMMITTER}_{NAME,EMAIL} are derived from PACKAGER
+and exported into the build environment.
 
 Default makepkg args: --syncdeps --noconfirm --log --holdver --skipinteg
 
