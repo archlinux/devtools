@@ -48,32 +48,6 @@ pkgctl_repo_configure_usage() {
 _EOF_
 }
 
-get_packager_name() {
-	local packager=$1
-	local packager_pattern="(.+) <(.+@.+)>"
-	local name
-
-	if [[ ! $packager =~ $packager_pattern ]]; then
-		return 1
-	fi
-
-	name=$(echo "${packager}"|sed -E "s/${packager_pattern}/\1/")
-	printf "%s" "${name}"
-}
-
-get_packager_email() {
-	local packager=$1
-	local packager_pattern="(.+) <(.+@.+)>"
-	local email
-
-	if [[ ! $packager =~ $packager_pattern ]]; then
-		return 1
-	fi
-
-	email=$(echo "${packager}"|sed -E "s/${packager_pattern}/\2/")
-	printf "%s" "${email}"
-}
-
 is_packager_name_valid() {
 	local packager_name=$1
 	if [[ -z ${packager_name} ]]; then

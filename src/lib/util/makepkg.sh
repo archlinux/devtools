@@ -58,6 +58,32 @@ makepkg_generate_integrity() {
 	)
 }
 
+get_packager_name() {
+	local packager=$1
+	local packager_pattern="(.+) <(.+@.+)>"
+	local name
+
+	if [[ ! $packager =~ $packager_pattern ]]; then
+		return 1
+	fi
+
+	name=$(echo "${packager}" | sed --regexp-extended "s/${packager_pattern}/\1/")
+	printf "%s" "${name}"
+}
+
+get_packager_email() {
+	local packager=$1
+	local packager_pattern="(.+) <(.+@.+)>"
+	local email
+
+	if [[ ! $packager =~ $packager_pattern ]]; then
+		return 1
+	fi
+
+	email=$(echo "${packager}" | sed --regexp-extended "s/${packager_pattern}/\2/")
+	printf "%s" "${email}"
+}
+
 # Load makepkg.conf once to make variables available
 _makepkg_config_loaded=false
 makepkg_load_config() {
