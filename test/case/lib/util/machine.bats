@@ -55,3 +55,15 @@ assert_name() {
 	assert_pid "$output"
 	assert_name "$output" bats-exec-test-1234567890abcdefghijklmnopqrstuvwxyz1234
 }
+
+@test "machine_name normalize trailing plus/dash" {
+	run machine_name foo+++
+	assert_pid "$output"
+	assert_name "$output" bats-exec-test-foo
+}
+
+@test "machine_name strip trailing dot" {
+	run machine_name foo...
+	assert_pid "$output"
+	assert_name "$output" bats-exec-test-foo
+}

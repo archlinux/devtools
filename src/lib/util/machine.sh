@@ -22,7 +22,9 @@ machine_name() {
 			tr --squeeze-repeats '.' | \
 			head --bytes=$(( max_hostname - max_pid_digits - 1 ))
 	)"
-	machine=${machine%%.}
-	machine=${machine%%-}
+
+	# Drop all trailing '-' or '.' characters
+	machine=$(printf "%s" "${machine}" | sed --regexp-extended 's/-+$//;s/\.+$//')
+
 	printf "%s.%s" "${machine}" "$$"
 }
