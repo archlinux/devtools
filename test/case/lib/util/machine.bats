@@ -55,3 +55,69 @@ assert_name() {
 	assert_pid "$output"
 	assert_name "$output" bats-exec-test-1234567890abcdefghijklmnopqrstuvwxyz1234
 }
+
+@test "machine_name normalize trailing plus/dash" {
+	run machine_name foo+++
+	assert_pid "$output"
+	assert_name "$output" bats-exec-test-foo
+}
+
+@test "machine_name strip trailing dot" {
+	run machine_name foo...
+	assert_pid "$output"
+	assert_name "$output" bats-exec-test-foo
+}
+
+@test "machine_name dot dash" {
+	run machine_name foo.-bar
+	assert_pid "$output"
+	assert_name "$output" bats-exec-test-foo.bar
+}
+
+@test "machine_name dash dot" {
+	run machine_name foo-.bar
+	assert_pid "$output"
+	assert_name "$output" bats-exec-test-foo.bar
+}
+
+@test "machine_name mixed dot dash run" {
+	run machine_name foo-.-bar
+	assert_pid "$output"
+	assert_name "$output" bats-exec-test-foo.bar
+}
+
+@test "machine_name long mixed dot dash run" {
+	run machine_name foo.-.-.-.-bar
+	assert_pid "$output"
+	assert_name "$output" bats-exec-test-foo.bar
+}
+
+@test "machine_name strip trailing mixed dot dash run" {
+	run machine_name a.-.-.-
+	assert_pid "$output"
+	assert_name "$output" bats-exec-test-a
+}
+
+@test "machine_name truncation ends on dot dash" {
+	run machine_name 1234567890abcdefghijklmnopqrstuvwxyz123.-xxx
+	assert_pid "$output"
+	assert_name "$output" bats-exec-test-1234567890abcdefghijklmnopqrstuvwxyz123
+}
+
+@test "machine_name truncation ends on dash dot" {
+	run machine_name 1234567890abcdefghijklmnopqrstuvwxyz123-.xxx
+	assert_pid "$output"
+	assert_name "$output" bats-exec-test-1234567890abcdefghijklmnopqrstuvwxyz123
+}
+
+@test "machine_name uppercase is normalized" {
+	run machine_name FOO
+	assert_pid "$output"
+	assert_name "$output" bats-exec-test
+}
+
+@test "machine_name uppercase between dots" {
+	run machine_name a.B.c
+	assert_pid "$output"
+	assert_name "$output" bats-exec-test-a.c
+}

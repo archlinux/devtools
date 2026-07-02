@@ -19,10 +19,19 @@ machine_name() {
 	# https://github.com/systemd/systemd/blob/v256/src/basic/hostname-util.c#L83-L136
 	machine="$(
 		tr --squeeze-repeats --complement 'a-z0-9.' - <<< "${machine}" | \
-			tr --squeeze-repeats '.' | \
 			head --bytes=$(( max_hostname - max_pid_digits - 1 ))
 	)"
-	machine=${machine%%.}
-	machine=${machine%%-}
+
+	# Drop all trailing '-' or '.' characters
+	local previous
+	while [[ ${previous-} != "${machine}" ]]; do
+		previous=${machine}
+		machine=${machine%.}
+		machine=${machine%-}
+		machine=${machine//-./.}
+		machine=${machine//.-/.}
+		machine=${machine//../.}
+	done
+
 	printf "%s.%s" "${machine}" "$$"
 }
