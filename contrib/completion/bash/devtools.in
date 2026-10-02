@@ -193,7 +193,7 @@ _pkgctl_build_args=(
 )
 _pkgctl_build_args__arch_opts() { _devtools_completions_binary_arch; }
 _pkgctl_build_args__repo_opts() { _devtools_completions_repo; }
-_pkgctl_build_args__offload_host_opts() { :; }
+_pkgctl_build_args__offload_host_opts() { _devtools_completions_ssh_host; }
 _pkgctl_build_args__worker_opts() { :; }
 _pkgctl_build_args_w_opts() { _pkgctl_build_args__worker_opts; }
 _pkgctl_build_args__inspect_opts() { _devtools_completions_inspect; }
@@ -658,6 +658,9 @@ _devtools_completions_all_packages() {
 }
 _devtools_completions_protocol() {
 	mapfile -t COMPREPLY < <(compgen -W "https" -- "$cur")
+}
+_devtools_completions_ssh_host() {
+	_known_hosts_real -a -- "$cur"
 }
 _devtools_completions_inspect() {
 	mapfile -t COMPREPLY < <(compgen -W "${DEVTOOLS_VALID_INSPECT_MODES[*]}" -- "$cur")
