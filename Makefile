@@ -1,6 +1,6 @@
 SHELL=/bin/bash -o pipefail
 
-V=1.5.1
+V=1.5.2
 BUILDTOOLVER ?= $(V)
 
 PREFIX = /usr/local
