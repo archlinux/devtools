@@ -8,6 +8,8 @@ DEVTOOLS_INCLUDE_LICENSE_CHECK_SH=1
 _DEVTOOLS_LIBRARY_DIR=${_DEVTOOLS_LIBRARY_DIR:-@pkgdatadir@}
 # shellcheck source=src/lib/common.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/common.sh
+# shellcheck source=src/lib/util/srcinfo.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/srcinfo.sh
 
 source /usr/share/makepkg/util/message.sh
 
@@ -103,7 +105,7 @@ pkgctl_license_check() {
 			return 1
 		fi
 
-		if ! pkgbase=$(grep --max-count=1 --extended-regexp "pkgbase = (.+)" .SRCINFO | awk '{print $3}'); then
+		if ! pkgbase=$(get_from_srcinfo 'pkgbase'); then
 			msg_error "${BOLD}${path}:${ALL_OFF} pkgbase not found in .SRCINFO"
 			return 1
 		fi

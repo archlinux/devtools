@@ -67,3 +67,26 @@ write_srcinfo_file() {
 	fi
 	stat_done
 }
+
+# Note that this function expects .SRCINFO to be in the current directory
+get_from_srcinfo() {
+	local element=${1}
+	local value
+
+	if [[ -z "${element}" ]]; then
+		error 'Missing element to get from .SRCINFO file'
+		return 1
+	fi
+
+	if [[ ! -f .SRCINFO ]]; then
+		error '.SRCINFO file not found'
+		return 1
+	fi
+
+	if ! value=$(grep --max-count=1 --extended-regexp "${element} = (.+)" .SRCINFO | awk '{print $3}'); then
+		error "Element '${element}' not found in .SRCINFO file"
+		return 1
+	fi
+
+	echo "${value}"
+}

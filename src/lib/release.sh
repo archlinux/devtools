@@ -14,6 +14,8 @@ source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/pacman.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/valid-repos.sh
 # shellcheck source=src/lib/api/gitlab.sh
 source "${_DEVTOOLS_LIBRARY_DIR}"/lib/api/gitlab.sh
+# shellcheck source=src/lib/util/srcinfo.sh
+source "${_DEVTOOLS_LIBRARY_DIR}"/lib/util/srcinfo.sh
 
 source /usr/share/makepkg/util/util.sh
 
@@ -170,8 +172,8 @@ pkgctl_release() {
 		fi
 
 		# close out-of-date issue from commit msg if it exists and matches $pkgver
-		local pkgbase=$(grep --max-count=1 --extended-regexp "pkgbase = (.+)" .SRCINFO | awk '{print $3}')
-		local pkgver=$(grep --max-count=1 --extended-regexp "pkgver = (.+)" .SRCINFO | awk '{print $3}')
+		local pkgbase=$(get_from_srcinfo 'pkgbase')
+		local pkgver=$(get_from_srcinfo 'pkgver')
 		project_path=$(gitlab_project_convert_name "${pkgbase}")
 		IFS='|' read -r ood_issue_id upstream_version < <(curl --silent --fail --retry 3 --retry-delay 3 --compressed https://bumpbuddy.archlinux.org/data.json | jq --raw-output --arg pkgbase "${pkgbase}" '.[$pkgbase] | "\(.issue // "")|\(.upstream_version // "")"') || warning 'Failed to query bumpbuddy data'
 
