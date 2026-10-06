@@ -98,7 +98,7 @@ pkgctl_issue_view() {
 	fi
 	pkgbase=$(basename "${pkgbase}")
 
-	project_path=$(gitlab_project_name_to_path "${pkgbase}")
+	project_path=$(gitlab_project_convert_name "${pkgbase}")
 
 	if ! result=$(gitlab_project_issue "${pkgbase}" "${iid}"); then
 		die "Failed to view issue ${pkgbase} #${iid}"

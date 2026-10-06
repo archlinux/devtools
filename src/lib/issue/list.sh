@@ -271,7 +271,7 @@ pkgctl_issue_list() {
 		fi
 
 		pkgbase=$(basename "${path}")
-		project_path=$(gitlab_project_name_to_path "${pkgbase}")
+		project_path=$(gitlab_project_convert_name "${pkgbase}")
 
 		echo "${UNDERLINE}${pkgbase}${ALL_OFF}"
 

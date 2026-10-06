@@ -147,7 +147,7 @@ pkgctl_issue_move() {
 		exit 1
 	fi
 
-	project_path=$(gitlab_project_name_to_path "${to_project_name}")
+	project_path=$(gitlab_project_convert_name "${to_project_name}")
 	issue_url="${GIT_PACKAGING_URL_HTTPS}/${project_path}/-/issues/${to_iid}"
 
 	msg_success "Moved issue ${BOLD}${pkgbase}${ALL_OFF} ${BOLD}#${iid}${ALL_OFF} to ${BOLD}${to_project_name}${ALL_OFF} ${BOLD}#${to_iid}${ALL_OFF}"

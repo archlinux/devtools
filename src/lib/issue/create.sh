@@ -173,7 +173,7 @@ pkgctl_issue_create() {
 		pkgbase=$(realpath --canonicalize-existing .)
 	fi
 	pkgbase=$(basename "${pkgbase}")
-	project_path=$(gitlab_project_name_to_path "${pkgbase}")
+	project_path=$(gitlab_project_convert_name "${pkgbase}")
 	recovery_file="${recovery_home}/issue_create_${pkgbase}.md"
 
 	# spawn web browser

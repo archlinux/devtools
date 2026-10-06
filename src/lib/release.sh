@@ -172,7 +172,7 @@ pkgctl_release() {
 		# close out-of-date issue from commit msg if it exists and matches $pkgver
 		local pkgbase=$(grep --max-count=1 --extended-regexp "pkgbase = (.+)" .SRCINFO | awk '{print $3}')
 		local pkgver=$(grep --max-count=1 --extended-regexp "pkgver = (.+)" .SRCINFO | awk '{print $3}')
-		project_path=$(gitlab_project_name_to_path "${pkgbase}")
+		project_path=$(gitlab_project_convert_name "${pkgbase}")
 		IFS='|' read -r ood_issue_id upstream_version < <(curl --silent --fail --retry 3 --retry-delay 3 --compressed https://bumpbuddy.archlinux.org/data.json | jq --raw-output --arg pkgbase "${pkgbase}" '.[$pkgbase] | "\(.issue // "")|\(.upstream_version // "")"') || warning 'Failed to query bumpbuddy data'
 
 		if [[ -n "${ood_issue_id}" ]] && [[ -n "${upstream_version}" ]]; then

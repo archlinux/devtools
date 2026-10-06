@@ -181,7 +181,7 @@ pkgctl_repo_clone() {
 	for pkgbase in "${pkgbases[@]}"; do
 		if [[ ! -d ${pkgbase} ]]; then
 			msg "Cloning ${pkgbase} ..."
-			project_path=$(gitlab_project_name_to_path "${pkgbase}")
+			project_path=$(gitlab_project_convert_name "${pkgbase}")
 			remote_url="${GIT_REPO_BASE_URL}/${project_path}.git"
 			if ! git clone --origin origin "${remote_url}" "${pkgbase}"; then
 				die 'failed to clone %s' "${pkgbase}"

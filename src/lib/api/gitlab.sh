@@ -344,7 +344,7 @@ longest_package_name_from_ids() {
 	printf "%s" "${longest}"
 }
 
-# Convert arbitrary project names to GitLab valid path names.
+# Convert arbitrary project names to GitLab valid project names.
 #
 # GitLab has several limitations on project and group names and also maintains
 # a list of reserved keywords as documented on their docs.
@@ -355,7 +355,7 @@ longest_package_name_from_ids() {
 # 3. replace any special chars other than '_', '-' and '.' with '-'
 # 4. replace consecutive '_-' chars with a single '-'
 # 5. replace 'tree' with 'unix-tree' due to GitLab reserved keyword
-gitlab_project_name_to_path() {
+gitlab_project_convert_name() {
 	local name=$1
 	printf "%s" "${name}" \
 		| sed -E 's/([a-zA-Z0-9]+)\+([a-zA-Z]+)/\1-\2/g' \
@@ -372,7 +372,7 @@ gitlab_api_create_project() {
 	[[ -z ${WORKDIR:-} ]] && setup_workdir
 	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
 
-	project_path=$(gitlab_project_name_to_path "${pkgbase}")
+	project_path=$(gitlab_project_convert_name "${pkgbase}")
 
 	# create GitLab project
 	data='{
@@ -421,7 +421,7 @@ gitlab_project() {
 	[[ -z ${WORKDIR:-} ]] && setup_workdir
 	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
 
-	project_path=$(gitlab_project_name_to_path "${project}")
+	project_path=$(gitlab_project_convert_name "${project}")
 
 	if ! gitlab_api_call "${outfile}" GET "projects/archlinux%2fpackaging%2fpackages%2f${project_path}/"; then
 		return 1
@@ -485,7 +485,7 @@ gitlab_project_issue() {
 	[[ -z ${WORKDIR:-} ]] && setup_workdir
 	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
 
-	project_path=$(gitlab_project_name_to_path "${pkgbase}")
+	project_path=$(gitlab_project_convert_name "${pkgbase}")
 
 	if ! gitlab_api_call "${outfile}" GET "projects/archlinux%2fpackaging%2fpackages%2f${project_path}/issues/${iid}"; then
 		return 1
@@ -512,7 +512,7 @@ gitlab_project_issue_create() {
 	[[ -z ${WORKDIR:-} ]] && setup_workdir
 	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
 
-	project_path=$(gitlab_project_name_to_path "${pkgbase}")
+	project_path=$(gitlab_project_convert_name "${pkgbase}")
 
 	data=$(jq --null-input \
 		--arg title "${title}" \
@@ -564,7 +564,7 @@ gitlab_project_issue_edit() {
 	[[ -z ${WORKDIR:-} ]] && setup_workdir
 	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
 
-	project_path=$(gitlab_project_name_to_path "${pkgbase}")
+	project_path=$(gitlab_project_convert_name "${pkgbase}")
 
 	if ! gitlab_api_call "${outfile}" PUT "/projects/archlinux%2fpackaging%2fpackages%2f${project_path}/issues/${iid}?${params}" "${data}"; then
 		return 1
@@ -588,7 +588,7 @@ gitlab_create_project_issue_note() {
 	[[ -z ${WORKDIR:-} ]] && setup_workdir
 	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
 
-	project_path=$(gitlab_project_name_to_path "${pkgbase}")
+	project_path=$(gitlab_project_convert_name "${pkgbase}")
 
 	data=$(jq --null-input --arg body "${body}" '$ARGS.named')
 	if ! gitlab_api_call "${outfile}" POST "/projects/archlinux%2fpackaging%2fpackages%2f${project_path}/issues/${iid}/notes" "${data}"; then
@@ -613,7 +613,7 @@ gitlab_project_issue_move() {
 	[[ -z ${WORKDIR:-} ]] && setup_workdir
 	outfile=$(mktemp --tmpdir="${WORKDIR}" pkgctl-gitlab-api.XXXXXXXXXX)
 
-	project_path=$(gitlab_project_name_to_path "${pkgbase}")
+	project_path=$(gitlab_project_convert_name "${pkgbase}")
 
 	if ! gitlab_api_call "${outfile}" POST "/projects/archlinux%2fpackaging%2fpackages%2f${project_path}/issues/${iid}/move?to_project_id=${to_project_id}"; then
 		return 1

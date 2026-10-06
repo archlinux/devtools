@@ -226,7 +226,7 @@ pkgctl_repo_configure() {
 
 		pushd "${path}" >/dev/null
 
-		project_path=$(gitlab_project_name_to_path "${pkgbase}")
+		project_path=$(gitlab_project_convert_name "${pkgbase}")
 		remote_url="${GIT_REPO_BASE_URL}/${project_path}.git"
 		if ! git remote add origin "${remote_url}" &>/dev/null; then
 			git remote set-url origin "${remote_url}"

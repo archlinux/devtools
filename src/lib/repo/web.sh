@@ -85,7 +85,7 @@ pkgctl_repo_web() {
 
 	for pkgbase in "${pkgbases[@]}"; do
 		pkgbase=$(basename "${pkgbase}")
-		path=$(gitlab_project_name_to_path "${pkgbase}")
+		path=$(gitlab_project_convert_name "${pkgbase}")
 		url="${GIT_PACKAGING_URL_HTTPS}/${path}"
 		case ${mode} in
 			open)
