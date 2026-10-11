@@ -386,7 +386,7 @@ is_debug_package() {
 # can pass unquoted globs to is_globfile() and have them expanded as function
 # arguments before being checked.
 is_globfile() {
-	[[ -f $1 ]]
+	[[ -e $1 ]]
 }
 
 join_by() {

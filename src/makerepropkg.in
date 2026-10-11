@@ -93,6 +93,8 @@ get_makepkg_conf() {
     local fname=${1}
     local arch="${2}"
     local makepkg_conf="${3}"
+    local temp_conf_dir="${TEMPDIR}/makepkg.conf.tmp"
+    mkdir --parents "${temp_conf_dir}" "${makepkg_conf}.d"
 
     if ! buildtool_file=$(get_pkgfile "${fname}"); then
        error "failed to retrieve ${fname}"
@@ -107,20 +109,23 @@ get_makepkg_conf() {
         return $?
     fi
 
-    msg2 "extracting ${arch}.conf from devtools archive"
     if ! bsdtar --extract --to-stdout --fast-read --file "${buildtool_file}" "usr/share/devtools/makepkg.conf.d/${arch}.conf" > "${makepkg_conf}"; then
         error "failed to extract 'usr/share/devtools/makepkg.conf.d/${arch}.conf' from devtools archive"
         return 1
     fi
 
-    mkdir --parents "${makepkg_conf}.d"
+    # extract architecture specific conf
+    if bsdtar --list --file "${buildtool_file}" "usr/share/devtools/makepkg.conf.d/${arch}.conf*" &>/dev/null; then
+        msg2 "extracting ${arch}.conf from devtools archive"
+        bsdtar --extract --file "${buildtool_file}" --cd "${temp_conf_dir}" --strip-components 4 "usr/share/devtools/makepkg.conf.d/${arch}.conf*"
+        cp --dereference "${temp_conf_dir}/${arch}.conf" "${makepkg_conf}"
+    fi
+
+    # extract shared conf.d so we can dereference symlinks
     if bsdtar --list --file "${buildtool_file}" "usr/share/devtools/makepkg.conf.d/conf.d" &>/dev/null; then
         msg2 "extracting conf.d from devtools archive"
-        bsdtar --extract --file "${buildtool_file}" --cd "${makepkg_conf}.d" --strip-components 4 "usr/share/devtools/makepkg.conf.d/conf.d"
-    fi
-    if bsdtar --list --file "${buildtool_file}" "usr/share/devtools/makepkg.conf.d/${arch}.conf.d" &>/dev/null; then
-        msg2 "extracting ${arch}.conf.d from devtools archive"
-        bsdtar --extract --file "${buildtool_file}" --cd "${makepkg_conf}.d" --strip-components 4 "usr/share/devtools/makepkg.conf.d/${arch}.conf.d"
+        bsdtar --extract --file "${buildtool_file}" --cd "${temp_conf_dir}" --strip-components 4 "usr/share/devtools/makepkg.conf.d/conf.d"
+        cp --dereference "${temp_conf_dir}/${arch}.conf.d/"* "${makepkg_conf}.d"
     fi
 
     return 0
