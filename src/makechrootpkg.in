@@ -432,7 +432,7 @@ if [[ $inspect == always ]] || ( [[ $inspect == failure ]] && (( ret != 0 )) ); 
 	arch-nspawn "$copydir" \
 		"${nspawn_build_args[@]}" \
 		--machine="$(machine_name "${pkgbase}.inspect")" \
-		--user=builduser \
+		--uid=builduser \
 		--chdir=/build
 fi
 
